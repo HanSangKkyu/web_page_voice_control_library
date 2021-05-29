@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <div id="dd">
+        d
+    </div>
+    <script>
+        function move(){
+            console.log('move');
+        }
+
+        function input(){
+            console.log('input');
+        }
+
+        var json = [
+            {
+                command : ["이동","열기","연결","페이지","보이기","표시","띄우기","들어가기","읽어와"],
+                func : "move"
+            },
+            {
+                command : ["입력","채우기","쓰기","표기","작성"],
+                func : "input"
+            }
+        ];
+        localStorage.setItem('command',JSON.stringify(json));
+
+        document.getElementById('dd').innerText = localStorage.getItem('command');
+
+        command = JSON.parse(localStorage.getItem('command'));
+        console.log(command);
+        for(var i = 0;i<command.length;i++){
+            fire(command[i].func);
+            console.log(command[i].command);
+            for(var j=0;j<command[i].command.length;j++){
+                console.log(command[i].command[j]);
+            }
+        }
+
+
+        // 웹페이지 개발자가 제공하는 함수 기능해서만 클라이언트는 사용할 수 있다.
+        function fire(_name) {
+            switch(_name){
+                case "move":
+                    move();
+                    break;
+                case "input":
+                    input();
+                    break;
+            }
+        }
+    </script>
+</body>
+</html>
