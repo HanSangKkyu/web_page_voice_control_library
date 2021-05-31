@@ -4,12 +4,192 @@
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+    
+    <!-- bootstrap -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.1/dist/css/bootstrap.min.css" rel="stylesheet" >
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.1/dist/js/bootstrap.bundle.min.js" ></script>
+    
+    <title>prototype demo</title>
 </head>
 <body>
-    <div id="dd">
-        d
+    <div style="height: 100vh;">
+        <div style="height: 1vh;" class="row">
+            <div class="col-2"></div>
+            <div style="font-weight: bold;" class="text-center col-8">커스텀 명령어 만들기</div>
+            <div style="cursor: pointer; color: red;" class="col-1" onclick="delItemOnDict()">삭제</div>
+            <div style="cursor: pointer; color: green;" class="col-1" onclick="laodAddPage()">추가</div>
+        </div>
+        <div style="height: 30vh; margin-top: 3vh;" id="screen">
+
+            
+        </div>
+        <div style="height: 69vh; overflow:scroll;" class="list-group" id="list" role="tablist"></div>
     </div>
+    
+    <script>
+        // 문자열을 이용해서 함수를 호출하고 싶을 때   window[dict[i].func]();
+
+        var dict;
+        var commandList;
+        var selectedItemNum;
+
+        function getCustomMethods(){
+            // 개발자가 만든 함수들을 가져온다.
+            res = [];
+            var funclist = Object.getOwnPropertyNames(window).filter(item => typeof window[item] === 'function')
+            for(var i = funclist.length-1;i>=0;i--){
+                if(funclist[i] == 'webkitResolveLocalFileSystemURL'){
+                    break;
+                }
+                if(funclist[i] == 'crosswebex_nativecall' || funclist[i] == 'getCustomMethods'){
+                    continue;
+                }
+                
+                res.push(funclist[i]);
+            }
+            return res;
+        }
+
+        function loadDictList(){
+            dict = JSON.parse(localStorage.getItem('dictionary'));
+            var list = '';
+            for(var i = 0;i<dict.length;i++){
+                list += '<a class="list-group-item list-group-item-action" data-bs-toggle="list" href="" onclick="laodEditPage('+i+')">' +
+                            '<li class="list-group-item d-flex justify-content-between align-items-start">' +
+                                '<div class="ms-2 me-auto">' +
+                                    '<div class="fw-bold">'+ dict[i].command +'</div>' +
+                                    dict[i].func +
+                                '</div>' +
+                            '</li>' +
+                        '</a>';
+            }
+
+            document.getElementById('list').innerHTML = list;
+        }
+
+        function laodAddPage(){
+            commandList = [];
+
+            var funcList = getCustomMethods();
+            var options = '';
+            for(var i = 0;i<funcList.length;i++){
+                options += '<option value="'+funcList[i]+'">'+funcList[i]+'</option>';
+            }
+            document.getElementById('screen').innerHTML = 
+            '<div class="row">'+
+            '    <div class="col-6">'+
+            '        <div class="input-group mb-3">'+
+            '            <input type="text" class="form-control" placeholder="명령어를 입력하세요" id="commandInput">'+
+            '            <button class="btn btn-outline-secondary" type="button" onclick="addCommandList()">추가</button>'+
+            '        </div>'+
+            '    </div>'+
+            '    <div class="col-6">'+
+            '        <select class="form-select" id="funcSelector">'+options+'</select>'+
+            '    </div>'+
+            '</div>'+
+            '<div class="row">'+
+            '    <div style="height: 24vh; overflow: scroll;" class="col-6" id="commandList">'+
+            '    </div>'+
+            '    <div class="col-6">'+
+            '        <button type="button" class="btn btn-primary" onclick="addItemToDict()">확인</button>'+
+            '    </div>'+
+            '</div>';
+        }
+        
+        function addItemToDict(){
+            var funcData = document.getElementById('funcSelector').value;
+            console.log(funcData);
+
+            var item = {
+                command : commandList,
+                func : funcData
+            }
+            dict.push(item);
+            updateDict();
+        }
+
+        function addCommandList(){
+            var data = document.getElementById('commandInput').value;
+            console.log(data);
+            if(data.length > 0){
+                commandList.push(data);
+                updateCommandList();
+                document.getElementById('commandInput').value = '';
+            }
+        }
+
+        function delCommandList(data){
+            const idx = commandList.findIndex(function(item) {return item == data})
+            if (idx > -1) {
+                commandList.splice(idx, 1);
+                updateCommandList();
+            }
+        }
+
+        function updateCommandList(){
+            var res = '';
+                for(var i = 0;i<commandList.length;i++){
+                    res += 
+                    '<div class="input-group mb-3">'+
+                    '   <input type="text" class="form-control" placeholder="명령어를 입력하세요" value="'+commandList[i]+'">'+
+                    '   <button class="btn btn-outline-secondary" type="button" onclick="delCommandList('+"'"+commandList[i]+"'"+')">삭제</button>'+
+                    '</div>';
+                }
+            document.getElementById('commandList').innerHTML = res;
+        }
+
+        function updateDict(){
+            localStorage.setItem('dictionary', JSON.stringify(dict));
+            loadDictList();
+        }
+
+        function laodEditPage(data){
+            selectedItemNum = data;
+            console.log(dict[data]);
+            commandList = dict[data].command;
+
+            var funcList = getCustomMethods();
+            var options = '';
+            for(var i = 0;i<funcList.length;i++){
+                options += '<option value="'+funcList[i]+'">'+funcList[i]+'</option>';
+            }
+            document.getElementById('screen').innerHTML = 
+            '<div class="row">'+
+            '    <div class="col-6">'+
+            '        <div class="input-group mb-3">'+
+            '            <input type="text" class="form-control" placeholder="명령어를 입력하세요" id="commandInput">'+
+            '            <button class="btn btn-outline-secondary" type="button" onclick="addCommandList()">추가</button>'+
+            '        </div>'+
+            '    </div>'+
+            '    <div class="col-6">'+
+            '        <select class="form-select" id="funcSelector">'+options+'</select>'+
+            '    </div>'+
+            '</div>'+
+            '<div class="row">'+
+            '    <div style="height: 24vh; overflow: scroll;" class="col-6" id="commandList">'+
+            '    </div>'+
+            '    <div class="col-6">'+
+            '        <button type="button" class="btn btn-primary" onclick="editItemOnDict('+data+')">확인</button>'+
+            '    </div>'+
+            '</div>';
+            
+            document.getElementById('funcSelector').value = dict[data].func;
+            updateCommandList();
+        }
+
+        function editItemOnDict(data){
+            dict[data].command = commandList;
+            dict[data].func = document.getElementById('funcSelector').value;
+            updateDict();
+        }
+
+        function delItemOnDict(){
+            dict.splice(selectedItemNum, 1);
+            updateDict();
+        }
+
+        loadDictList();
+    </script>
     <script>
         function move(){
             console.log('move');
@@ -18,63 +198,6 @@
         function input(){
             console.log('input');
         }
-
-        var json = [
-            {
-                command : ["이동","열기","연결","페이지","보이기","표시","띄우기","들어가기","읽어와"],
-                func : "move"
-            },
-            {
-                command : ["입력","채우기","쓰기","표기","작성"],
-                func : "input"
-            }
-        ];
-        localStorage.setItem('command',JSON.stringify(json));
-
-        document.getElementById('dd').innerText = localStorage.getItem('command');
-
-        command = JSON.parse(localStorage.getItem('command'));
-        console.log(command);
-        for(var i = 0;i<command.length;i++){
-            fire(command[i].func);
-            console.log(command[i].command);
-            for(var j=0;j<command[i].command.length;j++){
-                console.log(command[i].command[j]);
-            }
-        }
-
-
-        // 웹페이지 개발자가 제공하는 함수 기능에서만 클라이언트는 사용할 수 있다.
-        function fire(_name) {
-            switch(_name){
-                case "move":
-                    move();
-                    break;
-                case "input":
-                    input();
-                    break;
-            }
-        }
-
-        getMethods = (obj) => Object.getOwnPropertyNames(obj).filter(item => typeof obj[item] === 'function')
-        function getCustomMethods(){
-            
-            res = [];
-            var funclist = getMethods(window);
-            for(var i = funclist.length-1;i>=0;i--){
-                if(funclist[i] == 'webkitResolveLocalFileSystemURL'){
-                    break;
-                }
-                console.log(funclist[i]);
-                res.push(funclist[i]);
-            }
-
-            return res;
-        }
-
-        console.log(getCustomMethods()); 
-        
-
     </script>
 </body>
 </html>
