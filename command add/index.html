@@ -28,7 +28,7 @@
         var dict;
         var commandList;
         var selectedItemNum;
-        var defaultFucntionList = ['getCustomMethods', 'loadDictList', 'laodAddPage', 'addItemToDict', 'delCommandList', 'updateCommandList', 'updateDict', 'laodEditPage', 'editItemOnDict', 'delItemOnDict', 'addCommandList'];
+        var defaultFucntionList = ['getCustomMethods', 'loadDictList', 'laodAddPage', 'addItemToDict', 'delCommandList', 'updateCommandList', 'updateDict', 'laodEditPage', 'editItemOnDict', 'delItemOnDict', 'addCommandList', 'getParam', 'updateParamListOnAddPage', 'updateParamListOnEditPage'];
 
         function getCustomMethods(){
             // 개발자가 만든 함수들을 가져온다.
@@ -57,6 +57,7 @@
                 param[i] = param[i].trim();
             }
             console.log(param);
+            return param;
         }
 
         function loadDictList(){
@@ -88,6 +89,8 @@
             for(var i = 0;i<funcList.length;i++){
                 options += '<option value="'+funcList[i]+'">'+funcList[i]+'</option>';
             }
+
+
             document.getElementById('screen').innerHTML = 
             '<div class="row">'+
             '    <div class="col-6">'+
@@ -97,16 +100,20 @@
             '        </div>'+
             '    </div>'+
             '    <div class="col-6">'+
-            '        <select class="form-select" id="funcSelector">'+options+'</select>'+
+            '        <select class="form-select" id="funcSelector" onchange="updateParamListOnAddPage()">'+options+'</select>'+
             '    </div>'+
             '</div>'+
             '<div class="row">'+
             '    <div style="height: 24vh; overflow: scroll;" class="col-6" id="commandList">'+
             '    </div>'+
             '    <div class="col-6">'+
+            '    <div id="paramList">' +
+            '    </div>' +
             '        <button type="button" class="btn btn-primary" onclick="addItemToDict()">확인</button>'+
             '    </div>'+
             '</div>';
+
+            updateParamListOnAddPage();
         }
         
         function addItemToDict(){
@@ -118,10 +125,17 @@
             for(var i=0;i<commandInputs.length;i++){
                 commandList.push(commandInputs[i].value);
             }
+            
+            var paramInputs = document.getElementsByClassName('paramInputs');
+            var paramInputsData = [];
+            for(var i=0;i<paramInputs.length;i++){
+                paramInputsData.push(paramInputs[i].value);
+            }
 
             var item = {
                 command : commandList,
-                func : funcData
+                func : funcData,
+                param : paramInputsData
             }
             dict.push(item);
             updateDict();
@@ -181,19 +195,22 @@
             '        </div>'+
             '    </div>'+
             '    <div class="col-6">'+
-            '        <select class="form-select" id="funcSelector">'+options+'</select>'+
+            '        <select class="form-select" id="funcSelector" onchange="updateParamListOnEditPage()">'+options+'</select>'+
             '    </div>'+
             '</div>'+
             '<div class="row">'+
             '    <div style="height: 24vh; overflow: scroll;" class="col-6" id="commandList">'+
             '    </div>'+
             '    <div class="col-6">'+
+            '    <div id="paramList">' +
+            '    </div>' +
             '        <button type="button" class="btn btn-primary" onclick="editItemOnDict('+data+')">확인</button>'+
             '    </div>'+
             '</div>';
             
             document.getElementById('funcSelector').value = dict[data].func;
             updateCommandList();
+            updateParamListOnEditPage();
         }
 
         function editItemOnDict(data){
@@ -204,12 +221,58 @@
             }
             dict[data].command = commandList;
             dict[data].func = document.getElementById('funcSelector').value;
+
+                        
+            var paramInputs = document.getElementsByClassName('paramInputs');
+            var paramInputsData = [];
+            for(var i=0;i<paramInputs.length;i++){
+                paramInputsData.push(paramInputs[i].value);
+            }
+
+            dict[data].param = paramInputsData;
+
             updateDict();
         }
 
         function delItemOnDict(){
             dict.splice(selectedItemNum, 1);
             updateDict();
+        }
+
+        function updateParamListOnEditPage(){
+            var func = document.getElementById('funcSelector').value;
+            var params = getParam(func);
+            if(params[0].length == 0){
+                document.getElementById('paramList').innerHTML = '';
+                return;
+            }
+            var paramList = '';
+            for(var i=0;i<params.length;i++){
+                paramList += 
+                '<div class="input-group mb-3">' +
+                '    <span class="input-group-text">'+params[i]+'</span>' +
+                '    <input type="text" class="form-control paramInputs" value="'+(dict[selectedItemNum].param[i] ? dict[selectedItemNum].param[i] : '')+'">' +
+                '</div>';
+            }
+            document.getElementById('paramList').innerHTML = paramList;
+        }
+
+        function updateParamListOnAddPage(){
+            var func = document.getElementById('funcSelector').value;
+            var params = getParam(func);
+            if(params[0].length == 0){
+                document.getElementById('paramList').innerHTML = '';
+                return;
+            }
+            var paramList = '';
+            for(var i=0;i<params.length;i++){
+                paramList += 
+                '<div class="input-group mb-3">' +
+                '    <span class="input-group-text">'+params[i]+'</span>' +
+                '    <input type="text" class="form-control paramInputs" >' +
+                '</div>';
+            }
+            document.getElementById('paramList').innerHTML = paramList;
         }
 
         loadDictList();
@@ -220,8 +283,8 @@
             console.log('move', param1, param2);
         }
 
-        function input(){
-            console.log('input');
+        function input(ask){
+            console.log('input', ask);
         }
 
         function foo(param){
@@ -267,6 +330,7 @@
         function goNextPage(){
             history.forward();
         }
+
     </script>
 </body>
 </html>
