@@ -28,7 +28,6 @@
     
     <script>
         // 문자열을 이용해서 함수를 호출하고 싶을 때   window[dict[i].func]();
-
         var dict;
         var commandList;
         var selectedItemNum;
@@ -37,7 +36,7 @@
         function getCustomMethods(){
             // 개발자가 만든 함수들을 가져온다.
             res = [];
-            var funclist = Object.getOwnPropertyNames(window).filter(item => typeof window[item] === 'function')
+            var funclist = Object.getOwnPropertyNames(window).filter(item => typeof window[item] === 'function');
             for(var i = funclist.length-1;i>=0;i--){
                 if(funclist[i] == 'webkitResolveLocalFileSystemURL'){
                     break;
@@ -101,6 +100,12 @@
         function addItemToDict(){
             var funcData = document.getElementById('funcSelector').value;
             console.log(funcData);
+
+            var commandInputs = document.getElementsByClassName('commandInputs');
+            commandList = [];
+            for(var i=0;i<commandInputs.length;i++){
+                commandList.push(commandInputs[i].value);
+            }
 
             var item = {
                 command : commandList,
