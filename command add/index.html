@@ -32,6 +32,7 @@
         var dict;
         var commandList;
         var selectedItemNum;
+        var defaultFucntionList = ['getCustomMethods', 'loadDictList', 'laodAddPage', 'addItemToDict', 'delCommandList', 'updateCommandList', 'updateDict', 'laodEditPage', 'editItemOnDict', 'delItemOnDict', 'addCommandList'];
 
         function getCustomMethods(){
             // 개발자가 만든 함수들을 가져온다.
@@ -41,7 +42,8 @@
                 if(funclist[i] == 'webkitResolveLocalFileSystemURL'){
                     break;
                 }
-                if(funclist[i] == 'crosswebex_nativecall' || funclist[i] == 'getCustomMethods'){
+                // console.log(funclist[i], defaultFucntionList, funclist[i] in defaultFucntionList);
+                if(funclist[i] == 'crosswebex_nativecall' || defaultFucntionList.toString().indexOf(funclist[i]) != -1 ){
                     continue;
                 }
                 
@@ -131,7 +133,7 @@
                 for(var i = 0;i<commandList.length;i++){
                     res += 
                     '<div class="input-group mb-3">'+
-                    '   <input type="text" class="form-control" placeholder="명령어를 입력하세요" value="'+commandList[i]+'">'+
+                    '   <input type="text" class="form-control commandInputs" placeholder="명령어를 입력하세요" value="'+commandList[i]+'">'+
                     '   <button class="btn btn-outline-secondary" type="button" onclick="delCommandList('+"'"+commandList[i]+"'"+')">삭제</button>'+
                     '</div>';
                 }
@@ -178,6 +180,11 @@
         }
 
         function editItemOnDict(data){
+            var commandInputs = document.getElementsByClassName('commandInputs');
+            commandList = [];
+            for(var i=0;i<commandInputs.length;i++){
+                commandList.push(commandInputs[i].value);
+            }
             dict[data].command = commandList;
             dict[data].func = document.getElementById('funcSelector').value;
             updateDict();
@@ -197,6 +204,10 @@
 
         function input(){
             console.log('input');
+        }
+
+        function foo(param){
+            console.log(';f');
         }
     </script>
 </body>
