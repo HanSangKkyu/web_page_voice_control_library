@@ -19,10 +19,7 @@
             <div style="cursor: pointer; color: red;" class="col-1" onclick="delItemOnDict()">삭제</div>
             <div style="cursor: pointer; color: green;" class="col-1" onclick="laodAddPage()">추가</div>
         </div>
-        <div style="height: 30vh; margin-top: 3vh;" id="screen">
-
-            
-        </div>
+        <div style="height: 30vh; margin-top: 3vh;" id="screen"></div>
         <div style="height: 69vh; overflow:scroll;" class="list-group" id="list" role="tablist"></div>
     </div>
     
@@ -47,12 +44,27 @@
                 }
                 
                 res.push(funclist[i]);
+                
             }
             return res;
         }
 
+        function getParam(func){
+            var param = window[func].toString().substring(window[func].toString().indexOf(func), window[func].toString().indexOf(')'));
+            param = param.substring(param.indexOf('(')+1);
+            param = param.split(',');
+            for(var i=0;i<param.length;i++){
+                param[i] = param[i].trim();
+            }
+            console.log(param);
+        }
+
         function loadDictList(){
             dict = JSON.parse(localStorage.getItem('dictionary'));
+            if(dict == null){
+                localStorage.setItem('dictionary', JSON.stringify([]));
+                dict = [];
+            }
             var list = '';
             for(var i = 0;i<dict.length;i++){
                 list += '<a class="list-group-item list-group-item-action" data-bs-toggle="list" href="" onclick="laodEditPage('+i+')">' +
@@ -203,8 +215,9 @@
         loadDictList();
     </script>
     <script>
-        function move(){
-            console.log('move');
+        // 매개변수의 타압은 문자열로 한정한다.
+        function move(param1, param2){
+            console.log('move', param1, param2);
         }
 
         function input(){
@@ -213,6 +226,46 @@
 
         function foo(param){
             console.log(';f');
+        }
+
+        function scrollDown(){
+            scrollTo(document.documentElement.scrollTop, document.documentElement.scrollTop+50);
+        }
+
+        function scrollUp(){
+            scrollTo(document.documentElement.scrollTop, document.documentElement.scrollTop-50);
+        }
+
+        function refresh(){
+            location.reload();
+        }
+
+        function zoomIn(){
+            if(document.body.style.zoom==""){
+                document.body.style.zoom = 110+"%";
+            }else{
+                var zoom = document.body.style.zoom.toString().substring(0, document.body.style.zoom.toString().indexOf("%"));
+                console.log(zoom);
+                document.body.style.zoom = (parseInt(zoom)+10)+"%";
+            }
+        }
+
+        function zoomOut(){
+            if(document.body.style.zoom==""){
+                document.body.style.zoom = 90+"%";
+            }else{
+                var zoom = document.body.style.zoom.toString().substring(0, document.body.style.zoom.toString().indexOf("%"));
+                console.log(zoom);
+                document.body.style.zoom = (parseInt(zoom)-10)+"%";
+            }
+        }
+
+        function goPreviousPage(){
+            history.back();
+        }
+
+        function goNextPage(){
+            history.forward();
         }
     </script>
 </body>
