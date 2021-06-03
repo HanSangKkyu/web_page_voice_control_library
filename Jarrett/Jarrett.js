@@ -148,6 +148,10 @@ const Jarrett = (function() {
         return true;
     };
     ;
+
+    Jarrett.prototype.editCommands = function (param) {
+
+    };
     /**
      * The SpeechSynthesisUtterance objects are stored in the artyom_garbage_collector variable
      * to prevent the wrong behaviour of artyom.say.
@@ -839,20 +843,23 @@ const Jarrett = (function() {
      * @returns {Boolean}
      */
      Jarrett.prototype.initialize = function (config) {
+        console.log("55555");
         var _this = this;
 
-        dict = JSON.parse(localStorage.getItem('dictionary'));
-        if(dict == null){
+        let dic = JSON.parse(localStorage.getItem('dictionary'));
+        console.log(dic);
+        if(dic == null){
             localStorage.setItem('dictionary', JSON.stringify([]));
-            dict = [];
+            dic = [];
         }
-        for (let j = 0; j < dict.length; j++) {
-            let str = dict[j].action;
-            dict[j].action = (i) => {
+        for (let j = 0; j < dic.length; j++) {
+            let str = dic[j].action;
+            dic[j].action = (i) => {
                 window[str]();
             }
         }
-        _this.addCommands(dict);
+        _this.emptyCommands();
+        _this.addCommands(dic);
         
         if (typeof (config) !== "object") {
             return Promise.reject("You must give the configuration for start artyom properly.");
@@ -1344,10 +1351,13 @@ const Jarrett = (function() {
      * @param configuration
      */
     Jarrett.prototype.restart = function () {
+        console.log("1111");
         var _this = this;
         var _copyInit = _this.properties;
         return new Promise(function (resolve, reject) {
+            console.log("2222");
             _this.fatality().then(function () {
+                console.log("3333");
                 _this.initialize(_copyInit).then(resolve, reject);
             });
         });

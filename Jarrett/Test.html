@@ -176,6 +176,8 @@
         function updateDict(){
             localStorage.setItem('dictionary', JSON.stringify(dict));
             loadDictList();
+            console.log("0000");
+            jarrett.restart();
         }
 
         function laodEditPage(data){
@@ -333,7 +335,7 @@
             history.forward();
         }
 
-        const jarrett = new Jarrett();
+        var jarrett = new Jarrett();
 
         jarrett.on(['tell me *'] , true).then((i,wildcard) => {
             jarrett.say("You've said : " + wildcard);
