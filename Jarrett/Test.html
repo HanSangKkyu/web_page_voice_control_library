@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+    <!-- bootstrap -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.1/dist/css/bootstrap.min.css" rel="stylesheet" >
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.1/dist/js/bootstrap.bundle.min.js" ></script>
+    <script src="Jarrett.js"></script>
+    <title>prototype demo</title>
+</head>
+<body>
+    <div style="height: 100vh;">
+        <div style="height: 1vh;" class="row">
+            <div class="col-2"></div>
+            <div style="font-weight: bold;" class="text-center col-8">커스텀 명령어 만들기</div>
+            <div style="cursor: pointer; color: red;" class="col-1" onclick="delItemOnDict()">삭제</div>
+            <div style="cursor: pointer; color: green;" class="col-1" onclick="laodAddPage()">추가</div>
+        </div>
+        <div style="height: 30vh; margin-top: 3vh;" id="screen"></div>
+        <div style="height: 69vh; overflow:scroll;" class="list-group" id="list" role="tablist"></div>
+    </div>
+    
+    <script>
+        // 문자열을 이용해서 함수를 호출하고 싶을 때
+        // window[dict[i].func]();
+        var dict;
+        var commandList;
+        var selectedItemNum;
+        var defaultFucntionList = ['getCustomMethods', 'loadDictList', 'laodAddPage', 'addItemToDict', 'delCommandList', 'updateCommandList', 'updateDict', 'laodEditPage', 'editItemOnDict', 'delItemOnDict', 'addCommandList', 'getParam', 'updateParamListOnAddPage', 'updateParamListOnEditPage'];
+
+        function getCustomMethods(){
+            // 개발자가 만든 함수들을 가져온다.
+            res = [];
+            var funclist = Object.getOwnPropertyNames(window).filter(item => typeof window[item] === 'function');
+            for(var i = funclist.length-1;i>=0;i--){
+                if(funclist[i] == 'webkitResolveLocalFileSystemURL'){
+                    break;
+                }
+                // console.log(funclist[i], defaultFucntionList, funclist[i] in defaultFucntionList);
+                if(funclist[i] == 'crosswebex_nativecall' || defaultFucntionList.toString().indexOf(funclist[i]) != -1 ){
+                    continue;
+                }
+                
+                res.push(funclist[i]);
+                
+            }
+            return res;
+        }
+
+        function getParam(func){
+            var param = window[func].toString().substring(window[func].toString().indexOf(func), window[func].toString().indexOf(')'));
+            param = param.substring(param.indexOf('(')+1);
+            param = param.split(',');
+            for(var i=0;i<param.length;i++){
+                param[i] = param[i].trim();
+            }
+            console.log(param);
+            return param;
+        }
+
+        function loadDictList(){
+            dict = JSON.parse(localStorage.getItem('dictionary'));
+            if(dict == null){
+                localStorage.setItem('dictionary', JSON.stringify([]));
+                dict = [];
+            }
+            var list = '';
+            for(var i = 0;i<dict.length;i++){
+                list += '<a class="list-group-item list-group-item-action" data-bs-toggle="list" href="" onclick="laodEditPage('+i+')">' +
+                            '<li class="list-group-item d-flex justify-content-between align-items-start">' +
+                                '<div class="ms-2 me-auto">' +
+                                    '<div class="fw-bold">'+ dict[i]./*command*/indexes +'</div>' +
+                                    dict[i]./*func*/action +
+                                '</div>' +
+                            '</li>' +
+                        '</a>';
+            }
+
+            document.getElementById('list').innerHTML = list;
+        }
+
+        function laodAddPage(){
+            commandList = [];
+
+            var funcList = getCustomMethods();
+            var options = '';
+            for(var i = 0;i<funcList.length;i++){
+                options += '<option value="'+funcList[i]+'">'+funcList[i]+'</option>';
+            }
+
+
+            document.getElementById('screen').innerHTML = 
+            '<div class="row">'+
+            '    <div class="col-6">'+
+            '        <div class="input-group mb-3">'+
+            '            <input type="text" class="form-control" placeholder="명령어를 입력하세요" id="commandInput">'+
+            '            <button class="btn btn-outline-secondary" type="button" onclick="addCommandList()">추가</button>'+
+            '        </div>'+
+            '    </div>'+
+            '    <div class="col-6">'+
+            '        <select class="form-select" id="funcSelector" onchange="updateParamListOnAddPage()">'+options+'</select>'+
+            '    </div>'+
+            '</div>'+
+            '<div class="row">'+
+            '    <div style="height: 24vh; overflow: scroll;" class="col-6" id="commandList">'+
+            '    </div>'+
+            '    <div class="col-6">'+
+            '    <div id="paramList">' +
+            '    </div>' +
+            '        <button type="button" class="btn btn-primary" onclick="addItemToDict()">확인</button>'+
+            '    </div>'+
+            '</div>';
+
+            updateParamListOnAddPage();
+        }
+        
+        function addItemToDict(){
+            var funcData = document.getElementById('funcSelector').value;
+            console.log(funcData);
+
+            var commandInputs = document.getElementsByClassName('commandInputs');
+            commandList = [];
+            for(var i=0;i<commandInputs.length;i++){
+                commandList.push(commandInputs[i].value);
+            }
+            
+            var paramInputs = document.getElementsByClassName('paramInputs');
+            var paramInputsData = [];
+            for(var i=0;i<paramInputs.length;i++){
+                paramInputsData.push(paramInputs[i].value);
+            }
+
+            var item = {
+                /*command*/indexes : commandList,
+                /*func*/action : funcData,
+                smart : false,
+                param : paramInputsData
+            }
+            dict.push(item);
+            updateDict();
+        }
+
+        function addCommandList(){
+            var data = document.getElementById('commandInput').value;
+            console.log(data);
+            if(data.length > 0){
+                commandList.push(data);
+                updateCommandList();
+                document.getElementById('commandInput').value = '';
+            }
+        }
+
+        function delCommandList(data){
+            const idx = commandList.findIndex(function(item) {return item == data})
+            if (idx > -1) {
+                commandList.splice(idx, 1);
+                updateCommandList();
+            }
+        }
+
+        function updateCommandList(){
+            var res = '';
+                for(var i = 0;i<commandList.length;i++){
+                    res += 
+                    '<div class="input-group mb-3">'+
+                    '   <input type="text" class="form-control commandInputs" placeholder="명령어를 입력하세요" value="'+commandList[i]+'">'+
+                    '   <button class="btn btn-outline-secondary" type="button" onclick="delCommandList('+"'"+commandList[i]+"'"+')">삭제</button>'+
+                    '</div>';
+                }
+            document.getElementById('commandList').innerHTML = res;
+        }
+
+        function updateDict(){
+            localStorage.setItem('dictionary', JSON.stringify(dict));
+            loadDictList();
+        }
+
+        function laodEditPage(data){
+            selectedItemNum = data;
+            console.log(dict[data]);
+            commandList = dict[data]./*command*/indexes;
+
+            var funcList = getCustomMethods();
+            var options = '';
+            for(var i = 0;i<funcList.length;i++){
+                options += '<option value="'+funcList[i]+'">'+funcList[i]+'</option>';
+            }
+            document.getElementById('screen').innerHTML = 
+            '<div class="row">'+
+            '    <div class="col-6">'+
+            '        <div class="input-group mb-3">'+
+            '            <input type="text" class="form-control" placeholder="명령어를 입력하세요" id="commandInput">'+
+            '            <button class="btn btn-outline-secondary" type="button" onclick="addCommandList()">추가</button>'+
+            '        </div>'+
+            '    </div>'+
+            '    <div class="col-6">'+
+            '        <select class="form-select" id="funcSelector" onchange="updateParamListOnEditPage()">'+options+'</select>'+
+            '    </div>'+
+            '</div>'+
+            '<div class="row">'+
+            '    <div style="height: 24vh; overflow: scroll;" class="col-6" id="commandList">'+
+            '    </div>'+
+            '    <div class="col-6">'+
+            '    <div id="paramList">' +
+            '    </div>' +
+            '        <button type="button" class="btn btn-primary" onclick="editItemOnDict('+data+')">확인</button>'+
+            '    </div>'+
+            '</div>';
+            
+            document.getElementById('funcSelector').value = dict[data]./*func*/action;
+            updateCommandList();
+            updateParamListOnEditPage();
+        }
+
+        function editItemOnDict(data){
+            var commandInputs = document.getElementsByClassName('commandInputs');
+            commandList = [];
+            for(var i=0;i<commandInputs.length;i++){
+                commandList.push(commandInputs[i].value);
+            }
+            dict[data]./*command*/indexes = commandList;
+            dict[data]./*func*/action = document.getElementById('funcSelector').value;
+
+                        
+            var paramInputs = document.getElementsByClassName('paramInputs');
+            var paramInputsData = [];
+            for(var i=0;i<paramInputs.length;i++){
+                paramInputsData.push(paramInputs[i].value);
+            }
+
+            dict[data].param = paramInputsData;
+
+            updateDict();
+        }
+
+        function delItemOnDict(){
+            dict.splice(selectedItemNum, 1);
+            updateDict();
+        }
+
+        function updateParamListOnEditPage(){
+            var func = document.getElementById('funcSelector').value;
+            var params = getParam(func);
+            if(params[0].length == 0){
+                document.getElementById('paramList').innerHTML = '';
+                return;
+            }
+            var paramList = '';
+            for(var i=0;i<params.length;i++){
+                paramList += 
+                '<div class="input-group mb-3">' +
+                '    <span class="input-group-text">'+params[i]+'</span>' +
+                '    <input type="text" class="form-control paramInputs" value="'+(dict[selectedItemNum].param[i] ? dict[selectedItemNum].param[i] : '')+'">' +
+                '</div>';
+            }
+            document.getElementById('paramList').innerHTML = paramList;
+        }
+
+        function updateParamListOnAddPage(){
+            var func = document.getElementById('funcSelector').value;
+            var params = getParam(func);
+            if(params[0].length == 0){
+                document.getElementById('paramList').innerHTML = '';
+                return;
+            }
+            var paramList = '';
+            for(var i=0;i<params.length;i++){
+                paramList += 
+                '<div class="input-group mb-3">' +
+                '    <span class="input-group-text">'+params[i]+'</span>' +
+                '    <input type="text" class="form-control paramInputs" >' +
+                '</div>';
+            }
+            document.getElementById('paramList').innerHTML = paramList;
+        }
+
+        loadDictList();
+    </script>
+    <script>
+        // 매개변수의 타압은 문자열로 한정한다.
+        function move(param1, param2){
+            console.log('move', param1, param2);
+        }
+
+        function input(ask){
+            console.log('input', ask);
+        }
+
+        function foo(param){
+            console.log(';f');
+        }
+
+        function scrollDown(){
+            scrollTo(document.documentElement.scrollTop, document.documentElement.scrollTop+50);
+        }
+
+        function scrollUp(){
+            scrollTo(document.documentElement.scrollTop, document.documentElement.scrollTop-50);
+        }
+
+        function refresh(){
+            location.reload();
+        }
+
+        function zoomIn(){
+            if(document.body.style.zoom==""){
+                document.body.style.zoom = 110+"%";
+            }else{
+                var zoom = document.body.style.zoom.toString().substring(0, document.body.style.zoom.toString().indexOf("%"));
+                console.log(zoom);
+                document.body.style.zoom = (parseInt(zoom)+10)+"%";
+            }
+        }
+
+        function zoomOut(){
+            if(document.body.style.zoom==""){
+                document.body.style.zoom = 90+"%";
+            }else{
+                var zoom = document.body.style.zoom.toString().substring(0, document.body.style.zoom.toString().indexOf("%"));
+                console.log(zoom);
+                document.body.style.zoom = (parseInt(zoom)-10)+"%";
+            }
+        }
+
+        function goPreviousPage(){
+            history.back();
+        }
+
+        function goNextPage(){
+            history.forward();
+        }
+
+        const jarrett = new Jarrett();
+
+        jarrett.on(['tell me *'] , true).then((i,wildcard) => {
+            jarrett.say("You've said : " + wildcard);
+        });
+
+        jarrett.on(['turn off']).then((i) => {
+            jarrett.fatality();
+        });
+
+        // Start the commands !
+        jarrett.initialize({
+            lang: "en-GB", // GreatBritain english
+            continuous: true, // Listen forever
+            soundex: true,// Use the soundex algorithm to increase accuracy
+            debug: true, // Show messages in the console
+            executionKeyword: "and do it now",
+            listen: true, // Start to listen commands !
+
+            // If providen, you can only trigger a command if you say its name
+            // e.g to trigger Good Morning, you need to say "Jarvis Good Morning"
+            //name: "" 
+        }).then(() => {
+            console.log("Artyom has been succesfully initialized");
+        }).catch((err) => {
+            console.error("Artyom couldn't be initialized: ", err);
+        });
+    </script>
+</body>
+</html>
