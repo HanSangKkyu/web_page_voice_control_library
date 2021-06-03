@@ -48,14 +48,14 @@ const Jarrett = (function() {
             speechSynthesis.getVoices();
         }
         else {
-            console.error("Artyom.js can't speak without the Speech Synthesis API.");
+            console.error("Jarrett.js can't speak without the Speech Synthesis API.");
         }
-        // This instance of webkitSpeechRecognition is the one used by Artyom.
+        // This instance of webkitSpeechRecognition is the one used by Jarrett.
         if (window.hasOwnProperty('webkitSpeechRecognition')) {
             this.JarrettWebkitSpeechRecognition = new window.webkitSpeechRecognition();
         }
         else {
-            console.error("Artyom.js can't recognize voice without the Speech Recognition API.");
+            console.error("Jarrett.js can't recognize voice without the Speech Recognition API.");
         }
         this.properties = {
             lang: 'en-GB',
@@ -104,7 +104,7 @@ const Jarrett = (function() {
             this.Device.isChrome = false;
         }
         /**
-         * The default voice of Artyom in the Desktop. In mobile, you will need to initialize (or force the language)
+         * The default voice of Jarrett in the Desktop. In mobile, you will need to initialize (or force the language)
          * with a language code in order to find an available voice in the device, otherwise it will use the native voice.
          */
         this.voice = {
@@ -127,10 +127,10 @@ const Jarrett = (function() {
     };
 
     /**
-     * Add dinamically commands to artyom using
-     * You can even add commands while artyom is active.
+     * Add dinamically commands to Jarrett using
+     * You can even add commands while Jarrett is active.
      *
-     * @tutorial http://docs.ourcodeworld.com/projects/artyom-js/documentation/methods/addcommands
+     * @tutorial http://docs.ourcodeworld.com/projects/Jarrett-js/documentation/methods/addcommands
      * @since 0.6
      * @param {Object | Array[Objects]} param
      * @returns {undefined}
@@ -153,8 +153,8 @@ const Jarrett = (function() {
 
     };
     /**
-     * The SpeechSynthesisUtterance objects are stored in the artyom_garbage_collector variable
-     * to prevent the wrong behaviour of artyom.say.
+     * The SpeechSynthesisUtterance objects are stored in the Jarrett_garbage_collector variable
+     * to prevent the wrong behaviour of Jarrett.say.
      * Use this method to clear all spoken SpeechSynthesisUtterance unused objects.
      *
      * @returns {Array<any>}
@@ -164,13 +164,13 @@ const Jarrett = (function() {
     };
     ;
     /**
-     * Displays a message in the console if the artyom propery DEBUG is set to true.
+     * Displays a message in the console if the Jarrett propery DEBUG is set to true.
      *
-     * @tutorial http://docs.ourcodeworld.com/projects/artyom-js/documentation/methods/debug
+     * @tutorial http://docs.ourcodeworld.com/projects/Jarrett-js/documentation/methods/debug
      * @returns {undefined}
      */
     Jarrett.prototype.debug = function (message, type) {
-        var preMessage = "[v" + this.getVersion() + "] Artyom.js";
+        var preMessage = "[v" + this.getVersion() + "] Jarrett.js";
         if (this.properties.debug === true) {
             switch (type) {
                 case "error":
@@ -189,20 +189,20 @@ const Jarrett = (function() {
         }
     };
     /**
-     * Artyom have it's own diagnostics.
-     * Run this function in order to detect why artyom is not initialized.
+     * Jarrett have it's own diagnostics.
+     * Run this function in order to detect why Jarrett is not initialized.
      *
-     * @tutorial http://docs.ourcodeworld.com/projects/artyom-js/documentation/methods/detecterrors
+     * @tutorial http://docs.ourcodeworld.com/projects/Jarrett-js/documentation/methods/detecterrors
      * @param {type} callback
      * @returns {}
      */
     Jarrett.prototype.detectErrors = function () {
         var _this = this;
         if ((window.location.protocol) == "file:") {
-            var message = "Error: running Artyom directly from a file. The APIs require a different communication protocol like HTTP or HTTPS";
+            var message = "Error: running Jarrett directly from a file. The APIs require a different communication protocol like HTTP or HTTPS";
             console.error(message);
             return {
-                code: "artyom_error_localfile",
+                code: "Jarrett_error_localfile",
                 message: message
             };
         }
@@ -210,19 +210,19 @@ const Jarrett = (function() {
             var message = "Error: the Speech Recognition and Speech Synthesis APIs require the Google Chrome Browser to work.";
             console.error(message);
             return {
-                code: "artyom_error_browser_unsupported",
+                code: "Jarrett_error_browser_unsupported",
                 message: message
             };
         }
         if (window.location.protocol != "https:") {
-            console.warn("Warning: artyom is being executed using the '" + window.location.protocol + "' protocol. The continuous mode requires a secure protocol (HTTPS)");
+            console.warn("Warning: Jarrett is being executed using the '" + window.location.protocol + "' protocol. The continuous mode requires a secure protocol (HTTPS)");
         }
         return false;
     };
     /**
-     * Removes all the added commands of artyom.
+     * Removes all the added commands of Jarrett.
      *
-     * @tutorial http://docs.ourcodeworld.com/projects/artyom-js/documentation/methods/emptycommands
+     * @tutorial http://docs.ourcodeworld.com/projects/Jarrett-js/documentation/methods/emptycommands
      * @since 0.6
      * @returns {Array}
      */
@@ -242,10 +242,10 @@ const Jarrett = (function() {
             console.warn("Internal error: Execution of empty command");
             return;
         }
-        // If artyom was initialized with a name, verify that the name begins with it to allow the execution of commands.
+        // If Jarrett was initialized with a name, verify that the name begins with it to allow the execution of commands.
         if (_this.properties.name) {
             if (voz.indexOf(_this.properties.name) != 0) {
-                _this.debug("Artyom requires with a name \"" + _this.properties.name + "\" but the name wasn't spoken.", "warn");
+                _this.debug("Jarrett requires with a name \"" + _this.properties.name + "\" but the name wasn't spoken.", "warn");
                 return;
             }
             // Remove name from voice command
@@ -253,7 +253,7 @@ const Jarrett = (function() {
         }
         _this.debug(">> " + voz);
         /** @3
-         * Artyom needs time to think that
+         * Jarrett needs time to think that
          */
         for (var i = 0; i < _this.commands.length; i++) {
             var instruction = _this.commands[i];
@@ -279,7 +279,7 @@ const Jarrett = (function() {
                         ///LOGIC HERE
                         var grupo = opcion.split("*");
                         if (grupo.length > 2) {
-                            console.warn("Artyom found a smart command with " + (grupo.length - 1) + " wildcards. Artyom only support 1 wildcard for each command. Sorry");
+                            console.warn("Jarrett found a smart command with " + (grupo.length - 1) + " wildcards. Jarrett only support 1 wildcard for each command. Sorry");
                             continue;
                         }
                         //START SMART COMMAND
@@ -402,7 +402,7 @@ const Jarrett = (function() {
         /**
          * If the soundex options is enabled, proceed to process the commands in case that any of the previous
          * ways of processing (exact, lowercase and command in quote) didn't match anything.
-         * Based on the soundex algorithm match a command if the spoken text is similar to any of the artyom commands.
+         * Based on the soundex algorithm match a command if the spoken text is similar to any of the Jarrett commands.
          * Example :
          * If you have a command with "Open Wallmart" and "Open Willmar" is recognized, the open wallmart command will be triggered.
          * soundex("Open Wallmart") == soundex("Open Willmar") <= true
@@ -436,18 +436,18 @@ const Jarrett = (function() {
         return;
     };
     /**
-     * Force artyom to stop listen even if is in continuos mode.
+     * Force Jarrett to stop listen even if is in continuos mode.
      *
-     * @tutorial http://docs.ourcodeworld.com/projects/artyom-js/documentation/methods/fatality
+     * @tutorial http://docs.ourcodeworld.com/projects/Jarrett-js/documentation/methods/fatality
      * @returns {Boolean}
      */
     Jarrett.prototype.fatality = function () {
         var _this = this;
         //fatalityPromiseCallback
         return new Promise(function (resolve, reject) {
-            // Expose the fatality promise callback to the helpers object of Artyom.
+            // Expose the fatality promise callback to the helpers object of Jarrett.
             // The promise isn't resolved here itself but in the onend callback of
-            // the speechRecognition instance of artyom
+            // the speechRecognition instance of Jarrett
             _this.properties.helpers.fatalityPromiseCallback = resolve;
             try {
                 // If config is continuous mode, deactivate anyway.
@@ -460,9 +460,9 @@ const Jarrett = (function() {
         });
     };
     /**
-     * Returns an array with all the available commands for artyom.
+     * Returns an array with all the available commands for Jarrett.
      *
-     * @tutorial http://docs.ourcodeworld.com/projects/artyom-js/documentation/methods/getavailablecommands
+     * @tutorial http://docs.ourcodeworld.com/projects/Jarrett-js/documentation/methods/getavailablecommands
      * @readonly
      * @returns {Array}
      */
@@ -470,10 +470,10 @@ const Jarrett = (function() {
         return this.commands;
     };
     /**
-     * Artyom can return inmediately the voices available in your browser.
+     * Jarrett can return inmediately the voices available in your browser.
      *
      * @readonly
-     * @tutorial http://docs.ourcodeworld.com/projects/artyom-js/documentation/methods/getvoices
+     * @tutorial http://docs.ourcodeworld.com/projects/Jarrett-js/documentation/methods/getvoices
      * @returns {Array}
      */
     Jarrett.prototype.getVoices = function () {
@@ -482,7 +482,7 @@ const Jarrett = (function() {
     /**
      * Verify if the browser supports speechSynthesis.
      *
-     * @tutorial http://docs.ourcodeworld.com/projects/artyom-js/documentation/methods/speechsupported
+     * @tutorial http://docs.ourcodeworld.com/projects/Jarrett-js/documentation/methods/speechsupported
      * @returns {Boolean}
      */
     Jarrett.prototype.speechSupported = function () {
@@ -491,16 +491,16 @@ const Jarrett = (function() {
     /**
      * Verify if the browser supports webkitSpeechRecognition.
      *
-     * @tutorial http://docs.ourcodeworld.com/projects/artyom-js/documentation/methods/recognizingsupported
+     * @tutorial http://docs.ourcodeworld.com/projects/Jarrett-js/documentation/methods/recognizingsupported
      * @returns {Boolean}
      */
     Jarrett.prototype.recognizingSupported = function () {
         return 'webkitSpeechRecognition' in window;
     };
     /**
-     * Stops the actual and pendings messages that artyom have to say.
+     * Stops the actual and pendings messages that Jarrett have to say.
      *
-     * @tutorial http://docs.ourcodeworld.com/projects/artyom-js/documentation/methods/shutup
+     * @tutorial http://docs.ourcodeworld.com/projects/Jarrett-js/documentation/methods/shutup
      * @returns {undefined}
      */
     Jarrett.prototype.shutUp = function () {
@@ -513,26 +513,26 @@ const Jarrett = (function() {
         this.clearGarbageCollection();
     };
     /**
-     * Returns an object with the actual properties of artyom.
+     * Returns an object with the actual properties of Jarrett.
      *
-     * @tutorial http://docs.ourcodeworld.com/projects/artyom-js/documentation/methods/getproperties
+     * @tutorial http://docs.ourcodeworld.com/projects/Jarrett-js/documentation/methods/getproperties
      * @returns {object}
      */
     Jarrett.prototype.getProperties = function () {
         return this.properties;
     };
     /**
-     * Returns the code language of artyom according to initialize function.
+     * Returns the code language of Jarrett according to initialize function.
      * if initialize not used returns english GB.
      *
-     * @tutorial http://docs.ourcodeworld.com/projects/artyom-js/documentation/methods/getlanguage
+     * @tutorial http://docs.ourcodeworld.com/projects/Jarrett-js/documentation/methods/getlanguage
      * @returns {String}
      */
     Jarrett.prototype.getLanguage = function () {
         return this.properties.lang;
     };
     /**
-     * Retrieves the used version of Artyom.js
+     * Retrieves the used version of Jarrett.js
      *
      * @returns {String}
      */
@@ -540,10 +540,10 @@ const Jarrett = (function() {
         return '1.0.6';
     };
     /**
-     * Artyom awaits for orders when this function
+     * Jarrett awaits for orders when this function
      * is executed.
      *
-     * If artyom gets a first parameter the instance will be stopped.
+     * If Jarrett gets a first parameter the instance will be stopped.
      *
      * @private
      * @returns {undefined}
@@ -574,7 +574,7 @@ const Jarrett = (function() {
             resolve();
         };
         /**
-         * Handle all artyom posible exceptions
+         * Handle all Jarrett posible exceptions
          *
          * @param {type} event
          * @returns {undefined}
@@ -582,7 +582,7 @@ const Jarrett = (function() {
         this.JarrettWebkitSpeechRecognition.onerror = function (event) {
             // Reject promise on initialization
             reject(event.error);
-            // Dispath error globally (artyom.when)
+            // Dispath error globally (Jarrett.when)
             _this.triggerEvent(_this.globalEvents.ERROR, {
                 code: event.error
             });
@@ -594,13 +594,13 @@ const Jarrett = (function() {
                 if (event.timeStamp - start_timestamp < 100) {
                     _this.triggerEvent(_this.globalEvents.ERROR, {
                         code: "info-blocked",
-                        message: "Artyom needs the permision of the microphone, is blocked."
+                        message: "Jarrett needs the permision of the microphone, is blocked."
                     });
                 }
                 else {
                     _this.triggerEvent(_this.globalEvents.ERROR, {
                         code: "info-denied",
-                        message: "Artyom needs the permision of the microphone, is denied"
+                        message: "Jarrett needs the permision of the microphone, is denied"
                     });
                 }
             }
@@ -618,7 +618,7 @@ const Jarrett = (function() {
                     _this.debug("Continuous mode enabled, restarting", "info");
                 }
                 else {
-                    console.error("Verify the microphone and check for the table of errors in sdkcarlos.github.io/sites/artyom.html to solve your problem. If you want to give your user a message when an error appears add an artyom listener");
+                    console.error("Verify the microphone and check for the table of errors in sdkcarlos.github.io/sites/Jarrett.html to solve your problem. If you want to give your user a message when an error appears add an Jarrett listener");
                 }
                 _this.triggerEvent(_this.globalEvents.COMMAND_RECOGNITION_END, {
                     code: "continuous_mode_enabled",
@@ -642,7 +642,7 @@ const Jarrett = (function() {
             _this.properties.recognizing = false;
         };
         /**
-         * Declare the processor dinamycally according to the mode of artyom
+         * Declare the processor dinamycally according to the mode of Jarrett
          * to increase the performance.
          *
          * @type {Function}
@@ -793,7 +793,7 @@ const Jarrett = (function() {
                 onResultProcessor(event);
             }
             else {
-                // Handle obeyKeyword if exists and artyom is not obeying
+                // Handle obeyKeyword if exists and Jarrett is not obeying
                 if (!_this.properties.obeyKeyword) {
                     return;
                 }
@@ -807,7 +807,7 @@ const Jarrett = (function() {
                         interim += event.results[i][0].transcript;
                     }
                 }
-                _this.debug("Artyom is not obeying", "warn");
+                _this.debug("Jarrett is not obeying", "warn");
                 // If the obeyKeyword is found in the recognized text
                 // enable command recognition again
                 if (((interim).indexOf(_this.properties.obeyKeyword) > -1) || (temporal).indexOf(_this.properties.obeyKeyword) > -1) {
@@ -833,12 +833,12 @@ const Jarrett = (function() {
         }
     };
     /**
-     * Set up artyom for the application.
+     * Set up Jarrett for the application.
      *
-     * This function will set the default language used by artyom
-     * or notice the user if artyom is not supported in the actual
+     * This function will set the default language used by Jarrett
+     * or notice the user if Jarrett is not supported in the actual
      * browser
-     * @tutorial http://docs.ourcodeworld.com/projects/artyom-js/documentation/methods/initialize
+     * @tutorial http://docs.ourcodeworld.com/projects/Jarrett-js/documentation/methods/initialize
      * @param {Object} config
      * @returns {Boolean}
      */
@@ -862,7 +862,7 @@ const Jarrett = (function() {
         _this.addCommands(dic);
         
         if (typeof (config) !== "object") {
-            return Promise.reject("You must give the configuration for start artyom properly.");
+            return Promise.reject("You must give the configuration for start Jarrett properly.");
         }
         if (config.hasOwnProperty("lang")) {
             _this.voice = _this.getVoice(config.lang);
@@ -916,7 +916,7 @@ const Jarrett = (function() {
         return Promise.resolve(true);
     };
     /**
-     * Add commands like an artisan. If you use artyom for simple tasks
+     * Add commands like an artisan. If you use Jarrett for simple tasks
      * then probably you don't like to write a lot to achieve it.
      *
      * Use the artisan syntax to write less, but with the same accuracy.
@@ -940,7 +940,7 @@ const Jarrett = (function() {
         };
     };
     /**
-     * Generates an artyom event with the designed name
+     * Generates an Jarrett event with the designed name
      *
      * @param {type} name
      * @returns {undefined}
@@ -953,10 +953,10 @@ const Jarrett = (function() {
         return event;
     };
     /**
-     * Repeats the last sentence that artyom said.
+     * Repeats the last sentence that Jarrett said.
      * Useful in noisy environments.
      *
-     * @tutorial http://docs.ourcodeworld.com/projects/artyom-js/documentation/methods/repeatlastsay
+     * @tutorial http://docs.ourcodeworld.com/projects/Jarrett-js/documentation/methods/repeatlastsay
      * @param {Boolean} returnObject If set to true, an object with the text and the timestamp when was executed will be returned.
      * @returns {Object}
      */
@@ -972,9 +972,9 @@ const Jarrett = (function() {
         }
     };
     /**
-     * Create a listener when an artyom action is called.
+     * Create a listener when an Jarrett action is called.
      *
-     * @tutorial http://docs.ourcodeworld.com/projects/artyom-js/documentation/methods/when
+     * @tutorial http://docs.ourcodeworld.com/projects/Jarrett-js/documentation/methods/when
      * @param {type} event
      * @param {type} action
      * @returns {undefined}
@@ -985,7 +985,7 @@ const Jarrett = (function() {
         }, false);
     };
     /**
-     * Process the recognized text if artyom is active in remote mode.
+     * Process the recognized text if Jarrett is active in remote mode.
      *
      * @returns {Boolean}
      */
@@ -1002,7 +1002,7 @@ const Jarrett = (function() {
         return typeof (this.getVoice(languageCode)) !== "undefined";
     };
     /**
-     * A boolean to check if artyom is obeying commands or not.
+     * A boolean to check if Jarrett is obeying commands or not.
      *
      * @returns {Boolean}
      */
@@ -1010,7 +1010,7 @@ const Jarrett = (function() {
         return this.properties.obeying;
     };
     /**
-     * Allow artyom to obey commands again.
+     * Allow Jarrett to obey commands again.
      *
      * @returns {Boolean}
      */
@@ -1018,7 +1018,7 @@ const Jarrett = (function() {
         return this.properties.obeying = true;
     };
     /**
-     * Pause the processing of commands. Artyom still listening in the background and it can be resumed after a couple of seconds.
+     * Pause the processing of commands. Jarrett still listening in the background and it can be resumed after a couple of seconds.
      *
      * @returns {Boolean}
      */
@@ -1027,7 +1027,7 @@ const Jarrett = (function() {
     };
     /**
      * This function returns a boolean according to the speechSynthesis status
-     * if artyom is speaking, will return true.
+     * if Jarrett is speaking, will return true.
      *
      * Note: This is not a feature of speechSynthesis, therefore this value hangs on
      * the fiability of the onStart and onEnd events of the speechSynthesis
@@ -1041,7 +1041,7 @@ const Jarrett = (function() {
     };
     /**
      * This function returns a boolean according to the SpeechRecognition status
-     * if artyom is listening, will return true.
+     * if Jarrett is listening, will return true.
      *
      * Note: This is not a feature of SpeechRecognition, therefore this value hangs on
      * the fiability of the onStart and onEnd events of the SpeechRecognition
@@ -1054,7 +1054,7 @@ const Jarrett = (function() {
         return this.properties.recognizing;
     };
     /**
-     * This function will return the webkitSpeechRecognition object used by artyom
+     * This function will return the webkitSpeechRecognition object used by Jarrett
      * retrieve it only to debug on it or get some values, do not make changes directly
      *
      * @readonly
@@ -1105,7 +1105,7 @@ const Jarrett = (function() {
         return voice;
     };
     /**
-     * Artyom provide an easy way to create a
+     * Jarrett provide an easy way to create a
      * dictation for your user.
      *
      * Just create an instance and start and stop when you want
@@ -1190,7 +1190,7 @@ const Jarrett = (function() {
         var _this = this;
         this.emptyCommands();
         var promptCommand = {
-            description: "Setting the artyom commands only for the prompt. The commands will be restored after the prompt finishes",
+            description: "Setting the Jarrett commands only for the prompt. The commands will be restored after the prompt finishes",
             indexes: config.options,
             action: function (i, wildcard) {
                 _this.commands = copyActualCommands;
@@ -1244,7 +1244,7 @@ const Jarrett = (function() {
         }
     };
     /**
-     * Shortcut method to enable the artyom debug on the fly.
+     * Shortcut method to enable the Jarrett debug on the fly.
      *
      * @returns {Array}
      */
@@ -1259,7 +1259,7 @@ const Jarrett = (function() {
     /**
      * Simulate a voice command via JS
      *
-     * @tutorial http://docs.ourcodeworld.com/projects/artyom-js/documentation/methods/simulateinstruction
+     * @tutorial http://docs.ourcodeworld.com/projects/Jarrett-js/documentation/methods/simulateinstruction
      * @param {type} sentence
      * @returns {undefined}
      */
@@ -1331,7 +1331,7 @@ const Jarrett = (function() {
         return output;
     };
     /**
-     * Allows to retrieve the recognized spoken text of artyom
+     * Allows to retrieve the recognized spoken text of Jarrett
      * and do something with it everytime something is recognized
      *
      * @param {String} action
@@ -1346,7 +1346,7 @@ const Jarrett = (function() {
         return true;
     };
     /**
-     * Restarts artyom with the initial configuration.
+     * Restarts Jarrett with the initial configuration.
      *
      * @param configuration
      */
@@ -1399,7 +1399,7 @@ const Jarrett = (function() {
         // If is first text chunk (onStart)
         if (actualChunk == 1) {
             msg.addEventListener('start', function () {
-                // Set artyom is talking
+                // Set Jarrett is talking
                 _this.properties.speaking = true;
                 // Trigger the onSpeechSynthesisStart event
                 _this.debug("Event reached : " + _this.globalEvents.SPEECH_SYNTHESIS_START);
@@ -1415,7 +1415,7 @@ const Jarrett = (function() {
         // If is final text chunk (onEnd)
         if ((actualChunk) >= totalChunks) {
             msg.addEventListener('end', function () {
-                // Set artyom is talking
+                // Set Jarrett is talking
                 _this.properties.speaking = false;
                 // Trigger the onSpeechSynthesisEnd event
                 _this.debug("Event reached : " + _this.globalEvents.SPEECH_SYNTHESIS_END);
@@ -1437,7 +1437,7 @@ const Jarrett = (function() {
     /**
      * Process the given text into chunks and execute the private function talk
      *
-     * @tutorial http://docs.ourcodeworld.com/projects/artyom-js/documentation/methods/say
+     * @tutorial http://docs.ourcodeworld.com/projects/Jarrett-js/documentation/methods/say
      * @param {String} message Text to be spoken
      * @param {Object} callbacks
      * @returns {undefined}
@@ -1448,7 +1448,7 @@ const Jarrett = (function() {
         var definitive = [];
         if (this.speechSupported()) {
             if (typeof (message) != 'string') {
-                return console.warn("Artyom expects a string to speak " + typeof message + " given");
+                return console.warn("Jarrett expects a string to speak " + typeof message + " given");
             }
             if (!message.length) {
                 return console.warn("Cannot speak empty string");
@@ -1483,7 +1483,7 @@ const Jarrett = (function() {
                     _this.talk(chunk, numberOfChunk, definitive.length, callbacks);
                 }
             });
-            // Save the spoken text into the lastSay object of artyom
+            // Save the spoken text into the lastSay object of Jarrett
             _this.properties.helpers.lastSay = {
                 text: message,
                 date: new Date()
