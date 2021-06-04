@@ -60,8 +60,6 @@ const Jarrett = (function() {
             speed: 1,
             volume: 1,
             listen: false,
-            mode: "normal",
-            debug: false,
             helpers: {
                 redirectRecognizedTextOutput: null,
                 remoteProcessorHandler: null,
@@ -131,7 +129,6 @@ const Jarrett = (function() {
         }
         return true;
     };
-    ;
 
     Jarrett.prototype.editCommands = function (param) {
 
@@ -139,27 +136,6 @@ const Jarrett = (function() {
 
     Jarrett.prototype.clearGarbageCollection = function () {
         return this.garbageCollection = [];
-    };
-    ;
-
-    Jarrett.prototype.debug = function (message, type) {
-        var preMessage = "[v" + this.getVersion() + "] Artyom.js";
-        if (this.properties.debug === true) {
-            switch (type) {
-                case "error":
-                    console.log("%c" + preMessage + ":%c " + message, 'background: #C12127; color: black;', 'color:black;');
-                    break;
-                case "warn":
-                    console.warn(message);
-                    break;
-                case "info":
-                    console.log("%c" + preMessage + ":%c " + message, 'background: #4285F4; color: #FFFFFF', 'color:black;');
-                    break;
-                default:
-                    console.log("%c" + preMessage + ":%c " + message, 'background: #005454; color: #BFF8F8', 'color:black;');
-                    break;
-            }
-        }
     };
 
     Jarrett.prototype.detectErrors = function () {
@@ -193,22 +169,14 @@ const Jarrett = (function() {
     Jarrett.prototype.execute = function (voz) {
         var _this = this;
         if (!voz) {
-            console.warn("Internal error: Execution of empty command");
             return;
         }
-        // If artyom was initialized with a name, verify that the name begins with it to allow the execution of commands.
         if (_this.properties.name) {
             if (voz.indexOf(_this.properties.name) != 0) {
-                _this.debug("Artyom requires with a name \"" + _this.properties.name + "\" but the name wasn't spoken.", "warn");
                 return;
             }
-            // Remove name from voice command
             voz = voz.substr(_this.properties.name.length);
         }
-        _this.debug(">> " + voz);
-        /** @3
-         * Artyom needs time to think that
-         */
         for (var i = 0; i < _this.commands.length; i++) {
             var instruction = _this.commands[i];
             var opciones = instruction.indexes;
@@ -223,7 +191,6 @@ const Jarrett = (function() {
                 if (opcion instanceof RegExp) {
                     // If RegExp matches 
                     if (opcion.test(voz)) {
-                        _this.debug(">> REGEX " + opcion.toString() + " MATCHED AGAINST " + voz + " WITH INDEX " + c + " IN COMMAND ", "info");
                         encontrado = parseInt(c.toString());
                     }
                     // Otherwise just wildcards
@@ -233,7 +200,6 @@ const Jarrett = (function() {
                         ///LOGIC HERE
                         var grupo = opcion.split("*");
                         if (grupo.length > 2) {
-                            console.warn("Artyom found a smart command with " + (grupo.length - 1) + " wildcards. Artyom only support 1 wildcard for each command. Sorry");
                             continue;
                         }
                         //START SMART COMMAND
@@ -297,12 +263,10 @@ const Jarrett = (function() {
                     continue; //Jump wildcard commands
                 }
                 if ((voz === opcion)) {
-                    _this.debug(">> MATCHED FULL EXACT OPTION " + opcion + " AGAINST " + voz + " WITH INDEX " + c + " IN COMMAND ", "info");
                     encontrado = parseInt(c.toString());
                     break;
                 }
                 else if ((voz.toLowerCase() === opcion.toLowerCase())) {
-                    _this.debug(">> MATCHED OPTION CHANGING ALL TO LOWERCASE " + opcion + " AGAINST " + voz + " WITH INDEX " + c + " IN COMMAND ", "info");
                     encontrado = parseInt(c.toString());
                     break;
                 }
@@ -334,12 +298,10 @@ const Jarrett = (function() {
                 }
                 var opcion = opciones[c];
                 if ((voz.indexOf(opcion) >= 0)) {
-                    _this.debug(">> MATCHED INDEX EXACT OPTION " + opcion + " AGAINST " + voz + " WITH INDEX " + c + " IN COMMAND ", "info");
-                    encontrado = parseInt(c.toString());
+                   encontrado = parseInt(c.toString());
                     break;
                 }
                 else if (((voz.toLowerCase()).indexOf(opcion.toLowerCase()) >= 0)) {
-                    _this.debug(">> MATCHED INDEX OPTION CHANGING ALL TO LOWERCASE " + opcion + " AGAINST " + voz + " WITH INDEX " + c + " IN COMMAND ", "info");
                     encontrado = parseInt(c.toString());
                     break;
                 }
@@ -373,7 +335,6 @@ const Jarrett = (function() {
                         continue; //Jump wildcard commands
                     }
                     if (_this.soundex(voz) == _this.soundex(opcion)) {
-                        _this.debug(">> Matched Soundex command '" + opcion + "' AGAINST '" + voz + "' with index " + c, "info");
                         encontrado = parseInt(c.toString());
                         _this.triggerEvent(_this.globalEvents.COMMAND_MATCHED);
                         var response = {
@@ -385,7 +346,6 @@ const Jarrett = (function() {
                 }
             }
         }
-        _this.debug("Event reached : " + _this.globalEvents.NOT_COMMAND_MATCHED);
         _this.triggerEvent(_this.globalEvents.NOT_COMMAND_MATCHED);
         return;
     };
@@ -438,10 +398,6 @@ const Jarrett = (function() {
         return this.properties.lang;
     };
 
-    Jarrett.prototype.getVersion = function () {
-        return '1.0.6';
-    };
-
     Jarrett.prototype.hey = function (resolve, reject) {
         var start_timestamp;
         var jarrett_is_allowed;
@@ -457,7 +413,6 @@ const Jarrett = (function() {
         }
         this.JarrettWebkitSpeechRecognition.lang = this.properties.lang;
         this.JarrettWebkitSpeechRecognition.onstart = function () {
-            _this.debug("Event reached : " + _this.globalEvents.COMMAND_RECOGNITION_START);
             _this.triggerEvent(_this.globalEvents.COMMAND_RECOGNITION_START);
             _this.properties.recognizing = true;
             jarrett_is_allowed = true;
@@ -491,10 +446,6 @@ const Jarrett = (function() {
             if (_this.flags.restartRecognition === true) {
                 if (jarrett_is_allowed === true) {
                     _this.JarrettWebkitSpeechRecognition.start();
-                    _this.debug("Continuous mode enabled, restarting", "info");
-                }
-                else {
-                    console.error("Verify the microphone and check for the table of errors in sdkcarlos.github.io/sites/artyom.html to solve your problem. If you want to give your user a message when an error appears add an artyom listener");
                 }
                 _this.triggerEvent(_this.globalEvents.COMMAND_RECOGNITION_END, {
                     code: "continuous_mode_enabled",
@@ -515,11 +466,9 @@ const Jarrett = (function() {
             _this.properties.recognizing = false;
         };
 
-        var onResultProcessor;
-        if (_this.properties.mode == "normal") {
-            onResultProcessor = function (event) {
+        _this.JarrettWebkitSpeechRecognition.onresult = function (event) {
+            if (_this.properties.obeying) {
                 if (!_this.commands.length) {
-                    _this.debug("No commands to process in normal mode.");
                     return;
                 }
                 var cantidadResultados = event.results.length;
@@ -532,7 +481,6 @@ const Jarrett = (function() {
                             _this.properties.helpers.redirectRecognizedTextOutput(identificated, true);
                         }
                         if ((comando) && (_this.properties.recognizing == true)) {
-                            _this.debug("<< Executing Matching Recognition in normal mode >>", "info");
                             _this.JarrettWebkitSpeechRecognition.stop();
                             _this.properties.recognizing = false;
                             if (comando.wildcard) {
@@ -552,7 +500,6 @@ const Jarrett = (function() {
                             if (identificated.indexOf(_this.properties.executionKeyword) != -1) {
                                 var comando = _this.execute(identificated.replace(_this.properties.executionKeyword, '').trim());
                                 if ((comando) && (_this.properties.recognizing == true)) {
-                                    _this.debug("<< Executing command ordered by ExecutionKeyword >>", 'info');
                                     _this.JarrettWebkitSpeechRecognition.stop();
                                     _this.properties.recognizing = false;
                                     if (comando.wildcard) {
@@ -565,81 +512,8 @@ const Jarrett = (function() {
                                 }
                             }
                         }
-                        _this.debug("Normal mode : " + identificated);
                     }
                 }
-            };
-        }
-        if (_this.properties.mode == "quick") {
-            onResultProcessor = function (event) {
-                if (!_this.commands.length) {
-                    _this.debug("No commands to process.");
-                    return;
-                }
-                var cantidadResultados = event.results.length;
-                _this.triggerEvent(_this.globalEvents.TEXT_RECOGNIZED);
-                for (var i = event.resultIndex; i < cantidadResultados; ++i) {
-                    var identificated = event.results[i][0].transcript;
-                    if (!event.results[i].isFinal) {
-                        var comando = _this.execute(identificated.trim());
-                        if (typeof (_this.properties.helpers.redirectRecognizedTextOutput) === "function") {
-                            _this.properties.helpers.redirectRecognizedTextOutput(identificated, true);
-                        }
-                        if ((comando) && (_this.properties.recognizing == true)) {
-                            _this.debug("<< Executing Matching Recognition in quick mode >>", "info");
-                            _this.JarrettWebkitSpeechRecognition.stop();
-                            _this.properties.recognizing = false;
-                            if (comando.wildcard) {
-                                comando.instruction.action(comando.index, comando.wildcard.item);
-                            }
-                            else {
-                                comando.instruction.action(comando.index);
-                            }
-                            break;
-                        }
-                    }
-                    else {
-                        var comando = _this.execute(identificated.trim());
-                        if (typeof (_this.properties.helpers.redirectRecognizedTextOutput) === "function") {
-                            _this.properties.helpers.redirectRecognizedTextOutput(identificated, false);
-                        }
-                        if ((comando) && (_this.properties.recognizing == true)) {
-                            _this.debug("<< Executing Matching Recognition in quick mode >>", "info");
-                            _this.JarrettWebkitSpeechRecognition.stop();
-                            _this.properties.recognizing = false;
-                            if (comando.wildcard) {
-                                comando.instruction.action(comando.index, comando.wildcard.item);
-                            }
-                            else {
-                                comando.instruction.action(comando.index);
-                            }
-                            break;
-                        }
-                    }
-                    _this.debug("Quick mode : " + identificated);
-                }
-            };
-        }
-        if (_this.properties.mode == "remote") {
-            onResultProcessor = function (event) {
-                var cantidadResultados = event.results.length;
-                _this.triggerEvent(_this.globalEvents.TEXT_RECOGNIZED);
-                if (typeof (_this.properties.helpers.remoteProcessorHandler) !== "function") {
-                    return _this.debug("The remoteProcessorService is undefined.", "warn");
-                }
-                for (var i = event.resultIndex; i < cantidadResultados; ++i) {
-                    var identificated = event.results[i][0].transcript;
-                    _this.properties.helpers.remoteProcessorHandler({
-                        text: identificated,
-                        isFinal: event.results[i].isFinal
-                    });
-                }
-            };
-        }
-
-        _this.JarrettWebkitSpeechRecognition.onresult = function (event) {
-            if (_this.properties.obeying) {
-                onResultProcessor(event);
             }
             else {
                 // Handle obeyKeyword if exists and artyom is not obeying
@@ -656,7 +530,6 @@ const Jarrett = (function() {
                         interim += event.results[i][0].transcript;
                     }
                 }
-                _this.debug("Artyom is not obeying", "warn");
                 if (((interim).indexOf(_this.properties.obeyKeyword) > -1) || (temporal).indexOf(_this.properties.obeyKeyword) > -1) {
                     _this.properties.obeying = true;
                 }
@@ -664,7 +537,6 @@ const Jarrett = (function() {
         };
         if (_this.properties.recognizing) {
             _this.JarrettWebkitSpeechRecognition.stop();
-            _this.debug("Event reached : " + _this.globalEvents.COMMAND_RECOGNITION_END);
             _this.triggerEvent(_this.globalEvents.COMMAND_RECOGNITION_END);
         }
         else {
@@ -736,15 +608,6 @@ const Jarrett = (function() {
         }
         if (config.hasOwnProperty("name")) {
             this.properties.name = config.name;
-        }
-        if (config.hasOwnProperty("debug")) {
-            this.properties.debug = config.debug;
-        }
-        else {
-            console.warn("The initialization doesn't provide how the debug mode should be handled. Is recommendable to set this value either to true or false.");
-        }
-        if (config.mode) {
-            this.properties.mode = config.mode;
         }
         if (this.properties.listen === true) {
             return new Promise(function (resolve, reject) {
@@ -981,15 +844,6 @@ const Jarrett = (function() {
         }
     };
 
-    Jarrett.prototype.setDebug = function (status) {
-        if (status) {
-            return this.properties.debug = true;
-        }
-        else {
-            return this.properties.debug = false;
-        }
-    };
-
     Jarrett.prototype.simulateInstruction = function (sentence) {
         var _this = this;
         if ((!sentence) || (typeof (sentence) !== "string")) {
@@ -1000,18 +854,15 @@ const Jarrett = (function() {
         if (typeof (foundCommand) === "object") {
             if (foundCommand.instruction) {
                 if (foundCommand.instruction.smart) {
-                    _this.debug('Smart command matches with simulation, executing', "info");
                     foundCommand.instruction.action(foundCommand.index, foundCommand.wildcard.item, foundCommand.wildcard.full);
                 }
                 else {
-                    _this.debug('Command matches with simulation, executing', "info");
                     foundCommand.instruction.action(foundCommand.index); //Execute Normal command
                 }
                 return true;
             }
         }
         else {
-            console.warn("No command founded trying with " + sentence);
             return false;
         }
     };
@@ -1102,7 +953,6 @@ const Jarrett = (function() {
                 // Set artyom is talking
                 _this.properties.speaking = true;
                 // Trigger the onSpeechSynthesisStart event
-                _this.debug("Event reached : " + _this.globalEvents.SPEECH_SYNTHESIS_START);
                 _this.triggerEvent(_this.globalEvents.SPEECH_SYNTHESIS_START);
                 // Trigger the onStart callback if exists
                 if (callbacks) {
@@ -1118,7 +968,6 @@ const Jarrett = (function() {
                 // Set artyom is talking
                 _this.properties.speaking = false;
                 // Trigger the onSpeechSynthesisEnd event
-                _this.debug("Event reached : " + _this.globalEvents.SPEECH_SYNTHESIS_END);
                 _this.triggerEvent(_this.globalEvents.SPEECH_SYNTHESIS_END);
                 // Trigger the onEnd callback if exists.
                 if (callbacks) {
@@ -1129,7 +978,6 @@ const Jarrett = (function() {
             });
         }
         // Notice how many chunks were processed for the given text.
-        this.debug((actualChunk) + " text chunk processed succesfully out of " + totalChunks);
         // Important : Save the SpeechSynthesisUtterance object in memory, otherwise it will get lost
         this.garbageCollection.push(msg);
         window.speechSynthesis.speak(msg);

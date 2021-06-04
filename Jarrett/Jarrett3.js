@@ -4,49 +4,6 @@
 const Jarrett = (function() {
     function Jarrett() {
         this.commands = [];
-        this.voicesIdentifiers = {
-            // German
-            "de-DE": ["Google Deutsch", "de-DE", "de_DE"],
-            // Spanish
-            "es-ES": ["Google español", "es-ES", "es_ES", "es-MX", "es_MX"],
-            // Italian
-            "it-IT": ["Google italiano", "it-IT", "it_IT"],
-            // Japanese
-            "jp-JP": ["Google 日本人", "ja-JP", "ja_JP"],
-            // English USA
-            "en-US": ["Google US English", "en-US", "en_US"],
-            // English UK
-            "en-GB": ["Google UK English Male", "Google UK English Female", "en-GB", "en_GB"],
-            // Brazilian Portuguese
-            "pt-BR": ["Google português do Brasil", "pt-PT", "pt-BR", "pt_PT", "pt_BR"],
-            // Portugal Portuguese
-            // Note: in desktop, there's no voice for portugal Portuguese
-            "pt-PT": ["Google português do Brasil", "pt-PT", "pt_PT"],
-            // Russian
-            "ru-RU": ["Google русский", "ru-RU", "ru_RU"],
-            // Dutch (holland)
-            "nl-NL": ["Google Nederlands", "nl-NL", "nl_NL"],
-            // French
-            "fr-FR": ["Google français", "fr-FR", "fr_FR"],
-            // Polish
-            "pl-PL": ["Google polski", "pl-PL", "pl_PL"],
-            // Indonesian
-            "id-ID": ["Google Bahasa Indonesia", "id-ID", "id_ID"],
-            // Hindi
-            "hi-IN": ["Google हिन्दी", "hi-IN", "hi_IN"],
-            // Mandarin Chinese
-            "zh-CN": ["Google 普通话（中国大陆）", "zh-CN", "zh_CN"],
-            // Cantonese Chinese
-            "zh-HK": ["Google 粤語（香港）", "zh-HK", "zh_HK"],
-            // Native voice
-            "native": ["native"]
-        };
-        if (window.hasOwnProperty('speechSynthesis')) {
-            speechSynthesis.getVoices();
-        }
-        else {
-            console.error("Artyom.js can't speak without the Speech Synthesis API.");
-        }
         if (window.hasOwnProperty('webkitSpeechRecognition')) {
             this.JarrettWebkitSpeechRecognition = new window.webkitSpeechRecognition();
         }
@@ -57,32 +14,23 @@ const Jarrett = (function() {
             lang: 'en-GB',
             recognizing: false,
             continuous: false,
-            speed: 1,
-            volume: 1,
             listen: false,
-            mode: "normal",
-            debug: false,
             helpers: {
                 redirectRecognizedTextOutput: null,
                 remoteProcessorHandler: null,
-                lastSay: null,
                 fatalityPromiseCallback: null
             },
             executionKeyword: null,
             obeyKeyword: null,
-            speaking: false,
             obeying: true,
             soundex: false,
             name: null
         };
-        this.garbageCollection = [];
         this.flags = {
             restartRecognition: false
         };
         this.globalEvents = {
             ERROR: "ERROR",
-            SPEECH_SYNTHESIS_START: "SPEECH_SYNTHESIS_START",
-            SPEECH_SYNTHESIS_END: "SPEECH_SYNTHESIS_END",
             TEXT_RECOGNIZED: "TEXT_RECOGNIZED",
             COMMAND_RECOGNITION_START: "COMMAND_RECOGNITION_START",
             COMMAND_RECOGNITION_END: "COMMAND_RECOGNITION_END",
@@ -99,14 +47,6 @@ const Jarrett = (function() {
         if (navigator.userAgent.indexOf("Chrome") == -1) {
             this.Device.isChrome = false;
         }
-
-        this.voice = {
-            default: false,
-            lang: "en-GB",
-            localService: false,
-            name: "Google UK English Male",
-            voiceURI: "Google UK English Male"
-        };
     }
 
     Jarrett.prototype.processCommand = function(command) {
@@ -131,35 +71,9 @@ const Jarrett = (function() {
         }
         return true;
     };
-    ;
-
+    //!!!!
     Jarrett.prototype.editCommands = function (param) {
 
-    };
-
-    Jarrett.prototype.clearGarbageCollection = function () {
-        return this.garbageCollection = [];
-    };
-    ;
-
-    Jarrett.prototype.debug = function (message, type) {
-        var preMessage = "[v" + this.getVersion() + "] Artyom.js";
-        if (this.properties.debug === true) {
-            switch (type) {
-                case "error":
-                    console.log("%c" + preMessage + ":%c " + message, 'background: #C12127; color: black;', 'color:black;');
-                    break;
-                case "warn":
-                    console.warn(message);
-                    break;
-                case "info":
-                    console.log("%c" + preMessage + ":%c " + message, 'background: #4285F4; color: #FFFFFF', 'color:black;');
-                    break;
-                default:
-                    console.log("%c" + preMessage + ":%c " + message, 'background: #005454; color: #BFF8F8', 'color:black;');
-                    break;
-            }
-        }
     };
 
     Jarrett.prototype.detectErrors = function () {
@@ -193,22 +107,14 @@ const Jarrett = (function() {
     Jarrett.prototype.execute = function (voz) {
         var _this = this;
         if (!voz) {
-            console.warn("Internal error: Execution of empty command");
             return;
         }
-        // If artyom was initialized with a name, verify that the name begins with it to allow the execution of commands.
         if (_this.properties.name) {
             if (voz.indexOf(_this.properties.name) != 0) {
-                _this.debug("Artyom requires with a name \"" + _this.properties.name + "\" but the name wasn't spoken.", "warn");
                 return;
             }
-            // Remove name from voice command
             voz = voz.substr(_this.properties.name.length);
         }
-        _this.debug(">> " + voz);
-        /** @3
-         * Artyom needs time to think that
-         */
         for (var i = 0; i < _this.commands.length; i++) {
             var instruction = _this.commands[i];
             var opciones = instruction.indexes;
@@ -223,7 +129,6 @@ const Jarrett = (function() {
                 if (opcion instanceof RegExp) {
                     // If RegExp matches 
                     if (opcion.test(voz)) {
-                        _this.debug(">> REGEX " + opcion.toString() + " MATCHED AGAINST " + voz + " WITH INDEX " + c + " IN COMMAND ", "info");
                         encontrado = parseInt(c.toString());
                     }
                     // Otherwise just wildcards
@@ -233,7 +138,6 @@ const Jarrett = (function() {
                         ///LOGIC HERE
                         var grupo = opcion.split("*");
                         if (grupo.length > 2) {
-                            console.warn("Artyom found a smart command with " + (grupo.length - 1) + " wildcards. Artyom only support 1 wildcard for each command. Sorry");
                             continue;
                         }
                         //START SMART COMMAND
@@ -297,12 +201,10 @@ const Jarrett = (function() {
                     continue; //Jump wildcard commands
                 }
                 if ((voz === opcion)) {
-                    _this.debug(">> MATCHED FULL EXACT OPTION " + opcion + " AGAINST " + voz + " WITH INDEX " + c + " IN COMMAND ", "info");
                     encontrado = parseInt(c.toString());
                     break;
                 }
                 else if ((voz.toLowerCase() === opcion.toLowerCase())) {
-                    _this.debug(">> MATCHED OPTION CHANGING ALL TO LOWERCASE " + opcion + " AGAINST " + voz + " WITH INDEX " + c + " IN COMMAND ", "info");
                     encontrado = parseInt(c.toString());
                     break;
                 }
@@ -334,12 +236,10 @@ const Jarrett = (function() {
                 }
                 var opcion = opciones[c];
                 if ((voz.indexOf(opcion) >= 0)) {
-                    _this.debug(">> MATCHED INDEX EXACT OPTION " + opcion + " AGAINST " + voz + " WITH INDEX " + c + " IN COMMAND ", "info");
-                    encontrado = parseInt(c.toString());
+                   encontrado = parseInt(c.toString());
                     break;
                 }
                 else if (((voz.toLowerCase()).indexOf(opcion.toLowerCase()) >= 0)) {
-                    _this.debug(">> MATCHED INDEX OPTION CHANGING ALL TO LOWERCASE " + opcion + " AGAINST " + voz + " WITH INDEX " + c + " IN COMMAND ", "info");
                     encontrado = parseInt(c.toString());
                     break;
                 }
@@ -373,7 +273,6 @@ const Jarrett = (function() {
                         continue; //Jump wildcard commands
                     }
                     if (_this.soundex(voz) == _this.soundex(opcion)) {
-                        _this.debug(">> Matched Soundex command '" + opcion + "' AGAINST '" + voz + "' with index " + c, "info");
                         encontrado = parseInt(c.toString());
                         _this.triggerEvent(_this.globalEvents.COMMAND_MATCHED);
                         var response = {
@@ -385,7 +284,6 @@ const Jarrett = (function() {
                 }
             }
         }
-        _this.debug("Event reached : " + _this.globalEvents.NOT_COMMAND_MATCHED);
         _this.triggerEvent(_this.globalEvents.NOT_COMMAND_MATCHED);
         return;
     };
@@ -408,26 +306,8 @@ const Jarrett = (function() {
         return this.commands;
     };
 
-    Jarrett.prototype.getVoices = function () {
-        return window.speechSynthesis.getVoices();
-    };
-
-    Jarrett.prototype.speechSupported = function () {
-        return 'speechSynthesis' in window;
-    };
-
     Jarrett.prototype.recognizingSupported = function () {
         return 'webkitSpeechRecognition' in window;
-    };
-
-    Jarrett.prototype.shutUp = function () {
-        if ('speechSynthesis' in window) {
-            do {
-                window.speechSynthesis.cancel();
-            } while (window.speechSynthesis.pending === true);
-        }
-        this.properties.speaking = false;
-        this.clearGarbageCollection();
     };
 
     Jarrett.prototype.getProperties = function () {
@@ -436,10 +316,6 @@ const Jarrett = (function() {
 
     Jarrett.prototype.getLanguage = function () {
         return this.properties.lang;
-    };
-
-    Jarrett.prototype.getVersion = function () {
-        return '1.0.6';
     };
 
     Jarrett.prototype.hey = function (resolve, reject) {
@@ -457,7 +333,6 @@ const Jarrett = (function() {
         }
         this.JarrettWebkitSpeechRecognition.lang = this.properties.lang;
         this.JarrettWebkitSpeechRecognition.onstart = function () {
-            _this.debug("Event reached : " + _this.globalEvents.COMMAND_RECOGNITION_START);
             _this.triggerEvent(_this.globalEvents.COMMAND_RECOGNITION_START);
             _this.properties.recognizing = true;
             jarrett_is_allowed = true;
@@ -491,10 +366,6 @@ const Jarrett = (function() {
             if (_this.flags.restartRecognition === true) {
                 if (jarrett_is_allowed === true) {
                     _this.JarrettWebkitSpeechRecognition.start();
-                    _this.debug("Continuous mode enabled, restarting", "info");
-                }
-                else {
-                    console.error("Verify the microphone and check for the table of errors in sdkcarlos.github.io/sites/artyom.html to solve your problem. If you want to give your user a message when an error appears add an artyom listener");
                 }
                 _this.triggerEvent(_this.globalEvents.COMMAND_RECOGNITION_END, {
                     code: "continuous_mode_enabled",
@@ -515,11 +386,9 @@ const Jarrett = (function() {
             _this.properties.recognizing = false;
         };
 
-        var onResultProcessor;
-        if (_this.properties.mode == "normal") {
-            onResultProcessor = function (event) {
+        _this.JarrettWebkitSpeechRecognition.onresult = function (event) {
+            if (_this.properties.obeying) {
                 if (!_this.commands.length) {
-                    _this.debug("No commands to process in normal mode.");
                     return;
                 }
                 var cantidadResultados = event.results.length;
@@ -532,7 +401,6 @@ const Jarrett = (function() {
                             _this.properties.helpers.redirectRecognizedTextOutput(identificated, true);
                         }
                         if ((comando) && (_this.properties.recognizing == true)) {
-                            _this.debug("<< Executing Matching Recognition in normal mode >>", "info");
                             _this.JarrettWebkitSpeechRecognition.stop();
                             _this.properties.recognizing = false;
                             if (comando.wildcard) {
@@ -552,7 +420,6 @@ const Jarrett = (function() {
                             if (identificated.indexOf(_this.properties.executionKeyword) != -1) {
                                 var comando = _this.execute(identificated.replace(_this.properties.executionKeyword, '').trim());
                                 if ((comando) && (_this.properties.recognizing == true)) {
-                                    _this.debug("<< Executing command ordered by ExecutionKeyword >>", 'info');
                                     _this.JarrettWebkitSpeechRecognition.stop();
                                     _this.properties.recognizing = false;
                                     if (comando.wildcard) {
@@ -565,81 +432,8 @@ const Jarrett = (function() {
                                 }
                             }
                         }
-                        _this.debug("Normal mode : " + identificated);
                     }
                 }
-            };
-        }
-        if (_this.properties.mode == "quick") {
-            onResultProcessor = function (event) {
-                if (!_this.commands.length) {
-                    _this.debug("No commands to process.");
-                    return;
-                }
-                var cantidadResultados = event.results.length;
-                _this.triggerEvent(_this.globalEvents.TEXT_RECOGNIZED);
-                for (var i = event.resultIndex; i < cantidadResultados; ++i) {
-                    var identificated = event.results[i][0].transcript;
-                    if (!event.results[i].isFinal) {
-                        var comando = _this.execute(identificated.trim());
-                        if (typeof (_this.properties.helpers.redirectRecognizedTextOutput) === "function") {
-                            _this.properties.helpers.redirectRecognizedTextOutput(identificated, true);
-                        }
-                        if ((comando) && (_this.properties.recognizing == true)) {
-                            _this.debug("<< Executing Matching Recognition in quick mode >>", "info");
-                            _this.JarrettWebkitSpeechRecognition.stop();
-                            _this.properties.recognizing = false;
-                            if (comando.wildcard) {
-                                comando.instruction.action(comando.index, comando.wildcard.item);
-                            }
-                            else {
-                                comando.instruction.action(comando.index);
-                            }
-                            break;
-                        }
-                    }
-                    else {
-                        var comando = _this.execute(identificated.trim());
-                        if (typeof (_this.properties.helpers.redirectRecognizedTextOutput) === "function") {
-                            _this.properties.helpers.redirectRecognizedTextOutput(identificated, false);
-                        }
-                        if ((comando) && (_this.properties.recognizing == true)) {
-                            _this.debug("<< Executing Matching Recognition in quick mode >>", "info");
-                            _this.JarrettWebkitSpeechRecognition.stop();
-                            _this.properties.recognizing = false;
-                            if (comando.wildcard) {
-                                comando.instruction.action(comando.index, comando.wildcard.item);
-                            }
-                            else {
-                                comando.instruction.action(comando.index);
-                            }
-                            break;
-                        }
-                    }
-                    _this.debug("Quick mode : " + identificated);
-                }
-            };
-        }
-        if (_this.properties.mode == "remote") {
-            onResultProcessor = function (event) {
-                var cantidadResultados = event.results.length;
-                _this.triggerEvent(_this.globalEvents.TEXT_RECOGNIZED);
-                if (typeof (_this.properties.helpers.remoteProcessorHandler) !== "function") {
-                    return _this.debug("The remoteProcessorService is undefined.", "warn");
-                }
-                for (var i = event.resultIndex; i < cantidadResultados; ++i) {
-                    var identificated = event.results[i][0].transcript;
-                    _this.properties.helpers.remoteProcessorHandler({
-                        text: identificated,
-                        isFinal: event.results[i].isFinal
-                    });
-                }
-            };
-        }
-
-        _this.JarrettWebkitSpeechRecognition.onresult = function (event) {
-            if (_this.properties.obeying) {
-                onResultProcessor(event);
             }
             else {
                 // Handle obeyKeyword if exists and artyom is not obeying
@@ -656,7 +450,6 @@ const Jarrett = (function() {
                         interim += event.results[i][0].transcript;
                     }
                 }
-                _this.debug("Artyom is not obeying", "warn");
                 if (((interim).indexOf(_this.properties.obeyKeyword) > -1) || (temporal).indexOf(_this.properties.obeyKeyword) > -1) {
                     _this.properties.obeying = true;
                 }
@@ -664,7 +457,6 @@ const Jarrett = (function() {
         };
         if (_this.properties.recognizing) {
             _this.JarrettWebkitSpeechRecognition.stop();
-            _this.debug("Event reached : " + _this.globalEvents.COMMAND_RECOGNITION_END);
             _this.triggerEvent(_this.globalEvents.COMMAND_RECOGNITION_END);
         }
         else {
@@ -681,7 +473,6 @@ const Jarrett = (function() {
     };
 
      Jarrett.prototype.initialize = function (config) {
-        console.log("55555");
         var _this = this;
 
         let dic = JSON.parse(localStorage.getItem('dictionary'));
@@ -703,7 +494,6 @@ const Jarrett = (function() {
             return Promise.reject("You must give the configuration for start artyom properly.");
         }
         if (config.hasOwnProperty("lang")) {
-            _this.voice = _this.getVoice(config.lang);
             _this.properties.lang = config.lang;
         }
         if (config.hasOwnProperty("continuous")) {
@@ -716,9 +506,6 @@ const Jarrett = (function() {
                 this.flags.restartRecognition = false;
             }
         }
-        if (config.hasOwnProperty("speed")) {
-            this.properties.speed = config.speed;
-        }
         if (config.hasOwnProperty("soundex")) {
             this.properties.soundex = config.soundex;
         }
@@ -728,23 +515,11 @@ const Jarrett = (function() {
         if (config.hasOwnProperty("obeyKeyword")) {
             this.properties.obeyKeyword = config.obeyKeyword;
         }
-        if (config.hasOwnProperty("volume")) {
-            this.properties.volume = config.volume;
-        }
         if (config.hasOwnProperty("listen")) {
             this.properties.listen = config.listen;
         }
         if (config.hasOwnProperty("name")) {
             this.properties.name = config.name;
-        }
-        if (config.hasOwnProperty("debug")) {
-            this.properties.debug = config.debug;
-        }
-        else {
-            console.warn("The initialization doesn't provide how the debug mode should be handled. Is recommendable to set this value either to true or false.");
-        }
-        if (config.mode) {
-            this.properties.mode = config.mode;
         }
         if (this.properties.listen === true) {
             return new Promise(function (resolve, reject) {
@@ -770,96 +545,46 @@ const Jarrett = (function() {
         };
     };
 
-     Jarrett.prototype.triggerEvent = function (name, param) {
+    Jarrett.prototype.triggerEvent = function (name, param) {
         var event = new CustomEvent(name, {
             'detail': param
         });
         document.dispatchEvent(event);
         return event;
     };
-
-     Jarrett.prototype.repeatLastSay = function (returnObject) {
-        var last = this.properties.helpers.lastSay;
-        if (returnObject) {
-            return last;
-        }
-        else {
-            if (last != null) {
-                this.say(last.text);
-            }
-        }
-    };
  
-     Jarrett.prototype.when = function (event, action) {
+    Jarrett.prototype.when = function (event, action) {
         return document.addEventListener(event, function (e) {
             action(e["detail"]);
         }, false);
     };
    
-     Jarrett.prototype.remoteProcessorService = function (action) {
+    Jarrett.prototype.remoteProcessorService = function (action) {
         this.properties.helpers.remoteProcessorHandler = action;
         return true;
     };
-
-     Jarrett.prototype.voiceAvailable = function (languageCode) {
-        return typeof (this.getVoice(languageCode)) !== "undefined";
-    };
  
-     Jarrett.prototype.isObeying = function () {
+    Jarrett.prototype.isObeying = function () {
         return this.properties.obeying;
     };
 
-     Jarrett.prototype.obey = function () {
+    Jarrett.prototype.obey = function () {
         return this.properties.obeying = true;
     };
 
-     Jarrett.prototype.dontObey = function () {
+    Jarrett.prototype.dontObey = function () {
         return this.properties.obeying = false;
     };
 
-     Jarrett.prototype.isSpeaking = function () {
-        return this.properties.speaking;
-    };
-
-     Jarrett.prototype.isRecognizing = function () {
+    Jarrett.prototype.isRecognizing = function () {
         return this.properties.recognizing;
     };
 
-     Jarrett.prototype.getNativeApi = function () {
+    Jarrett.prototype.getNativeApi = function () {
         return this.JarrettWebkitSpeechRecognition;
     };
 
-     Jarrett.prototype.getGarbageCollection = function () {
-        return this.garbageCollection;
-    };
-
-     Jarrett.prototype.getVoice = function (languageCode) {
-        var voiceIdentifiersArray = this.voicesIdentifiers[languageCode];
-        if (!voiceIdentifiersArray) {
-            console.warn("The providen language " + languageCode + " isn't available, using English Great britain as default");
-            voiceIdentifiersArray = this.voicesIdentifiers["en-GB"];
-        }
-        var voice = undefined;
-        var voices = speechSynthesis.getVoices();
-        var voicesLength = voiceIdentifiersArray.length;
-        var _loop_1 = function (i) {
-            var foundVoice = voices.filter(function (voice) {
-                return ((voice.name == voiceIdentifiersArray[i]) || (voice.lang == voiceIdentifiersArray[i]));
-            })[0];
-            if (foundVoice) {
-                voice = foundVoice;
-                return "break";
-            }
-        };
-        for (var i = 0; i < voicesLength; i++) {
-            var state_1 = _loop_1(i);
-            if (state_1 === "break")
-                break;
-        }
-        return voice;
-    };
-
-     Jarrett.prototype.newDictation = function (settings) {
+    Jarrett.prototype.newDictation = function (settings) {
         var _this = this;
         if (!_this.recognizingSupported()) {
             console.error("SpeechRecognition is not supported in this browser");
@@ -924,7 +649,7 @@ const Jarrett = (function() {
         };
     };
 
-     Jarrett.prototype.newPrompt = function (config) {
+    Jarrett.prototype.newPrompt = function (config) {
         if (typeof (config) !== "object") {
             console.error("Expected the prompt configuration.");
         }
@@ -938,7 +663,6 @@ const Jarrett = (function() {
                 _this.commands = copyActualCommands;
                 var toExe = config.onMatch(i, wildcard);
                 if (typeof (toExe) !== "function") {
-                    console.error("onMatch function expects a returning function to be executed");
                     return;
                 }
                 toExe();
@@ -963,55 +687,27 @@ const Jarrett = (function() {
                 }
             }
         };
-        this.say(config.question, callbacks);
-    };
-
-    Jarrett.prototype.sayRandom = function (data) {
-        if (data instanceof Array) {
-            var index = Math.floor(Math.random() * data.length);
-            this.say(data[index]);
-            return {
-                text: data[index],
-                index: index
-            };
-        }
-        else {
-            console.error("Random quotes must be in an array !");
-            return null;
-        }
-    };
-
-    Jarrett.prototype.setDebug = function (status) {
-        if (status) {
-            return this.properties.debug = true;
-        }
-        else {
-            return this.properties.debug = false;
-        }
+        //this.say(config.question, callbacks);
     };
 
     Jarrett.prototype.simulateInstruction = function (sentence) {
         var _this = this;
         if ((!sentence) || (typeof (sentence) !== "string")) {
-            console.warn("Cannot execute a non string command");
             return false;
         }
         var foundCommand = _this.execute(sentence); //Command founded object
         if (typeof (foundCommand) === "object") {
             if (foundCommand.instruction) {
                 if (foundCommand.instruction.smart) {
-                    _this.debug('Smart command matches with simulation, executing', "info");
                     foundCommand.instruction.action(foundCommand.index, foundCommand.wildcard.item, foundCommand.wildcard.full);
                 }
                 else {
-                    _this.debug('Command matches with simulation, executing', "info");
                     foundCommand.instruction.action(foundCommand.index); //Execute Normal command
                 }
                 return true;
             }
         }
         else {
-            console.warn("No command founded trying with " + sentence);
             return false;
         }
     };
@@ -1032,23 +728,6 @@ const Jarrett = (function() {
         return (r + '000').slice(0, 4).toUpperCase();
     };
 
-    Jarrett.prototype.splitStringByChunks = function (input, chunk_length) {
-        input = input || "";
-        chunk_length = chunk_length || 100;
-        var curr = chunk_length;
-        var prev = 0;
-        var output = [];
-        while (input[curr]) {
-            if (input[curr++] == ' ') {
-                output.push(input.substring(prev, curr));
-                prev = curr;
-                curr += chunk_length;
-            }
-        }
-        output.push(input.substr(prev));
-        return output;
-    };
-
     Jarrett.prototype.redirectRecognizedTextOutput = function (action) {
         if (typeof (action) != "function") {
             console.warn("Expected function to handle the recognized text ...");
@@ -1059,129 +738,14 @@ const Jarrett = (function() {
     };
 
     Jarrett.prototype.restart = function () {
-        console.log("1111");
         var _this = this;
         var _copyInit = _this.properties;
         return new Promise(function (resolve, reject) {
-            console.log("2222");
             _this.fatality().then(function () {
-                console.log("3333");
                 _this.initialize(_copyInit).then(resolve, reject);
             });
         });
     };
 
-    Jarrett.prototype.talk = function (text, actualChunk, totalChunks, callbacks) {
-        var _this = this;
-        var msg = new SpeechSynthesisUtterance();
-        msg.text = text;
-        msg.volume = this.properties.volume;
-        msg.rate = this.properties.speed;
-        // Select the voice according to the selected
-        var availableVoice = _this.getVoice(_this.properties.lang);
-        if (callbacks) {
-            // If the language to speak has been forced, use it
-            if (callbacks.hasOwnProperty("lang")) {
-                availableVoice = _this.getVoice(callbacks.lang);
-            }
-        }
-        // If is a mobile device, provide only the language code in the lang property i.e "es_ES"
-        if (this.Device.isMobile) {
-            // Try to set the voice only if exists, otherwise don't use anything to use the native voice
-            if (availableVoice) {
-                msg.lang = availableVoice.lang;
-            }
-            // If browser provide the entire object
-        }
-        else {
-            msg.voice = availableVoice;
-        }
-        // If is first text chunk (onStart)
-        if (actualChunk == 1) {
-            msg.addEventListener('start', function () {
-                // Set artyom is talking
-                _this.properties.speaking = true;
-                // Trigger the onSpeechSynthesisStart event
-                _this.debug("Event reached : " + _this.globalEvents.SPEECH_SYNTHESIS_START);
-                _this.triggerEvent(_this.globalEvents.SPEECH_SYNTHESIS_START);
-                // Trigger the onStart callback if exists
-                if (callbacks) {
-                    if (typeof (callbacks.onStart) == "function") {
-                        callbacks.onStart.call(msg);
-                    }
-                }
-            });
-        }
-        // If is final text chunk (onEnd)
-        if ((actualChunk) >= totalChunks) {
-            msg.addEventListener('end', function () {
-                // Set artyom is talking
-                _this.properties.speaking = false;
-                // Trigger the onSpeechSynthesisEnd event
-                _this.debug("Event reached : " + _this.globalEvents.SPEECH_SYNTHESIS_END);
-                _this.triggerEvent(_this.globalEvents.SPEECH_SYNTHESIS_END);
-                // Trigger the onEnd callback if exists.
-                if (callbacks) {
-                    if (typeof (callbacks.onEnd) == "function") {
-                        callbacks.onEnd.call(msg);
-                    }
-                }
-            });
-        }
-        // Notice how many chunks were processed for the given text.
-        this.debug((actualChunk) + " text chunk processed succesfully out of " + totalChunks);
-        // Important : Save the SpeechSynthesisUtterance object in memory, otherwise it will get lost
-        this.garbageCollection.push(msg);
-        window.speechSynthesis.speak(msg);
-    };
-
-    Jarrett.prototype.say = function (message, callbacks) {
-        var jarrett_say_max_chunk_length = 115;
-        var _this = this;
-        var definitive = [];
-        if (this.speechSupported()) {
-            if (typeof (message) != 'string') {
-                return console.warn("Artyom expects a string to speak " + typeof message + " given");
-            }
-            if (!message.length) {
-                return console.warn("Cannot speak empty string");
-            }
-            // If the providen text is long, proceed to split it
-            if (message.length > jarrett_say_max_chunk_length) {
-                // Split the given text by pause reading characters [",",":",";",". "] to provide a natural reading feeling.
-                var naturalReading = message.split(/,|:|\. |;/);
-                naturalReading.forEach(function (chunk, index) {
-                    // If the sentence is too long and could block the API, split it to prevent any errors.
-                    if (chunk.length > jarrett_say_max_chunk_length) {
-                        // Process the providen string into strings (withing an array) of maximum aprox. 115 characters to prevent any error with the API.
-                        var temp_processed = _this.splitStringByChunks(chunk, jarrett_say_max_chunk_length);
-                        // Add items of the processed sentence into the definitive chunk.
-                        definitive.push.apply(definitive, temp_processed);
-                    }
-                    else {
-                        // Otherwise just add the sentence to being spoken.
-                        definitive.push(chunk);
-                    }
-                });
-            }
-            else {
-                definitive.push(message);
-            }
-            // Clean any empty item in array
-            definitive = definitive.filter(function (e) { return e; });
-            // Finally proceed to talk the chunks and assign the callbacks.
-            definitive.forEach(function (chunk, index) {
-                var numberOfChunk = (index + 1);
-                if (chunk) {
-                    _this.talk(chunk, numberOfChunk, definitive.length, callbacks);
-                }
-            });
-            // Save the spoken text into the lastSay object of artyom
-            _this.properties.helpers.lastSay = {
-                text: message,
-                date: new Date()
-            };
-        }
-    };
     return Jarrett;
 }());

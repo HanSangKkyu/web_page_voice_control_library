@@ -8,7 +8,7 @@
     <!-- bootstrap -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.1/dist/css/bootstrap.min.css" rel="stylesheet" >
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.1/dist/js/bootstrap.bundle.min.js" ></script>
-    <script src="Jarrett.js"></script>
+    <script src="Jarrett5.js"></script>
     <title>prototype demo</title>
 </head>
 <body>
@@ -337,17 +337,12 @@
 
         var jarrett = new Jarrett();
 
-        jarrett.on(['tell me *'] , true).then((i,wildcard) => {
-            jarrett.say("You've said : " + wildcard);
-        });
-
         jarrett.on(['turn off']).then((i) => {
             jarrett.fatality();
         });
 
         // Start the commands !
         jarrett.initialize({
-            lang: "en-GB", // GreatBritain english
             continuous: true, // Listen forever
             soundex: true,// Use the soundex algorithm to increase accuracy
             debug: true, // Show messages in the console
@@ -357,10 +352,6 @@
             // If providen, you can only trigger a command if you say its name
             // e.g to trigger Good Morning, you need to say "Jarvis Good Morning"
             //name: "" 
-        }).then(() => {
-            console.log("Artyom has been succesfully initialized");
-        }).catch((err) => {
-            console.error("Artyom couldn't be initialized: ", err);
         });
     </script>
 </body>
