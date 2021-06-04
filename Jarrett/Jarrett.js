@@ -47,10 +47,7 @@ const Jarrett = (function() {
         else {
             console.error("Jarrett.js can't speak without the Speech Synthesis API.");
         }
-<<<<<<< HEAD
-=======
         // This instance of webkitSpeechRecognition is the one used by Jarrett.
->>>>>>> a0f21e989d26d9cad695271c8b513f9adeab204d
         if (window.hasOwnProperty('webkitSpeechRecognition')) {
             this.JarrettWebkitSpeechRecognition = new window.webkitSpeechRecognition();
         }
@@ -103,14 +100,6 @@ const Jarrett = (function() {
         if (navigator.userAgent.indexOf("Chrome") == -1) {
             this.Device.isChrome = false;
         }
-<<<<<<< HEAD
-
-=======
-        /**
-         * The default voice of Jarrett in the Desktop. In mobile, you will need to initialize (or force the language)
-         * with a language code in order to find an available voice in the device, otherwise it will use the native voice.
-         */
->>>>>>> a0f21e989d26d9cad695271c8b513f9adeab204d
         this.voice = {
             default: false,
             lang: "en-GB",
@@ -130,18 +119,6 @@ const Jarrett = (function() {
         }
     };
 
-<<<<<<< HEAD
-=======
-    /**
-     * Add dinamically commands to Jarrett using
-     * You can even add commands while Jarrett is active.
-     *
-     * @tutorial http://docs.ourcodeworld.com/projects/Jarrett-js/documentation/methods/addcommands
-     * @since 0.6
-     * @param {Object | Array[Objects]} param
-     * @returns {undefined}
-     */
->>>>>>> a0f21e989d26d9cad695271c8b513f9adeab204d
     Jarrett.prototype.addCommands = function (param) {
         var _this = this;
         if (param instanceof Array) {
@@ -159,31 +136,10 @@ const Jarrett = (function() {
     Jarrett.prototype.editCommands = function (param) {
 
     };
-<<<<<<< HEAD
-
-=======
-    /**
-     * The SpeechSynthesisUtterance objects are stored in the Jarrett_garbage_collector variable
-     * to prevent the wrong behaviour of Jarrett.say.
-     * Use this method to clear all spoken SpeechSynthesisUtterance unused objects.
-     *
-     * @returns {Array<any>}
-     */
->>>>>>> a0f21e989d26d9cad695271c8b513f9adeab204d
     Jarrett.prototype.clearGarbageCollection = function () {
         return this.garbageCollection = [];
     };
     ;
-<<<<<<< HEAD
-
-=======
-    /**
-     * Displays a message in the console if the Jarrett propery DEBUG is set to true.
-     *
-     * @tutorial http://docs.ourcodeworld.com/projects/Jarrett-js/documentation/methods/debug
-     * @returns {undefined}
-     */
->>>>>>> a0f21e989d26d9cad695271c8b513f9adeab204d
     Jarrett.prototype.debug = function (message, type) {
         var preMessage = "[v" + this.getVersion() + "] Jarrett.js";
         if (this.properties.debug === true) {
@@ -203,18 +159,6 @@ const Jarrett = (function() {
             }
         }
     };
-<<<<<<< HEAD
-
-=======
-    /**
-     * Jarrett have it's own diagnostics.
-     * Run this function in order to detect why Jarrett is not initialized.
-     *
-     * @tutorial http://docs.ourcodeworld.com/projects/Jarrett-js/documentation/methods/detecterrors
-     * @param {type} callback
-     * @returns {}
-     */
->>>>>>> a0f21e989d26d9cad695271c8b513f9adeab204d
     Jarrett.prototype.detectErrors = function () {
         var _this = this;
         if ((window.location.protocol) == "file:") {
@@ -238,17 +182,6 @@ const Jarrett = (function() {
         }
         return false;
     };
-<<<<<<< HEAD
-
-=======
-    /**
-     * Removes all the added commands of Jarrett.
-     *
-     * @tutorial http://docs.ourcodeworld.com/projects/Jarrett-js/documentation/methods/emptycommands
-     * @since 0.6
-     * @returns {Array}
-     */
->>>>>>> a0f21e989d26d9cad695271c8b513f9adeab204d
     Jarrett.prototype.emptyCommands = function () {
         return this.commands = [];
     };
@@ -452,25 +385,9 @@ const Jarrett = (function() {
         _this.triggerEvent(_this.globalEvents.NOT_COMMAND_MATCHED);
         return;
     };
-<<<<<<< HEAD
-
-=======
-    /**
-     * Force Jarrett to stop listen even if is in continuos mode.
-     *
-     * @tutorial http://docs.ourcodeworld.com/projects/Jarrett-js/documentation/methods/fatality
-     * @returns {Boolean}
-     */
->>>>>>> a0f21e989d26d9cad695271c8b513f9adeab204d
     Jarrett.prototype.fatality = function () {
         var _this = this;
         return new Promise(function (resolve, reject) {
-<<<<<<< HEAD
-=======
-            // Expose the fatality promise callback to the helpers object of Jarrett.
-            // The promise isn't resolved here itself but in the onend callback of
-            // the speechRecognition instance of Jarrett
->>>>>>> a0f21e989d26d9cad695271c8b513f9adeab204d
             _this.properties.helpers.fatalityPromiseCallback = resolve;
             try {
                 _this.flags.restartRecognition = false;
@@ -481,7 +398,6 @@ const Jarrett = (function() {
             }
         });
     };
-<<<<<<< HEAD
 
     Jarrett.prototype.getAvailableCommands = function () {
         return this.commands;
@@ -499,52 +415,6 @@ const Jarrett = (function() {
         return 'webkitSpeechRecognition' in window;
     };
 
-=======
-    /**
-     * Returns an array with all the available commands for Jarrett.
-     *
-     * @tutorial http://docs.ourcodeworld.com/projects/Jarrett-js/documentation/methods/getavailablecommands
-     * @readonly
-     * @returns {Array}
-     */
-    Jarrett.prototype.getAvailableCommands = function () {
-        return this.commands;
-    };
-    /**
-     * Jarrett can return inmediately the voices available in your browser.
-     *
-     * @readonly
-     * @tutorial http://docs.ourcodeworld.com/projects/Jarrett-js/documentation/methods/getvoices
-     * @returns {Array}
-     */
-    Jarrett.prototype.getVoices = function () {
-        return window.speechSynthesis.getVoices();
-    };
-    /**
-     * Verify if the browser supports speechSynthesis.
-     *
-     * @tutorial http://docs.ourcodeworld.com/projects/Jarrett-js/documentation/methods/speechsupported
-     * @returns {Boolean}
-     */
-    Jarrett.prototype.speechSupported = function () {
-        return 'speechSynthesis' in window;
-    };
-    /**
-     * Verify if the browser supports webkitSpeechRecognition.
-     *
-     * @tutorial http://docs.ourcodeworld.com/projects/Jarrett-js/documentation/methods/recognizingsupported
-     * @returns {Boolean}
-     */
-    Jarrett.prototype.recognizingSupported = function () {
-        return 'webkitSpeechRecognition' in window;
-    };
-    /**
-     * Stops the actual and pendings messages that Jarrett have to say.
-     *
-     * @tutorial http://docs.ourcodeworld.com/projects/Jarrett-js/documentation/methods/shutup
-     * @returns {undefined}
-     */
->>>>>>> a0f21e989d26d9cad695271c8b513f9adeab204d
     Jarrett.prototype.shutUp = function () {
         if ('speechSynthesis' in window) {
             do {
@@ -554,7 +424,6 @@ const Jarrett = (function() {
         this.properties.speaking = false;
         this.clearGarbageCollection();
     };
-<<<<<<< HEAD
 
     Jarrett.prototype.getProperties = function () {
         return this.properties;
@@ -568,44 +437,6 @@ const Jarrett = (function() {
         return '1.0.6';
     };
 
-=======
-    /**
-     * Returns an object with the actual properties of Jarrett.
-     *
-     * @tutorial http://docs.ourcodeworld.com/projects/Jarrett-js/documentation/methods/getproperties
-     * @returns {object}
-     */
-    Jarrett.prototype.getProperties = function () {
-        return this.properties;
-    };
-    /**
-     * Returns the code language of Jarrett according to initialize function.
-     * if initialize not used returns english GB.
-     *
-     * @tutorial http://docs.ourcodeworld.com/projects/Jarrett-js/documentation/methods/getlanguage
-     * @returns {String}
-     */
-    Jarrett.prototype.getLanguage = function () {
-        return this.properties.lang;
-    };
-    /**
-     * Retrieves the used version of Jarrett.js
-     *
-     * @returns {String}
-     */
-    Jarrett.prototype.getVersion = function () {
-        return '1.0.6';
-    };
-    /**
-     * Jarrett awaits for orders when this function
-     * is executed.
-     *
-     * If Jarrett gets a first parameter the instance will be stopped.
-     *
-     * @private
-     * @returns {undefined}
-     */
->>>>>>> a0f21e989d26d9cad695271c8b513f9adeab204d
     Jarrett.prototype.hey = function (resolve, reject) {
         var start_timestamp;
         var jarrett_is_allowed;
@@ -627,21 +458,8 @@ const Jarrett = (function() {
             jarrett_is_allowed = true;
             resolve();
         };
-<<<<<<< HEAD
-=======
-        /**
-         * Handle all Jarrett posible exceptions
-         *
-         * @param {type} event
-         * @returns {undefined}
-         */
->>>>>>> a0f21e989d26d9cad695271c8b513f9adeab204d
         this.JarrettWebkitSpeechRecognition.onerror = function (event) {
             reject(event.error);
-<<<<<<< HEAD
-=======
-            // Dispath error globally (Jarrett.when)
->>>>>>> a0f21e989d26d9cad695271c8b513f9adeab204d
             _this.triggerEvent(_this.globalEvents.ERROR, {
                 code: event.error
             });
@@ -691,17 +509,6 @@ const Jarrett = (function() {
             }
             _this.properties.recognizing = false;
         };
-<<<<<<< HEAD
-
-=======
-        /**
-         * Declare the processor dinamycally according to the mode of Jarrett
-         * to increase the performance.
-         *
-         * @type {Function}
-         * @return
-         */
->>>>>>> a0f21e989d26d9cad695271c8b513f9adeab204d
         var onResultProcessor;
         if (_this.properties.mode == "normal") {
             onResultProcessor = function (event) {
@@ -843,13 +650,7 @@ const Jarrett = (function() {
                         interim += event.results[i][0].transcript;
                     }
                 }
-<<<<<<< HEAD
                 _this.debug("Artyom is not obeying", "warn");
-=======
-                _this.debug("Jarrett is not obeying", "warn");
-                // If the obeyKeyword is found in the recognized text
-                // enable command recognition again
->>>>>>> a0f21e989d26d9cad695271c8b513f9adeab204d
                 if (((interim).indexOf(_this.properties.obeyKeyword) > -1) || (temporal).indexOf(_this.properties.obeyKeyword) > -1) {
                     _this.properties.obeying = true;
                 }
@@ -872,20 +673,6 @@ const Jarrett = (function() {
             }
         }
     };
-<<<<<<< HEAD
-
-=======
-    /**
-     * Set up Jarrett for the application.
-     *
-     * This function will set the default language used by Jarrett
-     * or notice the user if Jarrett is not supported in the actual
-     * browser
-     * @tutorial http://docs.ourcodeworld.com/projects/Jarrett-js/documentation/methods/initialize
-     * @param {Object} config
-     * @returns {Boolean}
-     */
->>>>>>> a0f21e989d26d9cad695271c8b513f9adeab204d
      Jarrett.prototype.initialize = function (config) {
         console.log("55555");
         var _this = this;
@@ -959,19 +746,6 @@ const Jarrett = (function() {
         }
         return Promise.resolve(true);
     };
-<<<<<<< HEAD
-
-=======
-    /**
-     * Add commands like an artisan. If you use Jarrett for simple tasks
-     * then probably you don't like to write a lot to achieve it.
-     *
-     * Use the artisan syntax to write less, but with the same accuracy.
-     *
-     * @disclaimer Not a promise-based implementation, just syntax.
-     * @returns {Boolean}
-     */
->>>>>>> a0f21e989d26d9cad695271c8b513f9adeab204d
      Jarrett.prototype.on = function (indexes, smart) {
         var _this = this;
         return {
@@ -987,16 +761,6 @@ const Jarrett = (function() {
             }
         };
     };
-<<<<<<< HEAD
-
-=======
-    /**
-     * Generates an Jarrett event with the designed name
-     *
-     * @param {type} name
-     * @returns {undefined}
-     */
->>>>>>> a0f21e989d26d9cad695271c8b513f9adeab204d
      Jarrett.prototype.triggerEvent = function (name, param) {
         var event = new CustomEvent(name, {
             'detail': param
@@ -1004,18 +768,6 @@ const Jarrett = (function() {
         document.dispatchEvent(event);
         return event;
     };
-<<<<<<< HEAD
-
-=======
-    /**
-     * Repeats the last sentence that Jarrett said.
-     * Useful in noisy environments.
-     *
-     * @tutorial http://docs.ourcodeworld.com/projects/Jarrett-js/documentation/methods/repeatlastsay
-     * @param {Boolean} returnObject If set to true, an object with the text and the timestamp when was executed will be returned.
-     * @returns {Object}
-     */
->>>>>>> a0f21e989d26d9cad695271c8b513f9adeab204d
      Jarrett.prototype.repeatLastSay = function (returnObject) {
         var last = this.properties.helpers.lastSay;
         if (returnObject) {
@@ -1027,32 +779,13 @@ const Jarrett = (function() {
             }
         }
     };
-<<<<<<< HEAD
  
-=======
-    /**
-     * Create a listener when an Jarrett action is called.
-     *
-     * @tutorial http://docs.ourcodeworld.com/projects/Jarrett-js/documentation/methods/when
-     * @param {type} event
-     * @param {type} action
-     * @returns {undefined}
-     */
->>>>>>> a0f21e989d26d9cad695271c8b513f9adeab204d
      Jarrett.prototype.when = function (event, action) {
         return document.addEventListener(event, function (e) {
             action(e["detail"]);
         }, false);
     };
-<<<<<<< HEAD
    
-=======
-    /**
-     * Process the recognized text if Jarrett is active in remote mode.
-     *
-     * @returns {Boolean}
-     */
->>>>>>> a0f21e989d26d9cad695271c8b513f9adeab204d
      Jarrett.prototype.remoteProcessorService = function (action) {
         this.properties.helpers.remoteProcessorHandler = action;
         return true;
@@ -1061,7 +794,6 @@ const Jarrett = (function() {
      Jarrett.prototype.voiceAvailable = function (languageCode) {
         return typeof (this.getVoice(languageCode)) !== "undefined";
     };
-<<<<<<< HEAD
  
      Jarrett.prototype.isObeying = function () {
         return this.properties.obeying;
@@ -1083,69 +815,6 @@ const Jarrett = (function() {
         return this.properties.recognizing;
     };
 
-=======
-    /**
-     * A boolean to check if Jarrett is obeying commands or not.
-     *
-     * @returns {Boolean}
-     */
-     Jarrett.prototype.isObeying = function () {
-        return this.properties.obeying;
-    };
-    /**
-     * Allow Jarrett to obey commands again.
-     *
-     * @returns {Boolean}
-     */
-     Jarrett.prototype.obey = function () {
-        return this.properties.obeying = true;
-    };
-    /**
-     * Pause the processing of commands. Jarrett still listening in the background and it can be resumed after a couple of seconds.
-     *
-     * @returns {Boolean}
-     */
-     Jarrett.prototype.dontObey = function () {
-        return this.properties.obeying = false;
-    };
-    /**
-     * This function returns a boolean according to the speechSynthesis status
-     * if Jarrett is speaking, will return true.
-     *
-     * Note: This is not a feature of speechSynthesis, therefore this value hangs on
-     * the fiability of the onStart and onEnd events of the speechSynthesis
-     *
-     * @since 0.9.3
-     * @summary Returns true if speechSynthesis is active
-     * @returns {Boolean}
-     */
-     Jarrett.prototype.isSpeaking = function () {
-        return this.properties.speaking;
-    };
-    /**
-     * This function returns a boolean according to the SpeechRecognition status
-     * if Jarrett is listening, will return true.
-     *
-     * Note: This is not a feature of SpeechRecognition, therefore this value hangs on
-     * the fiability of the onStart and onEnd events of the SpeechRecognition
-     *
-     * @since 0.9.3
-     * @summary Returns true if SpeechRecognition is active
-     * @returns {Boolean}
-     */
-     Jarrett.prototype.isRecognizing = function () {
-        return this.properties.recognizing;
-    };
-    /**
-     * This function will return the webkitSpeechRecognition object used by Jarrett
-     * retrieve it only to debug on it or get some values, do not make changes directly
-     *
-     * @readonly
-     * @since 0.9.2
-     * @summary Retrieve the native webkitSpeechRecognition object
-     * @returns {Object webkitSpeechRecognition}
-     */
->>>>>>> a0f21e989d26d9cad695271c8b513f9adeab204d
      Jarrett.prototype.getNativeApi = function () {
         return this.JarrettWebkitSpeechRecognition;
     };
@@ -1179,18 +848,6 @@ const Jarrett = (function() {
         }
         return voice;
     };
-<<<<<<< HEAD
-
-=======
-    /**
-     * Jarrett provide an easy way to create a
-     * dictation for your user.
-     *
-     * Just create an instance and start and stop when you want
-     *
-     * @returns Object | newDictation
-     */
->>>>>>> a0f21e989d26d9cad695271c8b513f9adeab204d
      Jarrett.prototype.newDictation = function (settings) {
         var _this = this;
         if (!_this.recognizingSupported()) {
@@ -1312,15 +969,6 @@ const Jarrett = (function() {
             return null;
         }
     };
-<<<<<<< HEAD
-
-=======
-    /**
-     * Shortcut method to enable the Jarrett debug on the fly.
-     *
-     * @returns {Array}
-     */
->>>>>>> a0f21e989d26d9cad695271c8b513f9adeab204d
     Jarrett.prototype.setDebug = function (status) {
         if (status) {
             return this.properties.debug = true;
@@ -1329,17 +977,6 @@ const Jarrett = (function() {
             return this.properties.debug = false;
         }
     };
-<<<<<<< HEAD
-
-=======
-    /**
-     * Simulate a voice command via JS
-     *
-     * @tutorial http://docs.ourcodeworld.com/projects/Jarrett-js/documentation/methods/simulateinstruction
-     * @param {type} sentence
-     * @returns {undefined}
-     */
->>>>>>> a0f21e989d26d9cad695271c8b513f9adeab204d
     Jarrett.prototype.simulateInstruction = function (sentence) {
         var _this = this;
         if ((!sentence) || (typeof (sentence) !== "string")) {
@@ -1398,17 +1035,6 @@ const Jarrett = (function() {
         output.push(input.substr(prev));
         return output;
     };
-<<<<<<< HEAD
-
-=======
-    /**
-     * Allows to retrieve the recognized spoken text of Jarrett
-     * and do something with it everytime something is recognized
-     *
-     * @param {String} action
-     * @returns {Boolean}
-     */
->>>>>>> a0f21e989d26d9cad695271c8b513f9adeab204d
     Jarrett.prototype.redirectRecognizedTextOutput = function (action) {
         if (typeof (action) != "function") {
             console.warn("Expected function to handle the recognized text ...");
@@ -1417,15 +1043,6 @@ const Jarrett = (function() {
         this.properties.helpers.redirectRecognizedTextOutput = action;
         return true;
     };
-<<<<<<< HEAD
-
-=======
-    /**
-     * Restarts Jarrett with the initial configuration.
-     *
-     * @param configuration
-     */
->>>>>>> a0f21e989d26d9cad695271c8b513f9adeab204d
     Jarrett.prototype.restart = function () {
         console.log("1111");
         var _this = this;
@@ -1502,18 +1119,6 @@ const Jarrett = (function() {
         this.garbageCollection.push(msg);
         window.speechSynthesis.speak(msg);
     };
-<<<<<<< HEAD
-
-=======
-    /**
-     * Process the given text into chunks and execute the private function talk
-     *
-     * @tutorial http://docs.ourcodeworld.com/projects/Jarrett-js/documentation/methods/say
-     * @param {String} message Text to be spoken
-     * @param {Object} callbacks
-     * @returns {undefined}
-     */
->>>>>>> a0f21e989d26d9cad695271c8b513f9adeab204d
     Jarrett.prototype.say = function (message, callbacks) {
         var jarrett_say_max_chunk_length = 115;
         var _this = this;
