@@ -90,6 +90,7 @@ const Jarrett = (function() {
             }
             voz = voz.substr(_this.properties.name.length);
         }
+        console.log(voz);
         for (var i = 0; i < _this.commands.length; i++) {
             var instruction = _this.commands[i];
             var opciones = instruction.indexes;
