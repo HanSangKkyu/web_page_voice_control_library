@@ -8,9 +8,12 @@ import android.speech.RecognitionListener
 import android.speech.RecognizerIntent
 import android.speech.SpeechRecognizer
 import android.util.Log
+import android.view.KeyEvent
+import android.view.KeyEvent.KEYCODE_ENTER
 import android.view.View
 import android.webkit.WebChromeClient
 import android.webkit.WebViewClient
+import android.widget.Button
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
@@ -42,13 +45,37 @@ class MainActivity : AppCompatActivity() {
         // 원하는 주소를 WebView에 연결
         webview.loadUrl("http://www.naver.com")
 
-        btn.setOnClickListener(View.OnClickListener() {
+        micBtn.setOnClickListener(View.OnClickListener() {
             startSTT()
 
-            // 앱에서 자바스크립트 코드 실행시키기
-//            webview.loadUrl("javascript:location.reload()");
         })
 
+        urlEditText.setOnFocusChangeListener { v, hasFocus ->
+            if(hasFocus){
+                menuBtn.setVisibility(View.GONE);
+                micBtn.setVisibility(View.GONE);
+            }else{
+                menuBtn.setVisibility(View.VISIBLE);
+                micBtn.setVisibility(View.VISIBLE);
+            }
+
+        }
+
+        urlEditText.setOnKeyListener(View.OnKeyListener { v, keyCode, event ->
+            if (event.action == KeyEvent.ACTION_DOWN && keyCode == KeyEvent.KEYCODE_ENTER) {
+                v.clearFocus()
+                webview.loadUrl("http://"+urlEditText.text)
+                return@OnKeyListener true
+            }
+            false
+        })
+
+
+
+        refreshBtn.setOnClickListener{ v ->
+            // 앱에서 자바스크립트 코드 실행시키기
+            webview.loadUrl("javascript:location.reload()");
+        }
     }
     // RecognitionListener 사용한 예제
     private fun startSTT() {
@@ -87,7 +114,7 @@ class MainActivity : AppCompatActivity() {
 
         override fun onResults(results: Bundle) {
             Log.e("result",SpeechRecognizer.RESULTS_RECOGNITION)
-            tv.text = results.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION)!![0]
+//            tv.text = results.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION)!![0]
         }
     }
 
