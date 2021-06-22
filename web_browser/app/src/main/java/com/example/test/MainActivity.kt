@@ -9,21 +9,24 @@ import android.speech.RecognizerIntent
 import android.speech.SpeechRecognizer
 import android.util.Log
 import android.view.KeyEvent
-import android.view.KeyEvent.KEYCODE_ENTER
 import android.view.View
-import android.webkit.WebChromeClient
-import android.webkit.WebViewClient
+import android.view.ViewGroup
 import android.widget.Button
+import android.widget.TableLayout
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
+import androidx.fragment.app.Fragment
 import kotlinx.android.synthetic.main.activity_main.*
+import kotlinx.android.synthetic.main.fragment_blank.*
 import java.util.*
 
 
 class MainActivity : AppCompatActivity() {
 
     private var speechRecognizer: SpeechRecognizer? = null
+    private var frList: HashMap<String,BlankFragment> = HashMap()
+    private var selectedBtnTag: String = ""
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -35,19 +38,8 @@ class MainActivity : AppCompatActivity() {
         if (Build.VERSION.SDK_INT >= 23)
             ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.INTERNET, Manifest.permission.RECORD_AUDIO), REQUEST_CODE)
 
-        // 인터넷 연결 되어 있을 때 (셀룰러/와이파이)
-        webview.settings.javaScriptEnabled = true // 자바 스크립트 허용
-
-        // 웹뷰안에 새 창이 뜨지 않도록 방지
-        webview.webViewClient = WebViewClient()
-        webview.webChromeClient = WebChromeClient()
-
-        // 원하는 주소를 WebView에 연결
-        webview.loadUrl("http://www.naver.com")
-
         micBtn.setOnClickListener(View.OnClickListener() {
             startSTT()
-
         })
 
         urlEditText.setOnFocusChangeListener { v, hasFocus ->
@@ -64,7 +56,7 @@ class MainActivity : AppCompatActivity() {
         urlEditText.setOnKeyListener(View.OnKeyListener { v, keyCode, event ->
             if (event.action == KeyEvent.ACTION_DOWN && keyCode == KeyEvent.KEYCODE_ENTER) {
                 v.clearFocus()
-                webview.loadUrl("http://"+urlEditText.text)
+                frList.get(selectedBtnTag)!!.changeUrl(urlEditText.text.toString())
                 return@OnKeyListener true
             }
             false
@@ -76,6 +68,37 @@ class MainActivity : AppCompatActivity() {
             // 앱에서 자바스크립트 코드 실행시키기
             webview.loadUrl("javascript:location.reload()");
         }
+
+
+        tabBtn.setOnClickListener{ v ->
+            val newTabBtn = Button(this)
+            val charPool = arrayOf('a','b','c','d','e','f','g','h','i','j','k','l','m','n','o','p','q','r','s','t','u','v','w','x','z')
+
+            val randomString = (1..10)
+                .map { i -> kotlin.random.Random.nextInt(0, charPool.size) }
+                .map(charPool::get)
+                .joinToString("");
+
+            newTabBtn.setLayoutParams(TableLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT, 1f))
+            newTabBtn.tag = randomString
+            newTabBtn.text = randomString
+            selectedBtnTag = randomString
+
+            frList.put(newTabBtn.tag.toString(),BlankFragment())
+            supportFragmentManager.beginTransaction().add(R.id.frame, frList.get(newTabBtn.tag.toString())!!).commit()
+
+
+            newTabBtn.setOnClickListener{v ->
+                frList.keys.forEach{
+                    supportFragmentManager.beginTransaction().hide(frList.get(it.toString())!!).commit()
+                }
+
+                supportFragmentManager.beginTransaction().show(frList.get(newTabBtn.tag.toString())!!).commit()
+                selectedBtnTag = newTabBtn.tag.toString()
+            }
+            tabList.addView(newTabBtn)
+        }
+
     }
     // RecognitionListener 사용한 예제
     private fun startSTT() {
