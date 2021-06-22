@@ -34,8 +34,6 @@ class BlankFragment : Fragment() {
         webview.webViewClient = WebViewClient()
         webview.webChromeClient = WebChromeClient()
 
-//        // 원하는 주소를 WebView에 연결
-//        webview.loadUrl("http://www.naver.com")
     }
 
 

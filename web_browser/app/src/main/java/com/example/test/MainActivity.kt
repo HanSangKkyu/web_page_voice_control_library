@@ -44,11 +44,11 @@ class MainActivity : AppCompatActivity() {
 
         urlEditText.setOnFocusChangeListener { v, hasFocus ->
             if(hasFocus){
-                menuBtn.setVisibility(View.GONE);
-                micBtn.setVisibility(View.GONE);
+                menuBtn.setVisibility(View.GONE)
+                micBtn.setVisibility(View.GONE)
             }else{
-                menuBtn.setVisibility(View.VISIBLE);
-                micBtn.setVisibility(View.VISIBLE);
+                menuBtn.setVisibility(View.VISIBLE)
+                micBtn.setVisibility(View.VISIBLE)
             }
 
         }
@@ -89,15 +89,22 @@ class MainActivity : AppCompatActivity() {
 
 
             newTabBtn.setOnClickListener{v ->
-                frList.keys.forEach{
-                    supportFragmentManager.beginTransaction().hide(frList.get(it.toString())!!).commit()
-                }
-
+                supportFragmentManager.beginTransaction().hide(frList.get(selectedBtnTag)!!).commit()
                 supportFragmentManager.beginTransaction().show(frList.get(newTabBtn.tag.toString())!!).commit()
                 selectedBtnTag = newTabBtn.tag.toString()
+
+
             }
+
+            newTabBtn.setOnLongClickListener { v ->
+                supportFragmentManager.beginTransaction().remove(frList.get(selectedBtnTag)!!).commit()
+                newTabBtn.visibility = View.GONE
+                return@setOnLongClickListener true
+            }
+
             tabList.addView(newTabBtn)
         }
+
 
     }
     // RecognitionListener 사용한 예제
