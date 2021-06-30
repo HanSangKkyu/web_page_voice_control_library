@@ -14,6 +14,7 @@ import android.view.ViewGroup
 import android.widget.Button
 import android.widget.TableLayout
 import android.widget.Toast
+import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.fragment.app.Fragment
@@ -28,6 +29,7 @@ class MainActivity : AppCompatActivity() {
     private var frList: HashMap<String,BlankFragment> = HashMap()
     private var selectedBtnTag: String = ""
 
+    @RequiresApi(Build.VERSION_CODES.KITKAT)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
@@ -67,6 +69,10 @@ class MainActivity : AppCompatActivity() {
         refreshBtn.setOnClickListener{ v ->
             // 앱에서 자바스크립트 코드 실행시키기
             webview.loadUrl("javascript:location.reload()");
+
+            webview.evaluateJavascript("(function(){return('<html>'+document.getElementsByTagName('html')[0].innerHTML+'</html>'); })();"){
+                Log.e("it",it)
+            }
         }
 
 
