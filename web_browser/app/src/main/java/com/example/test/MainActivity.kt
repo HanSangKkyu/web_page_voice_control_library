@@ -143,8 +143,7 @@ class MainActivity : AppCompatActivity() {
         }
 
         override fun onResults(results: Bundle) {
-            Log.e("result",SpeechRecognizer.RESULTS_RECOGNITION)
-//            tv.text = results.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION)!![0]
+            Log.e("음성 인식 결과:", results.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION)!![0])
         }
     }
 
