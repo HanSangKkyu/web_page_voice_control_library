@@ -78,12 +78,8 @@ class MainActivity : AppCompatActivity() {
 
         tabBtn.setOnClickListener{ v ->
             val newTabBtn = Button(this)
-            val charPool = arrayOf('a','b','c','d','e','f','g','h','i','j','k','l','m','n','o','p','q','r','s','t','u','v','w','x','z')
 
-            val randomString = (1..10)
-                .map { i -> kotlin.random.Random.nextInt(0, charPool.size) }
-                .map(charPool::get)
-                .joinToString("");
+            val randomString = makeRanStr()
 
             newTabBtn.setLayoutParams(TableLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT, 1f))
             newTabBtn.tag = randomString
@@ -113,6 +109,18 @@ class MainActivity : AppCompatActivity() {
 
 
     }
+
+    private fun makeRanStr(): String {
+        val charPool = arrayOf('a','b','c','d','e','f','g','h','i','j','k','l','m','n','o','p','q','r','s','t','u','v','w','x','z')
+
+        val randomString = (1..10)
+            .map { i -> kotlin.random.Random.nextInt(0, charPool.size) }
+            .map(charPool::get)
+            .joinToString("");
+
+        return randomString
+    }
+
     // RecognitionListener 사용한 예제
     private fun startSTT() {
         val speechRecognizerIntent = Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH).apply {
