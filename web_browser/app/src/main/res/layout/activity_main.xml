@@ -14,19 +14,17 @@
         <Button
             android:id="@+id/menuBtn"
             android:text="menu"
-            android:layout_weight="1"
-            android:layout_width="wrap_content"
+            android:layout_width="70dp"
             android:layout_height="wrap_content"/>
         <EditText
             android:id="@+id/urlEditText"
-            android:layout_weight="100"
+            android:layout_weight="1"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"/>
         <Button
             android:id="@+id/micBtn"
             android:text="mic"
-            android:layout_weight="1"
-            android:layout_width="wrap_content"
+            android:layout_width="70dp"
             android:layout_height="wrap_content"/>
     </LinearLayout>
     <HorizontalScrollView
@@ -41,12 +39,6 @@
         </LinearLayout>
     </HorizontalScrollView>
 
-<!--    <WebView-->
-<!--        android:id="@+id/webview"-->
-<!--        android:layout_width="match_parent"-->
-<!--        android:layout_height="match_parent"-->
-<!--        android:layout_weight="1"/>-->
-
     <FrameLayout
         android:id="@+id/frame"
         android:layout_weight="1"
@@ -60,15 +52,25 @@
         <Button
             android:id="@+id/tabBtn"
             android:text="tab"
+            android:layout_weight="1"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"/>
         <Button
             android:id="@+id/refreshBtn"
             android:text="refresh"
+            android:layout_weight="1"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"/>
         <Button
+            android:id="@+id/bookmarkBtn"
             android:text="bookmark"
+            android:layout_weight="1"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"/>
+        <Button
+            android:id="@+id/homeBtn"
+            android:text="home"
+            android:layout_weight="1"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"/>
 

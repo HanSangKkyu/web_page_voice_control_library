@@ -34,16 +34,30 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
+        requestMic()
+        initWidget()
+
+
+
+    }
+
+    private fun requestMic(){
+        // 마이크를 허용해달라고 요청한다.
         val REQUEST_CODE = 1
 
-        // 마이크를 허용해달라고 요청한다.
         if (Build.VERSION.SDK_INT >= 23)
             ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.INTERNET, Manifest.permission.RECORD_AUDIO), REQUEST_CODE)
 
+    }
+
+    @RequiresApi(Build.VERSION_CODES.KITKAT)
+    private fun initWidget(){
+        // 마이크
         micBtn.setOnClickListener(View.OnClickListener() {
             startSTT()
         })
 
+        // 주소입력창
         urlEditText.setOnFocusChangeListener { v, hasFocus ->
             if(hasFocus){
                 menuBtn.setVisibility(View.GONE)
@@ -52,7 +66,6 @@ class MainActivity : AppCompatActivity() {
                 menuBtn.setVisibility(View.VISIBLE)
                 micBtn.setVisibility(View.VISIBLE)
             }
-
         }
 
         urlEditText.setOnKeyListener(View.OnKeyListener { v, keyCode, event ->
@@ -65,7 +78,7 @@ class MainActivity : AppCompatActivity() {
         })
 
 
-
+        // 새로고침 버튼
         refreshBtn.setOnClickListener{ v ->
             // 앱에서 자바스크립트 코드 실행시키기
             webview.loadUrl("javascript:location.reload()");
@@ -75,7 +88,7 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
-
+        // 새탭 추가
         tabBtn.setOnClickListener{ v ->
             val newTabBtn = Button(this)
 
@@ -98,6 +111,7 @@ class MainActivity : AppCompatActivity() {
 
             }
 
+            // 탭 닫기
             newTabBtn.setOnLongClickListener { v ->
                 supportFragmentManager.beginTransaction().remove(frList.get(selectedBtnTag)!!).commit()
                 newTabBtn.visibility = View.GONE
@@ -107,7 +121,14 @@ class MainActivity : AppCompatActivity() {
             tabList.addView(newTabBtn)
         }
 
+        // 북마크 버튼
+        bookmarkBtn.setOnClickListener { v->
+            loadBookmarkDialog()
+        }
+    }
 
+    private fun loadBookmarkDialog() {
+        TODO("Not yet implemented")
     }
 
     private fun makeRanStr(): String {
