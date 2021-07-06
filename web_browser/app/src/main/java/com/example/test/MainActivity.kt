@@ -17,7 +17,6 @@ import android.widget.Toast
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
-import androidx.fragment.app.Fragment
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.fragment_blank.*
 import java.util.*
@@ -37,8 +36,6 @@ class MainActivity : AppCompatActivity() {
         requestMic()
         initWidget()
 
-
-
     }
 
     private fun requestMic(){
@@ -47,7 +44,6 @@ class MainActivity : AppCompatActivity() {
 
         if (Build.VERSION.SDK_INT >= 23)
             ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.INTERNET, Manifest.permission.RECORD_AUDIO), REQUEST_CODE)
-
     }
 
     @RequiresApi(Build.VERSION_CODES.KITKAT)
@@ -128,7 +124,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun loadBookmarkDialog() {
-        TODO("Not yet implemented")
+        BookmarkDialog(this).start()
     }
 
     private fun makeRanStr(): String {
