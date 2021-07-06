@@ -77,10 +77,31 @@ class MainActivity : AppCompatActivity() {
         // 새로고침 버튼
         refreshBtn.setOnClickListener{ v ->
             // 앱에서 자바스크립트 코드 실행시키기
-            webview.loadUrl("javascript:location.reload()");
+//            webview.loadUrl("javascript:location.reload()");
+//
+//            webview.evaluateJavascript("(function(){return('<html>'+document.getElementsByTagName('html')[0].innerHTML+'</html>'); })();"){
+//                Log.e("it",it)
+//            }
 
-            webview.evaluateJavascript("(function(){return('<html>'+document.getElementsByTagName('html')[0].innerHTML+'</html>'); })();"){
-                Log.e("it",it)
+//            webview.evaluateJavascript("(function(){return('<html>'+document.getElementsByTagName('html')[0].innerHTML+'</html>'); })();"){
+//                Log.e("it",it)
+//            }
+
+            webview.evaluateJavascript("Object.getOwnPropertyNames(window).filter(item => typeof window[item] === 'function');"){
+//                Log.e("it",it)
+                val functionList = it.toString().split(",")
+                val resFunctionList = ArrayList<String>()
+                for(i in functionList.reversed()){
+                    if(i == "\"FragmentDirective\""){
+                        break
+                    }
+                    resFunctionList.add(i.trim('\"'))
+//                    Log.i("jerrat",i)
+                }
+
+                for(i in resFunctionList){
+                    Log.i("resFunctionList",i)
+                }
             }
         }
 
