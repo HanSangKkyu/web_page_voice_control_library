@@ -87,22 +87,6 @@ class MainActivity : AppCompatActivity() {
 //                Log.e("it",it)
 //            }
 
-            webview.evaluateJavascript("Object.getOwnPropertyNames(window).filter(item => typeof window[item] === 'function');"){
-//                Log.e("it",it)
-                val functionList = it.toString().split(",")
-                val resFunctionList = ArrayList<String>()
-                for(i in functionList.reversed()){
-                    if(i == "\"FragmentDirective\""){
-                        break
-                    }
-                    resFunctionList.add(i.trim('\"'))
-//                    Log.i("jerrat",i)
-                }
-
-                for(i in resFunctionList){
-                    Log.i("resFunctionList",i)
-                }
-            }
         }
 
         // 새탭 추가
@@ -194,8 +178,15 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
+        @RequiresApi(Build.VERSION_CODES.KITKAT)
         override fun onResults(results: Bundle) {
-            Log.e("음성 인식 결과:", results.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION)!![0])
+            var speechText = results.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION)!![0]
+            Log.e("음성 인식 결과:", speechText)
+            Toast.makeText(this@MainActivity, "음성 인식 결과: "+speechText, Toast.LENGTH_SHORT).show()
+
+            matchCommand(speechText)
+
+            startSTT()
         }
     }
 
@@ -208,4 +199,54 @@ class MainActivity : AppCompatActivity() {
         super.onDestroy()
     }
 
+    @RequiresApi(Build.VERSION_CODES.KITKAT)
+    fun matchCommand(speechText:String){
+        var scollDown = arrayOf("내려", "아래로")
+        var scollUp = arrayOf("올려", "위로")
+        var zoomIn = arrayOf("크게", "확대")
+        var zoomOut = arrayOf("작게", "축소")
+
+
+        if(speechText in scollDown){
+            webview.evaluateJavascript("scrollTo(document.documentElement.scrollTop, document.documentElement.scrollTop+50);"){}
+        }else if(speechText in scollUp){
+            webview.evaluateJavascript("scrollTo(document.documentElement.scrollTop, document.documentElement.scrollTop-50);"){}
+        }else if(speechText in zoomIn){
+            webview.evaluateJavascript("    if(document.body.style.zoom==\"\"){\n" +
+                    "        document.body.style.zoom = 110+\"%\";\n" +
+                    "    }else{\n" +
+                    "        var zoom = document.body.style.zoom.toString().substring(0, document.body.style.zoom.toString().indexOf(\"%\"));\n" +
+                    "        console.log(zoom);\n" +
+                    "        document.body.style.zoom = (parseInt(zoom)+10)+\"%\";\n" +
+                    "    }"){}
+        }else if(speechText in zoomOut){
+            webview.evaluateJavascript("    if(document.body.style.zoom==\"\"){\n" +
+                    "        document.body.style.zoom = 90+\"%\";\n" +
+                    "    }else{\n" +
+                    "        var zoom = document.body.style.zoom.toString().substring(0, document.body.style.zoom.toString().indexOf(\"%\"));\n" +
+                    "        console.log(zoom);\n" +
+                    "        document.body.style.zoom = (parseInt(zoom)-10)+\"%\";\n" +
+                    "    }"){}
+        }
+    }
+
+    @RequiresApi(Build.VERSION_CODES.KITKAT)
+    fun getHTML(){
+        webview.evaluateJavascript("Object.getOwnPropertyNames(window).filter(item => typeof window[item] === 'function');"){
+//                Log.e("it",it)
+            val functionList = it.toString().split(",")
+            val resFunctionList = ArrayList<String>()
+            for(i in functionList.reversed()){
+                if(i == "\"FragmentDirective\""){
+                    break
+                }
+                resFunctionList.add(i.trim('\"'))
+//                    Log.i("jerrat",i)
+            }
+
+            for(i in resFunctionList){
+                Log.i("resFunctionList",i)
+            }
+        }
+    }
 }

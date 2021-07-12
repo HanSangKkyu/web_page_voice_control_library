@@ -34,13 +34,13 @@ function zoomIn(){
 }
 
 // function zoomOut(){
-//     if(document.body.style.zoom==""){
-//         document.body.style.zoom = 90+"%";
-//     }else{
-//         var zoom = document.body.style.zoom.toString().substring(0, document.body.style.zoom.toString().indexOf("%"));
-//         console.log(zoom);
-//         document.body.style.zoom = (parseInt(zoom)-10)+"%";
-//     }
+    // if(document.body.style.zoom==""){
+    //     document.body.style.zoom = 90+"%";
+    // }else{
+    //     var zoom = document.body.style.zoom.toString().substring(0, document.body.style.zoom.toString().indexOf("%"));
+    //     console.log(zoom);
+    //     document.body.style.zoom = (parseInt(zoom)-10)+"%";
+    // }
 // }
 
 // function goPreviousPage(){
