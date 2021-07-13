@@ -25,7 +25,7 @@ import java.util.*
 class MainActivity : AppCompatActivity() {
 
     private var speechRecognizer: SpeechRecognizer? = null
-    private var frList: HashMap<String, BlankFragment> = HashMap()
+    private var frList: ArrayList<TabInfo> = ArrayList()
     private var selectedBtnTag: String = ""
 
     @RequiresApi(Build.VERSION_CODES.KITKAT)
@@ -67,7 +67,7 @@ class MainActivity : AppCompatActivity() {
         urlEditText.setOnKeyListener(View.OnKeyListener { v, keyCode, event ->
             if (event.action == KeyEvent.ACTION_DOWN && keyCode == KeyEvent.KEYCODE_ENTER) {
                 v.clearFocus()
-                frList.get(selectedBtnTag)!!.changeUrl(urlEditText.text.toString())
+                frList.get(tagToIndex(selectedBtnTag)).blankFragment.changeUrl(urlEditText.text.toString())
                 return@OnKeyListener true
             }
             false
@@ -86,7 +86,7 @@ class MainActivity : AppCompatActivity() {
 //            webview.evaluateJavascript("(function(){return('<html>'+document.getElementsByTagName('html')[0].innerHTML+'</html>'); })();"){
 //                Log.e("it",it)
 //            }
-            showPreviousTab()
+            showNextTab()
         }
 
         // 새탭 추가
@@ -110,20 +110,21 @@ class MainActivity : AppCompatActivity() {
         newTabBtn.text = randomString
         selectedBtnTag = randomString
 
-        frList.put(newTabBtn.tag.toString(),BlankFragment())
-        supportFragmentManager.beginTransaction().add(R.id.frame, frList.get(newTabBtn.tag.toString())!!).commit()
+//        frList.put(newTabBtn.tag.toString(),BlankFragment())
+        frList.add(TabInfo(newTabBtn.tag.toString(), BlankFragment(), newTabBtn))
+        supportFragmentManager.beginTransaction().add(R.id.frame, frList.get(tagToIndex(newTabBtn.tag.toString())).blankFragment).commit()
 
         // 탭 화면 띄우기
         newTabBtn.setOnClickListener{v ->
-            supportFragmentManager.beginTransaction().hide(frList.get(selectedBtnTag)!!).commit()
-            supportFragmentManager.beginTransaction().show(frList.get(newTabBtn.tag.toString())!!).commit()
+            supportFragmentManager.beginTransaction().hide(frList.get(tagToIndex(selectedBtnTag)).blankFragment).commit()
+            supportFragmentManager.beginTransaction().show(frList.get(tagToIndex(newTabBtn.tag.toString())).blankFragment).commit()
             selectedBtnTag = newTabBtn.tag.toString()
         }
 
         // 탭 닫기
         newTabBtn.setOnLongClickListener { v ->
-            supportFragmentManager.beginTransaction().remove(frList.get(selectedBtnTag)!!).commit()
-            frList.remove(selectedBtnTag)
+            supportFragmentManager.beginTransaction().remove(frList.get(tagToIndex(selectedBtnTag)).blankFragment).commit()
+            frList.removeAt(tagToIndex(selectedBtnTag))
             newTabBtn.visibility = View.GONE
             return@setOnLongClickListener true
         }
@@ -133,17 +134,15 @@ class MainActivity : AppCompatActivity() {
 
     private fun showNextTab(){
         var flag = false;
-        for (item in frList.keys){
-            Log.e("dd",item.toString())
+
+        for(item in frList){
             if(flag){
-                Log.e("dd",item.toString())
-                supportFragmentManager.beginTransaction().hide(frList.get(selectedBtnTag)!!).commit()
-                supportFragmentManager.beginTransaction().show(frList.get(item.toString())!!).commit()
-                selectedBtnTag = item.toString()
+                supportFragmentManager.beginTransaction().hide(frList.get(tagToIndex(selectedBtnTag)).blankFragment).commit()
+                supportFragmentManager.beginTransaction().show(frList.get(tagToIndex(item.tag)).blankFragment).commit()
+                selectedBtnTag = item.tag
                 break
             }
-            Log.i("dd",item.toString()+" "+selectedBtnTag.toString())
-            if(item == selectedBtnTag){
+            if(item.tag == selectedBtnTag){
                 flag  = true
             }
         }
@@ -151,17 +150,15 @@ class MainActivity : AppCompatActivity() {
 
     private fun showPreviousTab(){
         var flag = false;
-        for (item in frList.keys.reversed()){
-            Log.e("dd",item.toString())
+
+        for(item in frList.reversed()){
             if(flag){
-                Log.e("dd",item.toString())
-                supportFragmentManager.beginTransaction().hide(frList.get(selectedBtnTag)!!).commit()
-                supportFragmentManager.beginTransaction().show(frList.get(item.toString())!!).commit()
-                selectedBtnTag = item.toString()
+                supportFragmentManager.beginTransaction().hide(frList.get(tagToIndex(selectedBtnTag)).blankFragment).commit()
+                supportFragmentManager.beginTransaction().show(frList.get(tagToIndex(item.tag)).blankFragment).commit()
+                selectedBtnTag = item.tag
                 break
             }
-            Log.i("dd",item.toString()+" "+selectedBtnTag.toString())
-            if(item == selectedBtnTag){
+            if(item.tag == selectedBtnTag){
                 flag  = true
             }
         }
@@ -299,11 +296,11 @@ class MainActivity : AppCompatActivity() {
         }else if(speechText in newTab){
             makeNewTab()
         }else if(speechText in nexTab){
-
+            showNextTab()
         }else if(speechText in previousTab){
-
+            showPreviousTab()
         }else if(speechText in closeTab){
-
+            closeTab()
         }else if(speechText in refresh){
             webview.evaluateJavascript(
                 "location.reload();"
@@ -339,5 +336,29 @@ class MainActivity : AppCompatActivity() {
                 Log.i("resFunctionList",i)
             }
         }
+    }
+
+    fun tagToIndex(_tag: String): Int {
+        for(i in 0..frList.size){
+            try {
+                if(frList.get(i).tag == _tag){
+                    return i
+                }
+            }catch (e:Exception){
+                Log.d("dd",e.toString())
+                if(frList.size > 0){
+                    return 0
+                }else{
+                    return -1
+                }
+            }
+        }
+        return -1
+    }
+
+    fun closeTab(){
+        supportFragmentManager.beginTransaction().remove(frList.get(tagToIndex(selectedBtnTag)).blankFragment).commit()
+        frList.get(tagToIndex(selectedBtnTag)).button.visibility = View.GONE
+        frList.removeAt(tagToIndex(selectedBtnTag))
     }
 }
