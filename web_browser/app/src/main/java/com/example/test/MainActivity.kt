@@ -25,7 +25,7 @@ import java.util.*
 class MainActivity : AppCompatActivity() {
 
     private var speechRecognizer: SpeechRecognizer? = null
-    private var frList: HashMap<String,BlankFragment> = HashMap()
+    private var frList: HashMap<String, BlankFragment> = HashMap()
     private var selectedBtnTag: String = ""
 
     @RequiresApi(Build.VERSION_CODES.KITKAT)
@@ -86,45 +86,84 @@ class MainActivity : AppCompatActivity() {
 //            webview.evaluateJavascript("(function(){return('<html>'+document.getElementsByTagName('html')[0].innerHTML+'</html>'); })();"){
 //                Log.e("it",it)
 //            }
-
+            showPreviousTab()
         }
 
         // 새탭 추가
         tabBtn.setOnClickListener{ v ->
-            val newTabBtn = Button(this)
-
-            val randomString = makeRanStr()
-
-            newTabBtn.setLayoutParams(TableLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT, 1f))
-            newTabBtn.tag = randomString
-            newTabBtn.text = randomString
-            selectedBtnTag = randomString
-
-            frList.put(newTabBtn.tag.toString(),BlankFragment())
-            supportFragmentManager.beginTransaction().add(R.id.frame, frList.get(newTabBtn.tag.toString())!!).commit()
-
-
-            newTabBtn.setOnClickListener{v ->
-                supportFragmentManager.beginTransaction().hide(frList.get(selectedBtnTag)!!).commit()
-                supportFragmentManager.beginTransaction().show(frList.get(newTabBtn.tag.toString())!!).commit()
-                selectedBtnTag = newTabBtn.tag.toString()
-
-
-            }
-
-            // 탭 닫기
-            newTabBtn.setOnLongClickListener { v ->
-                supportFragmentManager.beginTransaction().remove(frList.get(selectedBtnTag)!!).commit()
-                newTabBtn.visibility = View.GONE
-                return@setOnLongClickListener true
-            }
-
-            tabList.addView(newTabBtn)
+            makeNewTab()
         }
 
         // 북마크 버튼
         bookmarkBtn.setOnClickListener { v->
             loadBookmarkDialog()
+        }
+    }
+
+    private fun makeNewTab(){
+        val newTabBtn = Button(this)
+
+        val randomString = makeRanStr()
+
+        newTabBtn.setLayoutParams(TableLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT, 1f))
+        newTabBtn.tag = randomString
+        newTabBtn.text = randomString
+        selectedBtnTag = randomString
+
+        frList.put(newTabBtn.tag.toString(),BlankFragment())
+        supportFragmentManager.beginTransaction().add(R.id.frame, frList.get(newTabBtn.tag.toString())!!).commit()
+
+        // 탭 화면 띄우기
+        newTabBtn.setOnClickListener{v ->
+            supportFragmentManager.beginTransaction().hide(frList.get(selectedBtnTag)!!).commit()
+            supportFragmentManager.beginTransaction().show(frList.get(newTabBtn.tag.toString())!!).commit()
+            selectedBtnTag = newTabBtn.tag.toString()
+        }
+
+        // 탭 닫기
+        newTabBtn.setOnLongClickListener { v ->
+            supportFragmentManager.beginTransaction().remove(frList.get(selectedBtnTag)!!).commit()
+            frList.remove(selectedBtnTag)
+            newTabBtn.visibility = View.GONE
+            return@setOnLongClickListener true
+        }
+
+        tabList.addView(newTabBtn)
+    }
+
+    private fun showNextTab(){
+        var flag = false;
+        for (item in frList.keys){
+            Log.e("dd",item.toString())
+            if(flag){
+                Log.e("dd",item.toString())
+                supportFragmentManager.beginTransaction().hide(frList.get(selectedBtnTag)!!).commit()
+                supportFragmentManager.beginTransaction().show(frList.get(item.toString())!!).commit()
+                selectedBtnTag = item.toString()
+                break
+            }
+            Log.i("dd",item.toString()+" "+selectedBtnTag.toString())
+            if(item == selectedBtnTag){
+                flag  = true
+            }
+        }
+    }
+
+    private fun showPreviousTab(){
+        var flag = false;
+        for (item in frList.keys.reversed()){
+            Log.e("dd",item.toString())
+            if(flag){
+                Log.e("dd",item.toString())
+                supportFragmentManager.beginTransaction().hide(frList.get(selectedBtnTag)!!).commit()
+                supportFragmentManager.beginTransaction().show(frList.get(item.toString())!!).commit()
+                selectedBtnTag = item.toString()
+                break
+            }
+            Log.i("dd",item.toString()+" "+selectedBtnTag.toString())
+            if(item == selectedBtnTag){
+                flag  = true
+            }
         }
     }
 
@@ -201,10 +240,26 @@ class MainActivity : AppCompatActivity() {
 
     @RequiresApi(Build.VERSION_CODES.KITKAT)
     fun matchCommand(speechText:String){
-        var scollDown = arrayOf("내려", "아래로")
-        var scollUp = arrayOf("올려", "위로")
-        var zoomIn = arrayOf("크게", "확대")
-        var zoomOut = arrayOf("작게", "축소")
+        val scollDown = arrayOf("내려", "아래로")
+        val scollUp = arrayOf("올려", "위로")
+        val zoomIn = arrayOf("크게", "확대")
+        val zoomOut = arrayOf("작게", "축소")
+        val goBack = arrayOf("뒤로","백","이전 페이지")
+        val goForward = arrayOf("앞으로","다음 페이지")
+        val click = arrayOf("클릭","누르기", "터치")
+        val newTab = arrayOf("새탭","새탭 열기","새탬 만들기")
+        val nexTab = arrayOf("다음 탭","앞 탭")
+        val previousTab = arrayOf("이전 탭","전 탭")
+        val closeTab = arrayOf("탭 닫기","닫기")
+        val refresh = arrayOf("새로고침","리프래시")
+        val addBookmark = arrayOf("즐겨찾기 추가","북마크 추가")
+        val removeBookmark = arrayOf("즐겨찾기 제거","북마크 제거")
+        val showBookmark = arrayOf("북마크","즐겨찾기", "북마크 보여줘","증겨찾기 보여줘")
+        val findKeyword = arrayOf("~찾기")
+        val readScreen = arrayOf("","")
+        val nextFocus = arrayOf("","")
+        val showFocus = arrayOf("","")
+
 
 
         if(speechText in scollDown){
@@ -219,14 +274,50 @@ class MainActivity : AppCompatActivity() {
                     "        console.log(zoom);\n" +
                     "        document.body.style.zoom = (parseInt(zoom)+10)+\"%\";\n" +
                     "    }"){}
+        }else if(speechText in zoomOut) {
+            webview.evaluateJavascript(
+                "    if(document.body.style.zoom==\"\"){\n" +
+                        "        document.body.style.zoom = 90+\"%\";\n" +
+                        "    }else{\n" +
+                        "        var zoom = document.body.style.zoom.toString().substring(0, document.body.style.zoom.toString().indexOf(\"%\"));\n" +
+                        "        console.log(zoom);\n" +
+                        "        document.body.style.zoom = (parseInt(zoom)-10)+\"%\";\n" +
+                        "    }"
+            ) {}
+        }else if(speechText in goBack){
+            webview.evaluateJavascript(
+                "history.back();"
+            ) {}
+        }else if(speechText in goForward){
+            webview.evaluateJavascript(
+                "history.forward();"
+            ) {}
+        }else if(speechText in click){
+            webview.evaluateJavascript(
+                "document.activeElement.click();"
+            ) {}
+        }else if(speechText in newTab){
+            makeNewTab()
+        }else if(speechText in nexTab){
+
+        }else if(speechText in previousTab){
+
+        }else if(speechText in closeTab){
+
+        }else if(speechText in refresh){
+            webview.evaluateJavascript(
+                "location.reload();"
+            ) {}
         }else if(speechText in zoomOut){
-            webview.evaluateJavascript("    if(document.body.style.zoom==\"\"){\n" +
-                    "        document.body.style.zoom = 90+\"%\";\n" +
-                    "    }else{\n" +
-                    "        var zoom = document.body.style.zoom.toString().substring(0, document.body.style.zoom.toString().indexOf(\"%\"));\n" +
-                    "        console.log(zoom);\n" +
-                    "        document.body.style.zoom = (parseInt(zoom)-10)+\"%\";\n" +
-                    "    }"){}
+
+        }else if(speechText in zoomOut){
+
+        }else if(speechText in zoomOut){
+
+        }else if(speechText in zoomOut){
+
+        }else if(speechText in zoomOut){
+
         }
     }
 
