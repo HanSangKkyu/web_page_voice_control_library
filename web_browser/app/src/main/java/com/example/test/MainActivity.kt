@@ -110,9 +110,6 @@ class MainActivity : AppCompatActivity() {
         newTabBtn.text = randomString
         selectedBtnTag = randomString
 
-//        frList.put(newTabBtn.tag.toString(),BlankFragment())
-        frList.add(TabInfo(newTabBtn.tag.toString(), BlankFragment(), newTabBtn))
-        supportFragmentManager.beginTransaction().add(R.id.frame, frList.get(tagToIndex(newTabBtn.tag.toString())).blankFragment).commit()
 
         // 탭 화면 띄우기
         newTabBtn.setOnClickListener{v ->
@@ -130,6 +127,10 @@ class MainActivity : AppCompatActivity() {
         }
 
         tabList.addView(newTabBtn)
+        frList.add(TabInfo(newTabBtn.tag.toString(), BlankFragment(), newTabBtn))
+        supportFragmentManager.beginTransaction().add(R.id.frame, frList.get(tagToIndex(newTabBtn.tag.toString())).blankFragment).commit()
+
+
     }
 
     private fun showNextTab(){
