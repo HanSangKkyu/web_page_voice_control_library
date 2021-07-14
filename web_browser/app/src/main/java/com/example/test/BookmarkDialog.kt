@@ -3,14 +3,57 @@ package com.example.test
 import android.app.Dialog
 import android.content.Context
 import android.os.Build
+import android.util.Log
+import android.view.LayoutInflater
+import android.view.View
+import android.view.ViewGroup
 import android.view.Window
+import android.widget.AdapterView
+import android.widget.BaseAdapter
 import android.widget.Button
+import android.widget.TextView
 import androidx.annotation.RequiresApi
+import kotlinx.android.synthetic.main.dialog_bookmark.*
 
 class BookmarkDialog(context : Context) {
+    private val context = context   //부모 액티비티의 context 가 들어감
     private val dlg = Dialog(context)   //부모 액티비티의 context 가 들어감
     private val sharedPref = context?.getSharedPreferences("bookmark", Context.MODE_PRIVATE)
 
+
+    //    Adapter class
+    private class MyCustomAdapter(context: Context, data: ArrayList<String>) : BaseAdapter() {
+        private val mContext: Context
+        private val mData: ArrayList<String>
+
+        init {
+            mContext = context
+            mData = data
+        }
+
+        override fun getCount(): Int {
+            return mData.size
+        }
+
+        override fun getItemId(position: Int): Long {
+            return position.toLong()
+        }
+
+        override fun getItem(position: Int): Any {
+            val selectItem = mData.get(position)
+            return selectItem
+        }
+
+        override fun getView(position: Int, view: View?, viewGroup: ViewGroup?): View {
+            val layoutInflater = LayoutInflater.from(mContext)
+            val rowMain = layoutInflater.inflate(R.layout.row_bookmark, viewGroup, false)
+
+            val nameTextView = rowMain.findViewById<TextView>(R.id.bookmarkName)
+            nameTextView.text = mData.get(position)
+
+            return rowMain
+        }
+    }
 
     @RequiresApi(Build.VERSION_CODES.JELLY_BEAN_MR1)
     fun start() {
@@ -22,6 +65,15 @@ class BookmarkDialog(context : Context) {
 
         cancelBtn.setOnClickListener { v->
             dlg.dismiss()
+        }
+
+        // 어답터 설정
+        dlg.bookmarkListView.adapter = MyCustomAdapter(context,getBookmarks())
+
+        // Item click listener
+        dlg.bookmarkListView.onItemClickListener = AdapterView.OnItemClickListener { parent, view, position, id ->
+            val selectItem = parent.getItemAtPosition(position) as String
+            Log.e("listview",selectItem.toString())
         }
 
         dlg.show()
@@ -38,12 +90,15 @@ class BookmarkDialog(context : Context) {
 //        Log.e("bookmark",getBookmarks().toString()+" "+getBookmarks().size.toString())
 //        removeBookmark("naver.com")
 //        Log.e("bookmark",getBookmarks().toString()+" "+getBookmarks().size.toString())
+
+
+
     }
 
 
 
     @RequiresApi(Build.VERSION_CODES.JELLY_BEAN_MR1)
-    fun getBookmarks(): ArrayList<String> {
+    public fun getBookmarks(): ArrayList<String> {
         val bookmark = sharedPref.getString("bookmark", "")
         var res = ArrayList<String>()
         val arr = bookmark?.split(',')
