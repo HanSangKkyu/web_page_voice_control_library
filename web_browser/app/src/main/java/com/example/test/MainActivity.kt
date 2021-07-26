@@ -2,6 +2,7 @@ package com.example.test
 
 import android.Manifest
 import android.content.Intent
+import android.media.MediaRecorder
 import android.os.Build
 import android.os.Bundle
 import android.speech.RecognitionListener
@@ -27,6 +28,12 @@ class MainActivity : AppCompatActivity() {
     private var speechRecognizer: SpeechRecognizer? = null
     private var frList: ArrayList<TabInfo> = ArrayList()
     private var selectedBtnTag: String = ""
+
+    private var recorder: MediaRecorder? = null // 사용 하지 않을 때는 메모리해제 및  null 처리
+    private val recordingFilePath: String by lazy {
+        "${externalCacheDir?.absolutePath}/recording.3gp"
+    }
+
 
     @RequiresApi(Build.VERSION_CODES.KITKAT)
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -166,7 +173,9 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun loadBookmarkDialog() {
-        BookmarkDialog(this).start()
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1) {
+            BookmarkDialog(this).start()
+        }
     }
 
     private fun makeRanStr(): String {
@@ -180,6 +189,7 @@ class MainActivity : AppCompatActivity() {
         return randomString
     }
 
+
     // RecognitionListener 사용한 예제
     private fun startSTT() {
         val speechRecognizerIntent = Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH).apply {
@@ -192,6 +202,16 @@ class MainActivity : AppCompatActivity() {
             startListening(speechRecognizerIntent)
         }
 
+
+        recorder = MediaRecorder()
+            .apply {
+                setAudioSource(MediaRecorder.AudioSource.MIC)
+                setOutputFormat(MediaRecorder.OutputFormat.THREE_GPP) // 포멧
+                setAudioEncoder(MediaRecorder.AudioEncoder.AMR_NB) // 엔코더
+                setOutputFile(recordingFilePath) // 우리는 저장 x 캐시에
+                prepare()
+            }
+        recorder?.start()
     }
 
     private fun recognitionListener() = object : RecognitionListener {
@@ -217,6 +237,13 @@ class MainActivity : AppCompatActivity() {
 
         @RequiresApi(Build.VERSION_CODES.KITKAT)
         override fun onResults(results: Bundle) {
+
+            recorder?.run {
+                stop()
+                release()
+            }
+            recorder = null
+
             var speechText = results.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION)!![0]
             Log.e("음성 인식 결과:", speechText)
             Toast.makeText(this@MainActivity, "음성 인식 결과: "+speechText, Toast.LENGTH_SHORT).show()
