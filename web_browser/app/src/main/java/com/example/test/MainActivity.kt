@@ -2,9 +2,11 @@ package com.example.test
 
 import android.Manifest
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.media.MediaRecorder
 import android.os.Build
 import android.os.Bundle
+import android.os.Environment
 import android.speech.RecognitionListener
 import android.speech.RecognizerIntent
 import android.speech.SpeechRecognizer
@@ -18,8 +20,13 @@ import android.widget.Toast
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.fragment_blank.*
+import java.io.File
+import java.io.FileInputStream
+import java.io.FileOutputStream
+import java.io.IOException
 import java.util.*
 
 
@@ -28,11 +35,13 @@ class MainActivity : AppCompatActivity() {
     private var speechRecognizer: SpeechRecognizer? = null
     private var frList: ArrayList<TabInfo> = ArrayList()
     private var selectedBtnTag: String = ""
+    private var mediaRecorder: MediaRecorder? = null // 녹음을 위한 객체
+    private var state: Boolean = false
 
-    private var recorder: MediaRecorder? = null // 사용 하지 않을 때는 메모리해제 및  null 처리
-    private val recordingFilePath: String by lazy {
-        "${externalCacheDir?.absolutePath}/recording.3gp"
-    }
+//    private var recorder: MediaRecorder? = null // 사용 하지 않을 때는 메모리해제 및  null 처리
+//    private val recordingFilePath: String by lazy {
+//        "${externalCacheDir?.absolutePath}/recording.3gp"
+//    }
 
 
     @RequiresApi(Build.VERSION_CODES.KITKAT)
@@ -57,7 +66,16 @@ class MainActivity : AppCompatActivity() {
     private fun initWidget(){
         // 마이크
         micBtn.setOnClickListener(View.OnClickListener() {
-            startSTT()
+//            startSTT()
+            if (ContextCompat.checkSelfPermission(this,
+                    android.Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED && ContextCompat.checkSelfPermission(this,
+                    android.Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
+                //Permission is not granted
+                val permissions = arrayOf(android.Manifest.permission.RECORD_AUDIO, android.Manifest.permission.WRITE_EXTERNAL_STORAGE, android.Manifest.permission.READ_EXTERNAL_STORAGE)
+                ActivityCompat.requestPermissions(this, permissions,0)
+            } else {
+                startRecording()
+            }
         })
 
         // 주소입력창
@@ -93,8 +111,10 @@ class MainActivity : AppCompatActivity() {
 //            webview.evaluateJavascript("(function(){return('<html>'+document.getElementsByTagName('html')[0].innerHTML+'</html>'); })();"){
 //                Log.e("it",it)
 //            }
-            showNextTab()
+//            showNextTab()
+            stopRecording()
         }
+
 
         // 새탭 추가
         tabBtn.setOnClickListener{ v ->
@@ -201,17 +221,15 @@ class MainActivity : AppCompatActivity() {
             setRecognitionListener(recognitionListener())
             startListening(speechRecognizerIntent)
         }
-
-
-        recorder = MediaRecorder()
-            .apply {
-                setAudioSource(MediaRecorder.AudioSource.MIC)
-                setOutputFormat(MediaRecorder.OutputFormat.THREE_GPP) // 포멧
-                setAudioEncoder(MediaRecorder.AudioEncoder.AMR_NB) // 엔코더
-                setOutputFile(recordingFilePath) // 우리는 저장 x 캐시에
-                prepare()
-            }
-        recorder?.start()
+//        recorder = MediaRecorder()
+//            .apply {
+//                setAudioSource(MediaRecorder.AudioSource.MIC)
+//                setOutputFormat(MediaRecorder.OutputFormat.THREE_GPP) // 포멧
+//                setAudioEncoder(MediaRecorder.AudioEncoder.AMR_NB) // 엔코더
+//                setOutputFile(recordingFilePath) // 우리는 저장 x 캐시에
+//                prepare()
+//            }
+//        recorder?.start()
     }
 
     private fun recognitionListener() = object : RecognitionListener {
@@ -238,11 +256,13 @@ class MainActivity : AppCompatActivity() {
         @RequiresApi(Build.VERSION_CODES.KITKAT)
         override fun onResults(results: Bundle) {
 
-            recorder?.run {
-                stop()
-                release()
-            }
-            recorder = null
+//            recorder?.run {
+//                stop()
+//                release()
+//            }
+//            recorder = null
+            stopRecording()
+
 
             var speechText = results.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION)!![0]
             Log.e("음성 인식 결과:", speechText)
@@ -388,5 +408,80 @@ class MainActivity : AppCompatActivity() {
         supportFragmentManager.beginTransaction().remove(frList.get(tagToIndex(selectedBtnTag)).blankFragment).commit()
         frList.get(tagToIndex(selectedBtnTag)).button.visibility = View.GONE
         frList.removeAt(tagToIndex(selectedBtnTag))
+    }
+
+    private fun startRecording(){
+        //config and create MediaRecorder Object
+        val fileName: String = Date().getTime().toString() + ".mp3"
+        var output = Environment.getExternalStorageDirectory().absolutePath + "/Download/" + fileName //내장메모리 밑에 위치
+
+
+
+        mediaRecorder = MediaRecorder()
+        mediaRecorder?.setAudioSource((MediaRecorder.AudioSource.MIC))
+        mediaRecorder?.setOutputFormat((MediaRecorder.OutputFormat.MPEG_4))
+        mediaRecorder?.setAudioEncoder(MediaRecorder.AudioEncoder.AAC)
+//        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+        mediaRecorder?.setOutputFile(output)
+//        }
+//        File(cacheDir, "myCache")
+
+
+        try {
+            mediaRecorder?.prepare()
+            mediaRecorder?.start()
+            state = true
+            Toast.makeText(this, "레코딩 시작되었습니다.", Toast.LENGTH_SHORT).show()
+        } catch (e: IllegalStateException){
+            e.printStackTrace()
+        } catch (e: IOException){
+            e.printStackTrace()
+        }
+    }
+
+
+    private fun saveCache(data: String) {
+        try {
+            val file = File(cacheDir, "myCache")
+            val outputStream = FileOutputStream(file)
+            outputStream.write(data.toByteArray())
+            outputStream.close()
+            Log.d("data.toByteArray()", "saved")
+        } catch (e: IOException) {
+            e.printStackTrace()
+        }
+    }
+
+    private fun loadCache(): String {
+        try {
+            val file = File(cacheDir, "myCache")
+            if (!file.exists()) file.createNewFile()
+            val inputStream = FileInputStream(file)
+            val s = Scanner(inputStream)
+            var text = ""
+            while (s.hasNext()) {
+                text += s.nextLine()
+
+            }
+
+            inputStream.close()
+            Log.d("FileInputStream",text)
+            return text
+        } catch (e: IOException) {
+            e.printStackTrace()
+            return "Failed"
+        }
+    }
+
+    private fun stopRecording(){
+        if(state){
+            mediaRecorder?.stop()
+            mediaRecorder?.reset()
+            mediaRecorder?.release()
+            state = false
+            Toast.makeText(this, "중지 되었습니다.", Toast.LENGTH_SHORT).show()
+        } else {
+            Toast.makeText(this, "레코딩 상태가 아닙니다.", Toast.LENGTH_SHORT).show()
+        }
     }
 }
