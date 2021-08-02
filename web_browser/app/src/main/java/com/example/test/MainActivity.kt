@@ -1,6 +1,7 @@
 package com.example.test
 
 import android.Manifest
+import android.app.Dialog
 import android.content.Intent
 import android.os.Build
 import android.os.Bundle
@@ -11,6 +12,7 @@ import android.util.Log
 import android.view.KeyEvent
 import android.view.View
 import android.view.ViewGroup
+import android.widget.AdapterView
 import android.widget.Button
 import android.widget.TableLayout
 import android.widget.Toast
@@ -18,6 +20,7 @@ import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import kotlinx.android.synthetic.main.activity_main.*
+import kotlinx.android.synthetic.main.dialog_bookmark.*
 import kotlinx.android.synthetic.main.fragment_blank.*
 import java.util.*
 
@@ -27,6 +30,8 @@ class MainActivity : AppCompatActivity() {
     private var speechRecognizer: SpeechRecognizer? = null
     private var frList: ArrayList<TabInfo> = ArrayList()
     private var selectedBtnTag: String = ""
+    private var bookmarkDialog: BookmarkDialog? = null
+    private var dlg: Dialog? = null
 
     @RequiresApi(Build.VERSION_CODES.KITKAT)
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -35,6 +40,24 @@ class MainActivity : AppCompatActivity() {
 
         requestMic()
         initWidget()
+        initDialog()
+
+    }
+
+    @RequiresApi(Build.VERSION_CODES.JELLY_BEAN_MR1)
+    private fun initDialog() {
+
+        bookmarkDialog = BookmarkDialog(this)
+        bookmarkDialog!!.init()
+        dlg = bookmarkDialog!!.getDlg()
+
+        // Item click listener
+        dlg?.bookmarkListView?.onItemClickListener = AdapterView.OnItemClickListener { parent, view, position, id ->
+            val selectItem = parent.getItemAtPosition(position) as String
+            Log.e("listview",selectItem.toString())
+            frList.get(tagToIndex(selectedBtnTag)).blankFragment.changeUrl(selectItem.toString())
+            dlg?.dismiss()
+        }
 
     }
 
@@ -165,8 +188,10 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    @RequiresApi(Build.VERSION_CODES.JELLY_BEAN_MR1)
     private fun loadBookmarkDialog() {
-        BookmarkDialog(this).start()
+//        BookmarkDialog(this).getDlg().show()
+        dlg?.show()
     }
 
     private fun makeRanStr(): String {
