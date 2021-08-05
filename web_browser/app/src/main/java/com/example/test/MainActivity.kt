@@ -3,6 +3,8 @@ package com.example.test
 import android.Manifest
 import android.app.Dialog
 import android.content.Intent
+import android.media.AudioManager
+import android.media.AudioManager.*
 import android.os.Build
 import android.os.Bundle
 import android.speech.RecognitionListener
@@ -81,9 +83,11 @@ class MainActivity : AppCompatActivity() {
             if(hasFocus){
                 menuBtn.setVisibility(View.GONE)
                 micBtn.setVisibility(View.GONE)
+                enterBtn.visibility = View.VISIBLE
             }else{
                 menuBtn.setVisibility(View.VISIBLE)
                 micBtn.setVisibility(View.VISIBLE)
+                enterBtn.visibility = View.GONE
             }
         }
 
@@ -96,6 +100,10 @@ class MainActivity : AppCompatActivity() {
             false
         })
 
+        enterBtn.setOnClickListener { v ->
+            v.clearFocus()
+            frList.get(tagToIndex(selectedBtnTag)).blankFragment.changeUrl(urlEditText.text.toString())
+        }
 
         // 새로고침 버튼
         refreshBtn.setOnClickListener{ v ->
@@ -282,6 +290,8 @@ class MainActivity : AppCompatActivity() {
         val readScreen = arrayOf("","")
         val nextFocus = arrayOf("","")
         val showFocus = arrayOf("","")
+        val volUp = arrayOf("볼륨 업", "소리 키워 줘")
+        val volDown = arrayOf("볼륨 다운", "소리 줄여 줘")
 
 
 
@@ -341,6 +351,10 @@ class MainActivity : AppCompatActivity() {
 
         }else if(speechText in zoomOut){
 
+        }else if(speechText in volUp) {
+            volUp()
+        }else if(speechText in volDown) {
+            volDown()
         }
     }
 
@@ -386,5 +400,15 @@ class MainActivity : AppCompatActivity() {
         supportFragmentManager.beginTransaction().remove(frList.get(tagToIndex(selectedBtnTag)).blankFragment).commit()
         frList.get(tagToIndex(selectedBtnTag)).button.visibility = View.GONE
         frList.removeAt(tagToIndex(selectedBtnTag))
+    }
+
+    private fun volUp() {
+        val mAudioManager : AudioManager = getSystemService(AUDIO_SERVICE) as AudioManager
+        mAudioManager.adjustStreamVolume(STREAM_MUSIC, ADJUST_RAISE, FLAG_PLAY_SOUND + FLAG_SHOW_UI)
+    }
+
+    private fun volDown() {
+        val mAudioManager : AudioManager = getSystemService(AUDIO_SERVICE) as AudioManager
+        mAudioManager.adjustStreamVolume(STREAM_MUSIC, ADJUST_LOWER, FLAG_PLAY_SOUND + FLAG_SHOW_UI)
     }
 }
