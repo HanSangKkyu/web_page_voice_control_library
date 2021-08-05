@@ -3,10 +3,12 @@ package com.example.test
 import android.app.Dialog
 import android.content.Context
 import android.os.Build
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.view.Window
+import android.widget.AdapterView
 import android.widget.BaseAdapter
 import android.widget.Button
 import android.widget.TextView
@@ -58,7 +60,7 @@ class BookmarkDialog(context: Context) {
     }
 
     @RequiresApi(Build.VERSION_CODES.JELLY_BEAN_MR1)
-    fun init() {
+    public fun init() {
         dlg.requestWindowFeature(Window.FEATURE_NO_TITLE)   //타이틀바 제거
         dlg.setContentView(R.layout.dialog_bookmark)     //다이얼로그에 사용할 xml 파일을 불러옴
         dlg.setCancelable(false)    //다이얼로그의 바깥 화면을 눌렀을 때 다이얼로그가 닫히지 않도록 함
@@ -70,16 +72,26 @@ class BookmarkDialog(context: Context) {
         }
 
         // 어답터 설정
-        dlg.bookmarkListView.adapter = MyCustomAdapter(context,getBookmarks())
+        dlg.bookmarkListView.adapter = MyCustomAdapter(context, getBookmarks())
 
-
+        // 북마크 삭제
+        dlg.bookmarkListView?.onItemLongClickListener = AdapterView.OnItemLongClickListener OnKeyListener@{ parent, view, position, id ->
+            val selectItem = parent.getItemAtPosition(position) as String
+            removeBookmark(selectItem)
+            Log.e("asdf",selectItem)
+            return@OnKeyListener true
+        }
 
     }
 
+    @RequiresApi(Build.VERSION_CODES.JELLY_BEAN_MR1)
+    fun refreshData(){
+        dlg.bookmarkListView.adapter = MyCustomAdapter(context, getBookmarks())
+    }
 
 
     @RequiresApi(Build.VERSION_CODES.JELLY_BEAN_MR1)
-    public fun getBookmarks(): ArrayList<String> {
+    fun getBookmarks(): ArrayList<String> {
         val bookmark = sharedPref.getString("bookmark", "")
         var res = ArrayList<String>()
         val arr = bookmark?.split(',')
@@ -94,7 +106,9 @@ class BookmarkDialog(context: Context) {
     @RequiresApi(Build.VERSION_CODES.JELLY_BEAN_MR1)
     fun addBookmark(newItem:String){
         var al = getBookmarks()
-        al.add(newItem)
+        if(newItem.indexOf("://") != -1){
+            al.add(newItem.substring(newItem.indexOf("://")+"://".length, newItem.length))
+        }
 
         var res = ""
         for(i in al){
@@ -105,6 +119,7 @@ class BookmarkDialog(context: Context) {
             putString("bookmark", res.substring(0,res.length-1))
             commit()
         }
+        refreshData()
     }
 
     @RequiresApi(Build.VERSION_CODES.JELLY_BEAN_MR1)
@@ -121,5 +136,6 @@ class BookmarkDialog(context: Context) {
             putString("bookmark", res.substring(0,res.length-1))
             commit()
         }
+        refreshData()
     }
 }
