@@ -110,14 +110,44 @@ class MainActivity : AppCompatActivity() {
             // 앱에서 자바스크립트 코드 실행시키기
 //            webview.loadUrl("javascript:location.reload()");
 //
-//            webview.evaluateJavascript("(function(){return('<html>'+document.getElementsByTagName('html')[0].innerHTML+'</html>'); })();"){
+//            webview.evaluateJavascript("(function(){return('<div>'+document.getElementsByTagName('div')[0].innerHTML+'</div>'); })();"){
 //                Log.e("it",it)
 //            }
 
-//            webview.evaluateJavascript("(function(){return('<html>'+document.getElementsByTagName('html')[0].innerHTML+'</html>'); })();"){
+//            webview.evaluateJavascript("(function(){return(document.getElementsByTagName('div')[0].innerHTML); })();"){
 //                Log.e("it",it)
 //            }
-            showNextTab()
+
+
+//            webview.evaluateJavascript("(function(){return(document.getElementsByTagName('div')[0].innerHTML); })();"){
+//                Log.e("it",it)
+//            }
+
+            // get a tage href
+            var script = "document.getElementsByTagName('a').length"
+            webview.evaluateJavascript("(function(){return("+script+"); })();"){
+                var lenn = Integer.parseInt(it)
+                for(i in 0 until lenn){
+                    script = "document.getElementsByTagName('a')["+i+"].href" // 무조건 속성값을 적어야 함
+                    webview.evaluateJavascript("(function(){return("+script+"); })();"){
+                        Log.e("it4",it)
+                    }
+                }
+            }
+
+
+
+//            showNextTab()
+//            bookmarkDialog?.addBookmark(frList.get(tagToIndex(selectedBtnTag)).blankFragment.webview.url.toString())
+
+
+//            val script = "<html>document.getElementsByTagName('html')[0].innerHTML</html>"
+//            webview.evaluateJavascript("(function(){return("+script+"); })();"){
+//                Log.e("it",it)
+//            }
+//            bookmarkDialog?.addBookmark(frList.get(tagToIndex(selectedBtnTag)).blankFragment.webview.url.toString())
+
+
         }
 
         // 새탭 추가
@@ -347,9 +377,9 @@ class MainActivity : AppCompatActivity() {
 
         }else if(speechText in zoomOut){
 
-        }else if(speechText in zoomOut){
-
-        }else if(speechText in zoomOut){
+        }else if(speechText in addBookmark){
+            bookmarkDialog?.addBookmark(frList.get(tagToIndex(selectedBtnTag)).blankFragment.webview.url.toString())
+        }else if(speechText in removeBookmark){
 
         }else if(speechText in volUp) {
             volUp()
