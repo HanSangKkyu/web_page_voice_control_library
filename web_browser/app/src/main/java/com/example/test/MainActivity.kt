@@ -123,7 +123,9 @@ class MainActivity : AppCompatActivity() {
 //            webview.evaluateJavascript("(function(){return('<html>'+document.getElementsByTagName('html')[0].innerHTML+'</html>'); })();"){
 //                Log.e("it",it)
 //            }
-            showNextTab()
+//            showNextTab()
+            addBookmark()
+
         }
 
         // 새탭 추가
@@ -364,8 +366,8 @@ class MainActivity : AppCompatActivity() {
             webview.evaluateJavascript(
                 "location.reload();"
             ) {}
-        }else if(speechText in zoomOut){
-
+        }else if(speechText in addBookmark){
+            addBookmark()
         }else if(speechText in zoomOut){
 
         }else if(speechText in zoomOut){
@@ -433,5 +435,12 @@ class MainActivity : AppCompatActivity() {
     private fun volDown() {
         val mAudioManager : AudioManager = getSystemService(AUDIO_SERVICE) as AudioManager
         mAudioManager.adjustStreamVolume(STREAM_MUSIC, ADJUST_LOWER, FLAG_PLAY_SOUND + FLAG_SHOW_UI)
+    }
+
+    private fun addBookmark(){
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1) {
+            bookmarkDialog?.addBookmark(frList.get(tagToIndex(selectedBtnTag)).blankFragment.webview.url.toString())
+        }
+
     }
 }
