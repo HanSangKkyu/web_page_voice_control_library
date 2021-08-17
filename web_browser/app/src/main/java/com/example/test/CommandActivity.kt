@@ -7,15 +7,18 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.AdapterView
-import android.widget.ArrayAdapter
-import android.widget.BaseAdapter
-import android.widget.TextView
+import android.widget.*
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
 import kotlinx.android.synthetic.main.activity_command.*
+import org.json.JSONArray
+import org.json.JSONObject
 
 class CommandActivity : AppCompatActivity() {
+
+    var url = ""
+    var selectedFun = ""
+
     @RequiresApi(Build.VERSION_CODES.KITKAT)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -28,6 +31,7 @@ class CommandActivity : AppCompatActivity() {
     fun init() {
         // get extra
         var intent = getIntent()
+        url = intent.getStringExtra("url").toString()
         var funStr = intent.getStringExtra("fun").toString()
 
 
@@ -50,7 +54,8 @@ class CommandActivity : AppCompatActivity() {
                 position: Int,
                 id: Long
             ) {
-                Log.e("asdf", funSpinner.getItemAtPosition(position).toString())
+//                Log.e("asdf", funSpinner.getItemAtPosition(position).toString())
+                selectedFun = funSpinner.getItemAtPosition(position).toString()
             }
 
             override fun onNothingSelected(p0: AdapterView<*>?) {
@@ -60,11 +65,102 @@ class CommandActivity : AppCompatActivity() {
 
 
         // set listView
-
-
+        url = getHostPartInUrl(url)
+        val jArr = getCommandOfUrl(url)
         var commandList = ArrayList<Command>()
-    )
+        for (i in 0..jArr.length() - 1) {
+            commandList.add(
+                Command(
+                    jArr.getJSONObject(i).getString("line"),
+                    jArr.getJSONObject(i).getString("function")
+                )
+            )
+        }
         customCommandListView.adapter = MyCustomAdapter(this, commandList)
+
+        // set create Btn
+        createBtn.setOnClickListener { v ->
+            addCommand(url, line.text.toString(), selectedFun)
+            line.setText("")
+            Toast.makeText(this, "생성 완료", Toast.LENGTH_SHORT).show()
+        }
+    }
+
+
+    fun getCommand(): JSONArray {
+
+        val djson = "[\n" +
+                "    {\n" +
+                "        \"url\" : \"naver.com\",\n" +
+                "        \"command\" : [\n" +
+                "            {\n" +
+                "                \"line\" : \"hi\",\n" +
+                "                \"function\" : \"foo\"\n" +
+                "            }\n" +
+                "        ]\n" +
+                "    }\n" +
+                "]"
+        var sharedPref = getSharedPreferences("command", Context.MODE_PRIVATE)
+        val command = sharedPref.getString("command", djson)
+
+        return JSONArray(command)
+    }
+
+    fun getCommandOfUrl(url: String): JSONArray {
+        val json = getCommand()
+        for (i in 0..json.length() - 1) {
+            var tmp_url = json.getJSONObject(i).getString("url")
+            if (tmp_url.equals(url)) {
+                return json.getJSONObject(i).getJSONArray("command")
+            }
+        }
+
+        return JSONArray("[]")
+    }
+
+    fun addCommand(url: String, line: String, function: String) {
+        var sharedPref = getSharedPreferences("command", Context.MODE_PRIVATE)
+
+        var json = getCommand()
+        for (i in 0..json.length() - 1) {
+            var tmp_url = json.getJSONObject(i).getString("url")
+            if (tmp_url.equals(url)) {
+                var tmp_command = json.getJSONObject(i).getJSONArray("command")
+
+                var tmp_command_item = JSONObject()
+                tmp_command_item.put("line", line)
+                tmp_command_item.put("function", function)
+                tmp_command.put(tmp_command_item)
+                break
+            }
+            if (i == json.length() - 1) {
+                // 기존에 있던 url이 아닌 경우
+                var tmp_item = JSONObject()
+                tmp_item.put("url", url)
+                var tmp_command = JSONArray()
+                var tmp_command_item = JSONObject()
+                tmp_command_item.put("line", line)
+                tmp_command_item.put("function", function)
+
+                tmp_command.put(tmp_command_item)
+                tmp_item.put("command", tmp_command)
+                json.put(tmp_item)
+
+            }
+        }
+
+        with(sharedPref.edit()) {
+            putString("command", json.toString())
+            commit()
+        }
+    }
+
+    fun getHostPartInUrl(url: String): String {
+        var res = url.substring(url.indexOf("://") + 3)
+//        url = url.substring(url.indexOf(".")+1,url.indexOf("/"))
+        res = res.substring(0, res.indexOf("/"))
+        Log.e("asdf", res)
+        return res
     }
 }
 
