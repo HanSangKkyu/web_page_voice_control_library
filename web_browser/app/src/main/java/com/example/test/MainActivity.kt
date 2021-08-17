@@ -57,7 +57,7 @@ class MainActivity : AppCompatActivity() {
         // Item click listener
         dlg?.bookmarkListView?.onItemClickListener = AdapterView.OnItemClickListener { parent, view, position, id ->
             val selectItem = parent.getItemAtPosition(position) as String
-            if(frList.isEmpty()){
+            if (frList.isEmpty()) {
                 makeNewTab()
             }
             Handler().postDelayed({
@@ -69,16 +69,20 @@ class MainActivity : AppCompatActivity() {
 
     }
 
-    private fun requestMic(){
+    private fun requestMic() {
         // 마이크를 허용해달라고 요청한다.
         val REQUEST_CODE = 1
 
         if (Build.VERSION.SDK_INT >= 23)
-            ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.INTERNET, Manifest.permission.RECORD_AUDIO), REQUEST_CODE)
+            ActivityCompat.requestPermissions(
+                this,
+                arrayOf(Manifest.permission.INTERNET, Manifest.permission.RECORD_AUDIO),
+                REQUEST_CODE
+            )
     }
 
     @RequiresApi(Build.VERSION_CODES.KITKAT)
-    private fun initWidget(){
+    private fun initWidget() {
         // 마이크
         micBtn.setOnClickListener(View.OnClickListener() {
             startSTT()
@@ -86,11 +90,11 @@ class MainActivity : AppCompatActivity() {
 
         // 주소입력창
         urlEditText.setOnFocusChangeListener { v, hasFocus ->
-            if(hasFocus){
+            if (hasFocus) {
                 menuBtn.setVisibility(View.GONE)
                 micBtn.setVisibility(View.GONE)
                 enterBtn.visibility = View.VISIBLE
-            }else{
+            } else {
                 menuBtn.setVisibility(View.VISIBLE)
                 micBtn.setVisibility(View.VISIBLE)
                 enterBtn.visibility = View.GONE
@@ -112,7 +116,7 @@ class MainActivity : AppCompatActivity() {
         }
 
         // 새로고침 버튼
-        refreshBtn.setOnClickListener{ v ->
+        refreshBtn.setOnClickListener { v ->
             // 앱에서 자바스크립트 코드 실행시키기
 //            webview.loadUrl("javascript:location.reload()");
 //
@@ -129,28 +133,28 @@ class MainActivity : AppCompatActivity() {
         }
 
         // 새탭 추가
-        tabBtn.setOnClickListener{ v ->
+        tabBtn.setOnClickListener { v ->
             makeNewTab()
         }
 
         // 북마크 버튼
-        bookmarkBtn.setOnClickListener { v->
+        bookmarkBtn.setOnClickListener { v ->
             loadBookmarkDialog()
         }
 
         // 사용자 명령어 관리 페이지
-        commandBtn.setOnClickListener{v->
+        commandBtn.setOnClickListener { v ->
 
             var intent = Intent(this, CommandActivity::class.java)
-            intent.putExtra("url",getNowUrl())
+            intent.putExtra("url", getNowUrl())
             val script = "Object.getOwnPropertyNames(window).filter(item => typeof window[item] === 'function')"
-            webview.evaluateJavascript("(function(){return("+script+"); })();"){
+            webview.evaluateJavascript("(function(){return(" + script + "); })();") {
 
                 // get this page functions
-                var res = it.substring(1,it.length-1)
-                res = res.replace("\"","")
+                var res = it.substring(1, it.length - 1)
+                res = res.replace("\"", "")
 
-                intent.putExtra("fun",res)
+                intent.putExtra("fun", res)
                 startActivity(intent)
             }
 
@@ -158,27 +162,36 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    private fun makeNewTab(){
+    private fun makeNewTab() {
         val newTabBtn = Button(this)
 
         val randomString = makeRanStr()
 
-        newTabBtn.setLayoutParams(TableLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT, 1f))
+        newTabBtn.setLayoutParams(
+            TableLayout.LayoutParams(
+                ViewGroup.LayoutParams.WRAP_CONTENT,
+                ViewGroup.LayoutParams.WRAP_CONTENT,
+                1f
+            )
+        )
         newTabBtn.tag = randomString
         newTabBtn.text = randomString
         selectedBtnTag = randomString
 
 
         // 탭 화면 띄우기
-        newTabBtn.setOnClickListener{v ->
-            supportFragmentManager.beginTransaction().hide(frList.get(tagToIndex(selectedBtnTag)).blankFragment).commit()
-            supportFragmentManager.beginTransaction().show(frList.get(tagToIndex(newTabBtn.tag.toString())).blankFragment).commit()
+        newTabBtn.setOnClickListener { v ->
+            supportFragmentManager.beginTransaction().hide(frList.get(tagToIndex(selectedBtnTag)).blankFragment)
+                .commit()
+            supportFragmentManager.beginTransaction()
+                .show(frList.get(tagToIndex(newTabBtn.tag.toString())).blankFragment).commit()
             selectedBtnTag = newTabBtn.tag.toString()
         }
 
         // 탭 닫기
         newTabBtn.setOnLongClickListener { v ->
-            supportFragmentManager.beginTransaction().remove(frList.get(tagToIndex(selectedBtnTag)).blankFragment).commit()
+            supportFragmentManager.beginTransaction().remove(frList.get(tagToIndex(selectedBtnTag)).blankFragment)
+                .commit()
             frList.removeAt(tagToIndex(selectedBtnTag))
             newTabBtn.visibility = View.GONE
             return@setOnLongClickListener true
@@ -186,39 +199,42 @@ class MainActivity : AppCompatActivity() {
 
         tabList.addView(newTabBtn)
         frList.add(TabInfo(newTabBtn.tag.toString(), BlankFragment(), newTabBtn))
-        supportFragmentManager.beginTransaction().add(R.id.frame, frList.get(tagToIndex(newTabBtn.tag.toString())).blankFragment).commit()
+        supportFragmentManager.beginTransaction()
+            .add(R.id.frame, frList.get(tagToIndex(newTabBtn.tag.toString())).blankFragment).commit()
 
 
     }
 
-    private fun showNextTab(){
+    private fun showNextTab() {
         var flag = false;
 
-        for(item in frList){
-            if(flag){
-                supportFragmentManager.beginTransaction().hide(frList.get(tagToIndex(selectedBtnTag)).blankFragment).commit()
+        for (item in frList) {
+            if (flag) {
+                supportFragmentManager.beginTransaction().hide(frList.get(tagToIndex(selectedBtnTag)).blankFragment)
+                    .commit()
                 supportFragmentManager.beginTransaction().show(frList.get(tagToIndex(item.tag)).blankFragment).commit()
                 selectedBtnTag = item.tag
                 break
             }
-            if(item.tag == selectedBtnTag){
-                flag  = true
+            if (item.tag == selectedBtnTag) {
+                flag = true
             }
         }
     }
 
-    private fun showPreviousTab(){
+    private fun showPreviousTab() {
         var flag = false;
 
-        for(item in frList.reversed()){
-            if(flag){
-                supportFragmentManager.beginTransaction().hide(frList.get(tagToIndex(selectedBtnTag)).blankFragment).commit()
+        for (item in frList.reversed()) {
+            if (flag) {
+                supportFragmentManager.beginTransaction().hide(frList.get(tagToIndex(selectedBtnTag)).blankFragment)
+                    .commit()
                 supportFragmentManager.beginTransaction().show(frList.get(tagToIndex(item.tag)).blankFragment).commit()
                 selectedBtnTag = item.tag
                 break
             }
-            if(item.tag == selectedBtnTag){
-                flag  = true
+            if (item.tag == selectedBtnTag) {
+                flag = true
             }
         }
     }
@@ -230,7 +246,33 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun makeRanStr(): String {
-        val charPool = arrayOf('a','b','c','d','e','f','g','h','i','j','k','l','m','n','o','p','q','r','s','t','u','v','w','x','z')
+        val charPool = arrayOf(
+            'a',
+            'b',
+            'c',
+            'd',
+            'e',
+            'f',
+            'g',
+            'h',
+            'i',
+            'j',
+            'k',
+            'l',
+            'm',
+            'n',
+            'o',
+            'p',
+            'q',
+            'r',
+            's',
+            't',
+            'u',
+            'v',
+            'w',
+            'x',
+            'z'
+        )
 
         val randomString = (1..10)
             .map { i -> kotlin.random.Random.nextInt(0, charPool.size) }
@@ -255,7 +297,8 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun recognitionListener() = object : RecognitionListener {
-        override fun onReadyForSpeech(params: Bundle?) = Toast.makeText(this@MainActivity, "음성인식 시작", Toast.LENGTH_SHORT).show()
+        override fun onReadyForSpeech(params: Bundle?) =
+            Toast.makeText(this@MainActivity, "음성인식 시작", Toast.LENGTH_SHORT).show()
 
         override fun onRmsChanged(rmsdB: Float) {}
 
@@ -270,8 +313,12 @@ class MainActivity : AppCompatActivity() {
         override fun onEndOfSpeech() {}
 
         override fun onError(error: Int) {
-            when(error) {
-                SpeechRecognizer.ERROR_INSUFFICIENT_PERMISSIONS -> Toast.makeText(this@MainActivity, "퍼미션 없음", Toast.LENGTH_SHORT).show()
+            when (error) {
+                SpeechRecognizer.ERROR_INSUFFICIENT_PERMISSIONS -> Toast.makeText(
+                    this@MainActivity,
+                    "퍼미션 없음",
+                    Toast.LENGTH_SHORT
+                ).show()
             }
         }
 
@@ -279,7 +326,7 @@ class MainActivity : AppCompatActivity() {
         override fun onResults(results: Bundle) {
             var speechText = results.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION)!![0]
             Log.e("음성 인식 결과:", speechText)
-            Toast.makeText(this@MainActivity, "음성 인식 결과: "+speechText, Toast.LENGTH_SHORT).show()
+            Toast.makeText(this@MainActivity, "음성 인식 결과: " + speechText, Toast.LENGTH_SHORT).show()
 
             matchCommand(speechText)
 
@@ -297,44 +344,46 @@ class MainActivity : AppCompatActivity() {
     }
 
     @RequiresApi(Build.VERSION_CODES.KITKAT)
-    fun matchCommand(speechText:String){
+    fun matchCommand(speechText: String) {
         val scollDown = arrayOf("내려", "아래로")
         val scollUp = arrayOf("올려", "위로")
         val zoomIn = arrayOf("크게", "확대")
         val zoomOut = arrayOf("작게", "축소")
-        val goBack = arrayOf("뒤로","백","이전 페이지")
-        val goForward = arrayOf("앞으로","다음 페이지")
-        val click = arrayOf("클릭","누르기", "터치")
-        val newTab = arrayOf("새탭","새탭 열기","새탬 만들기")
-        val nexTab = arrayOf("다음 탭","앞 탭")
-        val previousTab = arrayOf("이전 탭","전 탭")
-        val closeTab = arrayOf("탭 닫기","닫기")
-        val refresh = arrayOf("새로고침","리프래시")
-        val addBookmark = arrayOf("즐겨찾기 추가","북마크 추가")
-        val removeBookmark = arrayOf("즐겨찾기 제거","북마크 제거")
-        val showBookmark = arrayOf("북마크","즐겨찾기", "북마크 보여줘","증겨찾기 보여줘")
+        val goBack = arrayOf("뒤로", "백", "이전 페이지")
+        val goForward = arrayOf("앞으로", "다음 페이지")
+        val click = arrayOf("클릭", "누르기", "터치")
+        val newTab = arrayOf("새탭", "새탭 열기", "새탬 만들기")
+        val nexTab = arrayOf("다음 탭", "앞 탭")
+        val previousTab = arrayOf("이전 탭", "전 탭")
+        val closeTab = arrayOf("탭 닫기", "닫기")
+        val refresh = arrayOf("새로고침", "리프래시")
+        val addBookmark = arrayOf("즐겨찾기 추가", "북마크 추가")
+        val removeBookmark = arrayOf("즐겨찾기 제거", "북마크 제거")
+        val showBookmark = arrayOf("북마크", "즐겨찾기", "북마크 보여줘", "증겨찾기 보여줘")
         val findKeyword = arrayOf("~찾기")
-        val readScreen = arrayOf("","")
-        val nextFocus = arrayOf("","")
-        val showFocus = arrayOf("","")
+        val readScreen = arrayOf("", "")
+        val nextFocus = arrayOf("", "")
+        val showFocus = arrayOf("", "")
         val volUp = arrayOf("볼륨 업", "소리 키워 줘")
         val volDown = arrayOf("볼륨 다운", "소리 줄여 줘")
 
 
 
-        if(speechText in scollDown){
-            webview.evaluateJavascript("scrollTo(document.documentElement.scrollTop, document.documentElement.scrollTop+50);"){}
-        }else if(speechText in scollUp){
-            webview.evaluateJavascript("scrollTo(document.documentElement.scrollTop, document.documentElement.scrollTop-50);"){}
-        }else if(speechText in zoomIn){
-            webview.evaluateJavascript("    if(document.body.style.zoom==\"\"){\n" +
-                    "        document.body.style.zoom = 110+\"%\";\n" +
-                    "    }else{\n" +
-                    "        var zoom = document.body.style.zoom.toString().substring(0, document.body.style.zoom.toString().indexOf(\"%\"));\n" +
-                    "        console.log(zoom);\n" +
-                    "        document.body.style.zoom = (parseInt(zoom)+10)+\"%\";\n" +
-                    "    }"){}
-        }else if(speechText in zoomOut) {
+        if (speechText in scollDown) {
+            webview.evaluateJavascript("scrollTo(document.documentElement.scrollTop, document.documentElement.scrollTop+50);") {}
+        } else if (speechText in scollUp) {
+            webview.evaluateJavascript("scrollTo(document.documentElement.scrollTop, document.documentElement.scrollTop-50);") {}
+        } else if (speechText in zoomIn) {
+            webview.evaluateJavascript(
+                "    if(document.body.style.zoom==\"\"){\n" +
+                        "        document.body.style.zoom = 110+\"%\";\n" +
+                        "    }else{\n" +
+                        "        var zoom = document.body.style.zoom.toString().substring(0, document.body.style.zoom.toString().indexOf(\"%\"));\n" +
+                        "        console.log(zoom);\n" +
+                        "        document.body.style.zoom = (parseInt(zoom)+10)+\"%\";\n" +
+                        "    }"
+            ) {}
+        } else if (speechText in zoomOut) {
             webview.evaluateJavascript(
                 "    if(document.body.style.zoom==\"\"){\n" +
                         "        document.body.style.zoom = 90+\"%\";\n" +
@@ -344,78 +393,78 @@ class MainActivity : AppCompatActivity() {
                         "        document.body.style.zoom = (parseInt(zoom)-10)+\"%\";\n" +
                         "    }"
             ) {}
-        }else if(speechText in goBack){
+        } else if (speechText in goBack) {
             webview.evaluateJavascript(
                 "history.back();"
             ) {}
-        }else if(speechText in goForward){
+        } else if (speechText in goForward) {
             webview.evaluateJavascript(
                 "history.forward();"
             ) {}
-        }else if(speechText in click){
+        } else if (speechText in click) {
             webview.evaluateJavascript(
                 "document.activeElement.click();"
             ) {}
-        }else if(speechText in newTab){
+        } else if (speechText in newTab) {
             makeNewTab()
-        }else if(speechText in nexTab){
+        } else if (speechText in nexTab) {
             showNextTab()
-        }else if(speechText in previousTab){
+        } else if (speechText in previousTab) {
             showPreviousTab()
-        }else if(speechText in closeTab){
+        } else if (speechText in closeTab) {
             closeTab()
-        }else if(speechText in refresh){
+        } else if (speechText in refresh) {
             webview.evaluateJavascript(
                 "location.reload();"
             ) {}
-        }else if(speechText in addBookmark){
+        } else if (speechText in addBookmark) {
             addBookmark()
-        }else if(speechText in zoomOut){
+        } else if (speechText in zoomOut) {
 
-        }else if(speechText in zoomOut){
+        } else if (speechText in zoomOut) {
 
-        }else if(speechText in zoomOut){
+        } else if (speechText in zoomOut) {
 
-        }else if(speechText in zoomOut){
+        } else if (speechText in zoomOut) {
 
-        }else if(speechText in volUp) {
+        } else if (speechText in volUp) {
             volUp()
-        }else if(speechText in volDown) {
+        } else if (speechText in volDown) {
             volDown()
         }
     }
 
     @RequiresApi(Build.VERSION_CODES.KITKAT)
-    fun getHTML(){
-        webview.evaluateJavascript("Object.getOwnPropertyNames(window).filter(item => typeof window[item] === 'function');"){
+    fun getHTML() {
+        webview.evaluateJavascript("Object.getOwnPropertyNames(window).filter(item => typeof window[item] === 'function');") {
 //                Log.e("it",it)
             val functionList = it.toString().split(",")
             val resFunctionList = ArrayList<String>()
-            for(i in functionList.reversed()){
-                if(i == "\"FragmentDirective\""){
+            for (i in functionList.reversed()) {
+                if (i == "\"FragmentDirective\"") {
                     break
                 }
                 resFunctionList.add(i.trim('\"'))
 //                    Log.i("jerrat",i)
             }
 
-            for(i in resFunctionList){
-                Log.i("resFunctionList",i)
+            for (i in resFunctionList) {
+                Log.i("resFunctionList", i)
             }
         }
     }
 
     fun tagToIndex(_tag: String): Int {
-        for(i in 0..frList.size){
+        for (i in 0..frList.size) {
             try {
-                if(frList.get(i).tag == _tag){
+                if (frList.get(i).tag == _tag) {
                     return i
                 }
-            }catch (e:Exception){
-                Log.d("dd",e.toString())
-                if(frList.size > 0){
+            } catch (e: Exception) {
+                Log.d("dd", e.toString())
+                if (frList.size > 0) {
                     return 0
-                }else{
+                } else {
                     return -1
                 }
             }
@@ -423,23 +472,23 @@ class MainActivity : AppCompatActivity() {
         return -1
     }
 
-    fun closeTab(){
+    fun closeTab() {
         supportFragmentManager.beginTransaction().remove(frList.get(tagToIndex(selectedBtnTag)).blankFragment).commit()
         frList.get(tagToIndex(selectedBtnTag)).button.visibility = View.GONE
         frList.removeAt(tagToIndex(selectedBtnTag))
     }
 
     private fun volUp() {
-        val mAudioManager : AudioManager = getSystemService(AUDIO_SERVICE) as AudioManager
+        val mAudioManager: AudioManager = getSystemService(AUDIO_SERVICE) as AudioManager
         mAudioManager.adjustStreamVolume(STREAM_MUSIC, ADJUST_RAISE, FLAG_PLAY_SOUND + FLAG_SHOW_UI)
     }
 
     private fun volDown() {
-        val mAudioManager : AudioManager = getSystemService(AUDIO_SERVICE) as AudioManager
+        val mAudioManager: AudioManager = getSystemService(AUDIO_SERVICE) as AudioManager
         mAudioManager.adjustStreamVolume(STREAM_MUSIC, ADJUST_LOWER, FLAG_PLAY_SOUND + FLAG_SHOW_UI)
     }
 
-    private fun addBookmark(){
+    private fun addBookmark() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1) {
             bookmarkDialog?.addBookmark(getNowUrl())
         }
