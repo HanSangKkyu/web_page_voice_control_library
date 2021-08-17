@@ -143,7 +143,16 @@ class MainActivity : AppCompatActivity() {
 
             var intent = Intent(this, CommandActivity::class.java)
             intent.putExtra("url",getNowUrl())
-            startActivity(intent)
+            val script = "Object.getOwnPropertyNames(window).filter(item => typeof window[item] === 'function')"
+            webview.evaluateJavascript("(function(){return("+script+"); })();"){
+
+                // get this page functions
+                var res = it.substring(1,it.length-1)
+                res = res.replace("\"","")
+
+                intent.putExtra("fun",res)
+                startActivity(intent)
+            }
 
 
         }
