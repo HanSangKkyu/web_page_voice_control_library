@@ -7,6 +7,7 @@ import android.media.AudioManager
 import android.media.AudioManager.*
 import android.os.Build
 import android.os.Bundle
+import android.os.Handler
 import android.speech.RecognitionListener
 import android.speech.RecognizerIntent
 import android.speech.SpeechRecognizer
@@ -56,8 +57,13 @@ class MainActivity : AppCompatActivity() {
         // Item click listener
         dlg?.bookmarkListView?.onItemClickListener = AdapterView.OnItemClickListener { parent, view, position, id ->
             val selectItem = parent.getItemAtPosition(position) as String
-            Log.e("listview",selectItem.toString())
-            frList.get(tagToIndex(selectedBtnTag)).blankFragment.changeUrl(selectItem.toString())
+            if(frList.isEmpty()){
+                makeNewTab()
+            }
+            Handler().postDelayed({
+                frList.get(tagToIndex(selectedBtnTag)).blankFragment.changeUrl(selectItem.toString())
+            }, 1000L)
+
             dlg?.dismiss()
         }
 
@@ -128,6 +134,23 @@ class MainActivity : AppCompatActivity() {
         // 북마크 버튼
         bookmarkBtn.setOnClickListener { v->
             loadBookmarkDialog()
+        }
+
+        // 사용자 명령어 관리 페이지
+        commandBtn.setOnClickListener{v->
+            val script = "Object.getOwnPropertyNames(window).filter(item => typeof window[item] === 'function')"
+            webview.evaluateJavascript("(function(){return("+script+"); })();"){
+
+                // get this page functions
+                var res = it.substring(1,it.length-1)
+                var resList = res.split(',')
+                for (i in 0..resList.size-1){
+                    val tmp = resList.get(i).replace("\"","")
+                    if(tmp !in DefaultFunVO().getDefaultFun()){
+                        Log.e("asdf",i.toString()+" "+tmp)
+                    }
+                }
+            }
         }
     }
 
