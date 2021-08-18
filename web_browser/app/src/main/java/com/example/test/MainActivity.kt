@@ -2,6 +2,7 @@ package com.example.test
 
 import android.Manifest
 import android.app.Dialog
+import android.content.Context
 import android.content.Intent
 import android.media.AudioManager
 import android.media.AudioManager.*
@@ -25,6 +26,7 @@ import androidx.core.app.ActivityCompat
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.dialog_bookmark.*
 import kotlinx.android.synthetic.main.fragment_blank.*
+import org.json.JSONArray
 import java.util.*
 
 
@@ -104,7 +106,14 @@ class MainActivity : AppCompatActivity() {
         urlEditText.setOnKeyListener(View.OnKeyListener { v, keyCode, event ->
             if (event.action == KeyEvent.ACTION_DOWN && keyCode == KeyEvent.KEYCODE_ENTER) {
                 v.clearFocus()
-                frList.get(tagToIndex(selectedBtnTag)).blankFragment.changeUrl(urlEditText.text.toString())
+                if (frList.isEmpty()) {
+                    makeNewTab()
+                }
+                Handler().postDelayed({
+                    frList.get(tagToIndex(selectedBtnTag)).blankFragment.changeUrl(urlEditText.text.toString())
+                }, 1000L)
+
+
                 return@OnKeyListener true
             }
             false
@@ -112,7 +121,14 @@ class MainActivity : AppCompatActivity() {
 
         enterBtn.setOnClickListener { v ->
             v.clearFocus()
-            frList.get(tagToIndex(selectedBtnTag)).blankFragment.changeUrl(urlEditText.text.toString())
+            if (frList.isEmpty()) {
+                makeNewTab()
+            }
+            Handler().postDelayed({
+                frList.get(tagToIndex(selectedBtnTag)).blankFragment.changeUrl(urlEditText.text.toString())
+            }, 1000L)
+
+
         }
 
         // 새로고침 버튼
@@ -128,7 +144,8 @@ class MainActivity : AppCompatActivity() {
 //                Log.e("it",it)
 //            }
 //            showNextTab()
-            addBookmark()
+//            addBookmark()
+            matchCustomCommand("hi")
 
         }
 
@@ -432,6 +449,60 @@ class MainActivity : AppCompatActivity() {
         } else if (speechText in volDown) {
             volDown()
         }
+
+
+        matchCustomCommand(speechText)
+    }
+
+    @RequiresApi(Build.VERSION_CODES.KITKAT)
+    private fun matchCustomCommand(speechText: String) {
+        val commandArr = getCommandOfUrl(getHostPartInUrl(getNowUrl()))
+        for(i in 0..commandArr.length()-1){
+            if(commandArr.getJSONObject(i).getString("line") == speechText){
+
+                var script = "window['"+commandArr.getJSONObject(i).getString("function")+"']()"
+
+                webview.evaluateJavascript("(function(){return("+script+"); })();"){
+                    Log.e("asdf",it)
+                }
+            }
+            Log.e("asdf",commandArr.getJSONObject(i).getString("line")+" "+commandArr.getJSONObject(i).getString("function"))
+        }
+    }
+    fun getCommand(): JSONArray {
+
+        val djson = "[\n" +
+                "    {\n" +
+                "        \"url\" : \"naver.com\",\n" +
+                "        \"command\" : [\n" +
+                "            {\n" +
+                "                \"line\" : \"hi\",\n" +
+                "                \"function\" : \"foo\"\n" +
+                "            }\n" +
+                "        ]\n" +
+                "    }\n" +
+                "]"
+        var sharedPref = getSharedPreferences("command", Context.MODE_PRIVATE)
+        val command = sharedPref.getString("command", djson)
+
+        return JSONArray(command)
+    }
+
+    fun getCommandOfUrl(url: String): JSONArray {
+        val json = getCommand()
+        for (i in 0..json.length() - 1) {
+            var tmp_url = json.getJSONObject(i).getString("url")
+            if (tmp_url.equals(url)) {
+                return json.getJSONObject(i).getJSONArray("command")
+            }
+        }
+
+        return JSONArray("[]")
+    }
+    fun getHostPartInUrl(url: String): String {
+        var res = url.substring(url.indexOf("://") + 3)
+        res = res.substring(0, res.indexOf("/"))
+        return res
     }
 
     @RequiresApi(Build.VERSION_CODES.KITKAT)
