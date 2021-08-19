@@ -85,6 +85,85 @@ class CommandActivity : AppCompatActivity() {
         saveBtn.setOnClickListener { v ->
             editCommandItem()
         }
+
+        // set create Btn
+        createJsBtn.setOnClickListener { v ->
+            addJsScript(url, line.text.toString(), jsScript.text.toString())
+            line.setText("")
+            Toast.makeText(this, "생성 완료", Toast.LENGTH_SHORT).show()
+            refreshListView()
+        }
+
+        // set save Btn
+        saveJsBtn.setOnClickListener { v ->
+            editJsScriptItem()
+        }
+    }
+
+    @RequiresApi(Build.VERSION_CODES.KITKAT)
+    private fun editJsScriptItem() {
+        var sharedPref = getSharedPreferences("command", Context.MODE_PRIVATE)
+
+        var json = getCommand()
+        for (i in 0..json.length() - 1) {
+            var tmp_url = json.getJSONObject(i).getString("url")
+            if (tmp_url.equals(url)) {
+                var tmp_command = json.getJSONObject(i).getJSONArray("command")
+                removeItem(selectedItemPos)
+
+                var tmp_command_item = JSONObject()
+                tmp_command_item.put("line", line.text.toString())
+                tmp_command_item.put("function", "#"+jsScript.text.toString())
+
+                tmp_command.put(selectedItemPos, tmp_command_item)
+                break
+            }
+        }
+
+        with(sharedPref.edit()) {
+            putString("command", json.toString())
+            commit()
+        }
+
+        refreshListView()
+
+    }
+
+    private fun addJsScript(url: String, line: String, jsScript: String) {
+        var sharedPref = getSharedPreferences("command", Context.MODE_PRIVATE)
+
+        var json = getCommand()
+        for (i in 0..json.length() - 1) {
+            var tmp_url = json.getJSONObject(i).getString("url")
+            if (tmp_url.equals(url)) {
+                var tmp_command = json.getJSONObject(i).getJSONArray("command")
+
+                var tmp_command_item = JSONObject()
+                tmp_command_item.put("line", line)
+                tmp_command_item.put("function", "#"+jsScript) // js 스크립트는 #으로 시작하게 만들어 함수와 구분한다.
+                tmp_command.put(tmp_command_item)
+                break
+            }
+            if (i == json.length() - 1) {
+                // 기존에 있던 url이 아닌 경우
+                var tmp_item = JSONObject()
+                tmp_item.put("url", url)
+                var tmp_command = JSONArray()
+                var tmp_command_item = JSONObject()
+                tmp_command_item.put("line", line)
+                tmp_command_item.put("function", "#"+jsScript) // js 스크립트는 #으로 시작하게 만들어 함수와 구분한다.
+
+                tmp_command.put(tmp_command_item)
+                tmp_item.put("command", tmp_command)
+                json.put(tmp_item)
+
+            }
+        }
+
+        with(sharedPref.edit()) {
+            putString("command", json.toString())
+            commit()
+        }
     }
 
     @RequiresApi(Build.VERSION_CODES.KITKAT)
@@ -148,12 +227,19 @@ class CommandActivity : AppCompatActivity() {
         selectedItemPos = position
         line.setText(getCommandOfUrl(url).getJSONObject(position).getString("line"))
         selectedFun = getCommandOfUrl(url).getJSONObject(position).getString("function")
-        for (i in 0..funList.size - 1) {
-            if (funList.get(i).equals(selectedFun)) {
-                funSpinner.setSelection(i)
-                break
+        if(selectedFun.contains("#")) {
+            // js script라면
+            jsScript.setText(selectedFun.replace("#",""))
+
+        }else{
+            for (i in 0..funList.size - 1) {
+                if (funList.get(i).equals(selectedFun)) {
+                    funSpinner.setSelection(i)
+                    break
+                }
             }
         }
+
 
     }
 

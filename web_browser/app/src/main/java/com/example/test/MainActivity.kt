@@ -57,17 +57,18 @@ class MainActivity : AppCompatActivity() {
         dlg = bookmarkDialog!!.getDlg()
 
         // Item click listener
-        dlg?.bookmarkListView?.onItemClickListener = AdapterView.OnItemClickListener { parent, view, position, id ->
-            val selectItem = parent.getItemAtPosition(position) as String
-            if (frList.isEmpty()) {
-                makeNewTab()
-            }
-            Handler().postDelayed({
-                frList.get(tagToIndex(selectedBtnTag)).blankFragment.changeUrl(selectItem.toString())
-            }, 1000L)
+        dlg?.bookmarkListView?.onItemClickListener =
+            AdapterView.OnItemClickListener { parent, view, position, id ->
+                val selectItem = parent.getItemAtPosition(position) as String
+                if (frList.isEmpty()) {
+                    makeNewTab()
+                }
+                Handler().postDelayed({
+                    frList.get(tagToIndex(selectedBtnTag)).blankFragment.changeUrl(selectItem.toString())
+                }, 1000L)
 
-            dlg?.dismiss()
-        }
+                dlg?.dismiss()
+            }
 
     }
 
@@ -145,8 +146,12 @@ class MainActivity : AppCompatActivity() {
 //            }
 //            showNextTab()
 //            addBookmark()
-            matchCustomCommand("hi")
+            matchCustomCommand("efefef")
 
+//            var script = ""
+//            webview.evaluateJavascript("(function(){return("+script+"); })();"){
+//                Log.e("it",it)
+//            }
         }
 
         // 새탭 추가
@@ -164,7 +169,8 @@ class MainActivity : AppCompatActivity() {
 
             var intent = Intent(this, CommandActivity::class.java)
             intent.putExtra("url", getNowUrl())
-            val script = "Object.getOwnPropertyNames(window).filter(item => typeof window[item] === 'function')"
+            val script =
+                "Object.getOwnPropertyNames(window).filter(item => typeof window[item] === 'function')"
             webview.evaluateJavascript("(function(){return(" + script + "); })();") {
 
                 // get this page functions
@@ -198,7 +204,8 @@ class MainActivity : AppCompatActivity() {
 
         // 탭 화면 띄우기
         newTabBtn.setOnClickListener { v ->
-            supportFragmentManager.beginTransaction().hide(frList.get(tagToIndex(selectedBtnTag)).blankFragment)
+            supportFragmentManager.beginTransaction()
+                .hide(frList.get(tagToIndex(selectedBtnTag)).blankFragment)
                 .commit()
             supportFragmentManager.beginTransaction()
                 .show(frList.get(tagToIndex(newTabBtn.tag.toString())).blankFragment).commit()
@@ -207,7 +214,8 @@ class MainActivity : AppCompatActivity() {
 
         // 탭 닫기
         newTabBtn.setOnLongClickListener { v ->
-            supportFragmentManager.beginTransaction().remove(frList.get(tagToIndex(selectedBtnTag)).blankFragment)
+            supportFragmentManager.beginTransaction()
+                .remove(frList.get(tagToIndex(selectedBtnTag)).blankFragment)
                 .commit()
             frList.removeAt(tagToIndex(selectedBtnTag))
             newTabBtn.visibility = View.GONE
@@ -217,7 +225,8 @@ class MainActivity : AppCompatActivity() {
         tabList.addView(newTabBtn)
         frList.add(TabInfo(newTabBtn.tag.toString(), BlankFragment(), newTabBtn))
         supportFragmentManager.beginTransaction()
-            .add(R.id.frame, frList.get(tagToIndex(newTabBtn.tag.toString())).blankFragment).commit()
+            .add(R.id.frame, frList.get(tagToIndex(newTabBtn.tag.toString())).blankFragment)
+            .commit()
 
 
     }
@@ -227,9 +236,11 @@ class MainActivity : AppCompatActivity() {
 
         for (item in frList) {
             if (flag) {
-                supportFragmentManager.beginTransaction().hide(frList.get(tagToIndex(selectedBtnTag)).blankFragment)
+                supportFragmentManager.beginTransaction()
+                    .hide(frList.get(tagToIndex(selectedBtnTag)).blankFragment)
                     .commit()
-                supportFragmentManager.beginTransaction().show(frList.get(tagToIndex(item.tag)).blankFragment).commit()
+                supportFragmentManager.beginTransaction()
+                    .show(frList.get(tagToIndex(item.tag)).blankFragment).commit()
                 selectedBtnTag = item.tag
                 break
             }
@@ -244,9 +255,11 @@ class MainActivity : AppCompatActivity() {
 
         for (item in frList.reversed()) {
             if (flag) {
-                supportFragmentManager.beginTransaction().hide(frList.get(tagToIndex(selectedBtnTag)).blankFragment)
+                supportFragmentManager.beginTransaction()
+                    .hide(frList.get(tagToIndex(selectedBtnTag)).blankFragment)
                     .commit()
-                supportFragmentManager.beginTransaction().show(frList.get(tagToIndex(item.tag)).blankFragment).commit()
+                supportFragmentManager.beginTransaction()
+                    .show(frList.get(tagToIndex(item.tag)).blankFragment).commit()
                 selectedBtnTag = item.tag
                 break
             }
@@ -457,18 +470,23 @@ class MainActivity : AppCompatActivity() {
     @RequiresApi(Build.VERSION_CODES.KITKAT)
     private fun matchCustomCommand(speechText: String) {
         val commandArr = getCommandOfUrl(getHostPartInUrl(getNowUrl()))
-        for(i in 0..commandArr.length()-1){
-            if(commandArr.getJSONObject(i).getString("line") == speechText){
+        for (i in 0..commandArr.length() - 1) {
+            if (commandArr.getJSONObject(i).getString("line") == speechText) {
+                var function = commandArr.getJSONObject(i).getString("function")
+                var script = ""
+                if (function.contains("#")) {
+                    script = function.replace("#", "")
+                } else {
+                    script = "window['" + function + "']()"
+                }
 
-                var script = "window['"+commandArr.getJSONObject(i).getString("function")+"']()"
-
-                webview.evaluateJavascript("(function(){return("+script+"); })();"){
-                    Log.e("asdf",it)
+                webview.evaluateJavascript("(function(){return(" + script + "); })();") {
+                    Log.e("asdf", it)
                 }
             }
-            Log.e("asdf",commandArr.getJSONObject(i).getString("line")+" "+commandArr.getJSONObject(i).getString("function"))
         }
     }
+
     fun getCommand(): JSONArray {
 
         val djson = "[\n" +
@@ -499,6 +517,7 @@ class MainActivity : AppCompatActivity() {
 
         return JSONArray("[]")
     }
+
     fun getHostPartInUrl(url: String): String {
         var res = url.substring(url.indexOf("://") + 3)
         res = res.substring(0, res.indexOf("/"))
@@ -544,7 +563,8 @@ class MainActivity : AppCompatActivity() {
     }
 
     fun closeTab() {
-        supportFragmentManager.beginTransaction().remove(frList.get(tagToIndex(selectedBtnTag)).blankFragment).commit()
+        supportFragmentManager.beginTransaction()
+            .remove(frList.get(tagToIndex(selectedBtnTag)).blankFragment).commit()
         frList.get(tagToIndex(selectedBtnTag)).button.visibility = View.GONE
         frList.removeAt(tagToIndex(selectedBtnTag))
     }
