@@ -166,14 +166,14 @@ class MainActivity : AppCompatActivity() {
 
         // 사용자 명령어 관리 페이지
         commandBtn.setOnClickListener { v ->
-            if(frList.isEmpty()){
+            if (frList.isEmpty()) {
                 return@setOnClickListener
             }
 
             var intent = Intent(this, CommandActivity::class.java)
             intent.putExtra("url", getNowUrl())
-            val script =
-                "Object.getOwnPropertyNames(window).filter(item => typeof window[item] === 'function')"
+            val script ="Object.getOwnPropertyNames(window).filter(item => typeof window[item] === 'function' && !(/\\{\\s*\\[native code\\]\\s*\\}/).test('' + window[item]))"
+
             webview.evaluateJavascript("(function(){return(" + script + "); })();") {
 
                 // get this page functions

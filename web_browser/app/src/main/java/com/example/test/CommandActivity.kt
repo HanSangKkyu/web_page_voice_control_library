@@ -44,9 +44,8 @@ class CommandActivity : AppCompatActivity() {
         // get function list in this page
         funList = ArrayList<String>()
         for (i in funStr.split(',')) {
-            if (i !in DefaultFunVO().getDefaultFun()) {
-                funList.add(i)
-            }
+
+            funList.add(i)
         }
 
 
