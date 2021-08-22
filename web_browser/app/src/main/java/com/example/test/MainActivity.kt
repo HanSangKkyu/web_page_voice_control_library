@@ -146,12 +146,15 @@ class MainActivity : AppCompatActivity() {
 //            }
 //            showNextTab()
 //            addBookmark()
-            matchCustomCommand("efefef")
+//            matchCustomCommand("efefef")
 
 //            var script = ""
 //            webview.evaluateJavascript("(function(){return("+script+"); })();"){
 //                Log.e("it",it)
 //            }
+//            addBookmark()
+//            matchCommand("대한민국 검색 해 줘")
+//            addBookmark()
         }
 
         // 새탭 추가
@@ -378,6 +381,8 @@ class MainActivity : AppCompatActivity() {
 
     @RequiresApi(Build.VERSION_CODES.KITKAT)
     fun matchCommand(speechText: String) {
+        // 형태소 분석을 통한 의도 파악 기술이 들어가야 할 듯하다.
+
         val scollDown = arrayOf("내려", "아래로")
         val scollUp = arrayOf("올려", "위로")
         val zoomIn = arrayOf("크게", "확대")
@@ -464,16 +469,19 @@ class MainActivity : AppCompatActivity() {
             volUp()
         } else if (speechText in volDown) {
             volDown()
+        }else{
+            // 기본 명령어에 해당되지 않은 요청이 들어왔을 때 사용자 지정 명령어를 검색한다.
+            matchCustomCommand(speechText)
         }
 
 
-        matchCustomCommand(speechText)
     }
 
     @RequiresApi(Build.VERSION_CODES.KITKAT)
     private fun matchCustomCommand(speechText: String) {
         val commandArr = getCommandOfUrl(getHostPartInUrl(getNowUrl()))
         for (i in 0..commandArr.length() - 1) {
+            // ~ 가 line에 포함되어 있는지 판단하여 적용해야 한다.
             if (commandArr.getJSONObject(i).getString("line") == speechText) {
                 var function = commandArr.getJSONObject(i).getString("function")
                 var script = ""
@@ -486,6 +494,23 @@ class MainActivity : AppCompatActivity() {
                 webview.evaluateJavascript("(function(){return(" + script + "); })();") {
                     Log.e("asdf", it)
                 }
+            }else if(commandArr.getJSONObject(i).getString("line").contains("*")){
+                // 사용자 지정 명령어가 *(와일드카드)를 가지고 있다면
+                // 사용자의 발화에서 어떤 부분이 와일드 카드이 인지 알아낸다.
+                var commmand = commandArr.getJSONObject(i).getString("line").replace("*","") // 찾아줘
+                var wc = speechText
+                if (wc.contains(commmand)) {
+                    wc = wc.replace(commmand, "")
+
+                    var function = commandArr.getJSONObject(i).getString("function")
+                    var script = function.replace("#", "")
+                    script = script.replace("*",wc)
+                    webview.evaluateJavascript(script) {
+                        Log.e("asdf", it)
+                    }
+                }
+
+
             }
         }
     }
