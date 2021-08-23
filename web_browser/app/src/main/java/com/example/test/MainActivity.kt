@@ -38,6 +38,10 @@ class MainActivity : AppCompatActivity() {
     private var bookmarkDialog: BookmarkDialog? = null
     private var dlg: Dialog? = null
 
+    private var searchSelector : String = ""
+    private var searchIndex: Int = 0
+    private var searchLength: Int = 0
+
     @RequiresApi(Build.VERSION_CODES.KITKAT)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -404,6 +408,12 @@ class MainActivity : AppCompatActivity() {
         val showFocus = arrayOf("", "")
         val volUp = arrayOf("볼륨 업", "소리 키워 줘")
         val volDown = arrayOf("볼륨 다운", "소리 줄여 줘")
+        val listing = arrayOf("리스트", "리스트 시작")
+        val prevElement = arrayOf("이전")
+        val nextElement = arrayOf("다음")
+        val endListing = arrayOf("리스트 종료")
+        val play = arrayOf("재생")
+        val pause = arrayOf("정지")
 
 
 
@@ -469,7 +479,19 @@ class MainActivity : AppCompatActivity() {
             volUp()
         } else if (speechText in volDown) {
             volDown()
-        }else{
+        }else if (speechText in listing) {
+            startlistingElement("a")
+        } else if (speechText in nextElement) {
+            moveElementList(1)
+        } else if (speechText in prevElement) {
+            moveElementList(-1)
+        } else if (speechText in endListing) {
+            endListingElement()
+        } else if (speechText in play) {
+            play()
+        } else if (speechText in pause) {
+            pause()
+        } else{
             // 기본 명령어에 해당되지 않은 요청이 들어왔을 때 사용자 지정 명령어를 검색한다.
             matchCustomCommand(speechText)
         }
@@ -616,5 +638,159 @@ class MainActivity : AppCompatActivity() {
 
     private fun getNowUrl(): String {
         return frList.get(tagToIndex(selectedBtnTag)).blankFragment.webview.url.toString()
+    }
+
+    @RequiresApi(Build.VERSION_CODES.KITKAT)
+    private fun startlistingElement(selector: String) {
+        searchSelector = selector
+        searchIndex = 0
+        webview.evaluateJavascript(
+            "javascript:(function() {" +
+                    "   let queries = document.querySelectorAll('$searchSelector');" +
+                    "   for(let i = 0; i < queries.length; i++) {" +
+                    "       let wrapper = document.createElement('div');" +
+                    "       wrapper.className = 'highlightedByBrowser';" +
+                    "       wrapper.style.backgroundColor = (i == $searchIndex ? 'orange' : 'yellow');" +
+                    "       queries[i].parentNode.insertBefore(wrapper, queries[i]);" +
+                    "       wrapper.append(queries[i]);" +
+                    "   }" +
+                    "   queries[$searchIndex].scrollIntoView();" +
+                    "   return queries.length;" +
+                    "})();"
+        ) {
+            try {
+                searchLength = it.toInt()
+                Log.e("테스트", it)
+            } catch(e:Exception) {
+                Log.e("테스트", e.localizedMessage)
+            }
+        }
+    }
+
+    @RequiresApi(Build.VERSION_CODES.KITKAT)
+    private fun moveElementList(direction : Int) {
+        val oldSearchIndex : Int = searchIndex
+        searchIndex = when {
+            (searchIndex + direction) >= searchLength -> {
+                searchIndex + direction - searchLength
+            }
+            searchIndex + direction < 0 -> {
+                searchLength + (searchIndex + direction)
+            }
+            else -> {
+                searchIndex + direction
+            }
+        }
+        webview.evaluateJavascript(
+            "javascript:(function() {" +
+                    "   let queries = document.querySelectorAll('$searchSelector');" +
+                    "   for(let i = 0; i < queries.length; i++) {" +
+                    "       if(queries[i].parentNode.className != 'highlightedByBrowser') {" +
+                    "           let wrapper = document.createElement('div');" +
+                    "           wrapper.className = 'highlightedByBrowser';" +
+                    "           queries.parentNode.insertBefore(wrapper, queries[i]);" +
+                    "           wrapper.append(queries[i]);" +
+                    "       }" +
+                    "       queries[i].parentNode.style.backgroundColor = 'yellow';" +
+                    "   }" +
+                    "   queries[$searchIndex].parentNode.style.backgroundColor = 'orange';" +
+                    "   queries[$searchIndex].scrollIntoView();" +
+                    "   return queries.length;" +
+                    "})();"
+        ) {
+            try {
+                searchLength = it.toInt()
+                Log.e("테스트", it)
+            } catch(e:Exception) {
+                Log.e("테스트", "why: "+ e.localizedMessage)
+            }
+        }
+    }
+
+    @RequiresApi(Build.VERSION_CODES.KITKAT)
+    private fun endListingElement() {
+        webview.evaluateJavascript(
+            "javascript:(function() {" +
+                    "   let queries=document.querySelectorAll('$searchSelector');" +
+                    "   let wrapper;" +
+                    "   for(let i = 0; i < queries.length; i++) {" +
+                    "       wrapper = queries[i].parentNode;" +
+                    "       if(wrapper.className == 'highlightedByBrowser') {" +
+                    "           wrapper.parentNode.insertBefore(queries[i], wrapper);" +
+                    "           wrapper.remove();" +
+                    "       };" +
+                    "      " +
+                    "   }" +
+                    "})();"
+        ){}
+    }
+
+    @RequiresApi(Build.VERSION_CODES.KITKAT)
+    private fun play() {
+        if (!searchSelector.contains("video") && !searchSelector.contains("audio")) {
+            searchSelector = "video, audio"
+            searchIndex = 0
+        }
+        webview.evaluateJavascript(
+            "javascript:(function() {" +
+                    "   let queries = document.querySelectorAll('$searchSelector');" +
+                    "   for(let i = 0; i < queries.length; i++) {" +
+                    "       if(queries[i].parentNode.className != 'highlightedByBrowser') {" +
+                    "           let wrapper = document.createElement('div');" +
+                    "           wrapper.className = 'highlightedByBrowser';" +
+                    "           wrapper.style.backgroundColor = (i == $searchIndex ? 'orange' : 'yellow');" +
+                    "           queries[i].parentNode.insertBefore(wrapper, queries[i]);" +
+                    "           wrapper.append(queries[i]);" +
+                    "       }" +
+                    "   }" +
+                    "   if (queries && queries.length > $searchIndex) {" +
+                    "       queries[$searchIndex].scrollIntoView();" +
+                    "       queries[$searchIndex].play();" +
+                    "   }" +
+                    "   return queries.length;" +
+                    "})();"
+        ){
+            Log.e("테스트", it);
+        }
+    }
+
+    @RequiresApi(Build.VERSION_CODES.KITKAT)
+    private fun pause() {
+        if (!searchSelector.contains("video") && !searchSelector.contains("audio")) {
+            searchSelector = "video, audio"
+            searchIndex = 0
+        }
+        webview.evaluateJavascript(
+            "javascript:(function() {" +
+                    "   let queries = document.querySelectorAll('$searchSelector');" +
+                    "   for(let i = 0; i < queries.length; i++) {" +
+                    "       if(queries[i].parentNode.className != 'highlightedByBrowser') {" +
+                    "           let wrapper = document.createElement('div');" +
+                    "           wrapper.className = 'highlightedByBrowser';" +
+                    "           wrapper.style.backgroundColor = (i == $searchIndex ? 'orange' : 'yellow');" +
+                    "           wrapper.innerHTML = queries[i].outerHTML;" +
+                    "           queries.parentNode.insertBefore(wrapper, queries[i]);" +
+                    "           queries[i].remove();" +
+                    "           queries[i] = wrapper.firstChild;" +
+                    "       }" +
+                    "   }" +
+                    "   if (queries && queries.length > $searchIndex && !queries[$searchIndex].paused) {" +
+                    "       queries[$searchIndex].pause();" +
+                    "   }" +
+                    "   else {" +
+                    "       for(let i = 0; i < queries.length; i++) {" +
+                    "           if (!queries[i].paused) {" +
+                    "               queries[i].pause();" +
+                    "               queries[$searchIndex].parentNode.style.backgrondColor = 'yellow';" +
+                    "               queries[i].parentNode.style.backgroundColor = 'orange';" +
+                    "               return i;" +
+                    "           }" +
+                    "       }" +
+                    "   }" +
+                    "   return $searchIndex;" +
+                    "})();"
+        ){
+            searchIndex = it.toInt()
+        }
     }
 }
