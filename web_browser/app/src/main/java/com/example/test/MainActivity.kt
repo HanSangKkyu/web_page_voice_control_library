@@ -386,7 +386,6 @@ class MainActivity : AppCompatActivity() {
     @RequiresApi(Build.VERSION_CODES.KITKAT)
     fun matchCommand(speechText: String) {
         // 형태소 분석을 통한 의도 파악 기술이 들어가야 할 듯하다.
-
         val scollDown = arrayOf("내려", "아래로")
         val scollUp = arrayOf("올려", "위로")
         val zoomIn = arrayOf("크게", "확대")
@@ -394,11 +393,11 @@ class MainActivity : AppCompatActivity() {
         val goBack = arrayOf("뒤로", "백", "이전 페이지")
         val goForward = arrayOf("앞으로", "다음 페이지")
         val click = arrayOf("클릭", "누르기", "터치")
-        val newTab = arrayOf("새탭", "새탭 열기", "새탬 만들기")
+        val newTab = arrayOf("새 탭", "새 탭 열기", "새 탭 만들기")
         val nexTab = arrayOf("다음 탭", "앞 탭")
         val previousTab = arrayOf("이전 탭", "전 탭")
         val closeTab = arrayOf("탭 닫기", "닫기")
-        val refresh = arrayOf("새로고침", "리프래시")
+        val refresh = arrayOf("새로 고침", "리프레쉬")
         val addBookmark = arrayOf("즐겨찾기 추가", "북마크 추가")
         val removeBookmark = arrayOf("즐겨찾기 제거", "북마크 제거")
         val showBookmark = arrayOf("북마크", "즐겨찾기", "북마크 보여줘", "증겨찾기 보여줘")
@@ -418,9 +417,9 @@ class MainActivity : AppCompatActivity() {
 
 
         if (speechText in scollDown) {
-            webview.evaluateJavascript("scrollTo(document.documentElement.scrollTop, document.documentElement.scrollTop+50);") {}
+            webview.evaluateJavascript("scrollTo(document.documentElement.scrollTop, document.documentElement.scrollTop+200);") {}
         } else if (speechText in scollUp) {
-            webview.evaluateJavascript("scrollTo(document.documentElement.scrollTop, document.documentElement.scrollTop-50);") {}
+            webview.evaluateJavascript("scrollTo(document.documentElement.scrollTop, document.documentElement.scrollTop-200);") {}
         } else if (speechText in zoomIn) {
             webview.evaluateJavascript(
                 "    if(document.body.style.zoom==\"\"){\n" +
@@ -476,6 +475,7 @@ class MainActivity : AppCompatActivity() {
 //                "document.activeElement.click();"
 //            ) {}
         } else if (speechText in newTab) {
+            Log.e("asdf", "newtab");
             makeNewTab()
         } else if (speechText in nexTab) {
             showNextTab()

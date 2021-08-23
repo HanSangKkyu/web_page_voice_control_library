@@ -1,42 +1,46 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:orientation="vertical"
-    tools:context=".CommandActivity">
+              xmlns:app="http://schemas.android.com/apk/res-auto"
+              xmlns:tools="http://schemas.android.com/tools"
+              android:layout_width="match_parent"
+              android:layout_height="match_parent"
+              android:orientation="vertical"
+              tools:context=".CommandActivity"
+              android:focusable="true"
+              android:focusableInTouchMode="true">
 
     <TextView
         android:id="@+id/urlTextView"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="url" />
+        android:text="url"/>
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="vertical">
+        android:orientation="vertical"
+        android:focusable="true"
+        android:focusableInTouchMode="true">
 
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="명령어를 입력하세요" />
+            android:text="명령어를 입력하세요"/>
 
         <EditText
             android:id="@+id/line"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content" />
+            android:layout_height="wrap_content"/>
 
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="실행할 함수를 선택하세요" />
+            android:text="실행할 함수를 선택하세요"/>
 
         <Spinner
             android:id="@+id/funSpinner"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content" />
+            android:layout_height="wrap_content"/>
     </LinearLayout>
 
     <LinearLayout
@@ -49,23 +53,24 @@
             android:id="@+id/saveBtn"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="저장" />
+            android:text="저장"/>
 
         <Button
             android:id="@+id/createBtn"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="생성" />
+            android:text="생성"/>
     </LinearLayout>
 
     <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="실행할 스크립트를 입력하세요" />
+        android:text="실행할 스크립트를 입력하세요"/>
+
     <EditText
         android:id="@+id/jsScript"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content" />
+        android:layout_height="wrap_content"/>
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -77,18 +82,18 @@
             android:id="@+id/saveJsBtn"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="저장" />
+            android:text="저장"/>
 
         <Button
             android:id="@+id/createJsBtn"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="생성" />
+            android:text="생성"/>
     </LinearLayout>
 
     <ListView
         android:id="@+id/customCommandListView"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content" />
+        android:layout_height="wrap_content"/>
 
 </LinearLayout>
