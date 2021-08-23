@@ -451,8 +451,30 @@ class MainActivity : AppCompatActivity() {
             ) {}
         } else if (speechText in click) {
             webview.evaluateJavascript(
-                "document.activeElement.click();"
-            ) {}
+                "javascript:(function() {" +
+                        "   let queries = document.querySelectorAll('$searchSelector');" +
+                        "   for(let i = 0; i < queries.length; i++) {" +
+                        "       if(queries[i].parentNode.className != 'highlightedByBrowser') {" +
+                        "           let wrapper = document.createElement('div');" +
+                        "           wrapper.className = 'highlightedByBrowser';" +
+                        "           wrapper.style.backgroundColor = (i == $searchIndex ? 'orange' : 'yellow');" +
+                        "           queries[i].parentNode.insertBefore(wrapper, queries[i]);" +
+                        "           wrapper.append(queries[i]);" +
+                        "       }" +
+                        "   }" +
+                        "   if (queries && queries.length > $searchIndex) {" +
+                        "       queries[$searchIndex].scrollIntoView();" +
+                        "       queries[$searchIndex].click();" +
+                        "   }" +
+                        "   return queries.length;" +
+                        "})();"
+            ){
+                Log.e("테스트", it);
+            }
+
+//            webview.evaluateJavascript(
+//                "document.activeElement.click();"
+//            ) {}
         } else if (speechText in newTab) {
             makeNewTab()
         } else if (speechText in nexTab) {
