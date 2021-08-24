@@ -3,7 +3,6 @@ package com.example.test
 import android.content.Context
 import android.os.Build
 import android.os.Bundle
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -11,7 +10,6 @@ import android.widget.*
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
 import kotlinx.android.synthetic.main.activity_command.*
-import kotlinx.android.synthetic.main.dialog_bookmark.*
 import org.json.JSONArray
 import org.json.JSONObject
 
@@ -22,6 +20,7 @@ class CommandActivity : AppCompatActivity() {
     var selectedItemPos = -1
     var commandList = ArrayList<Command>()
     var funList = ArrayList<String>()
+    var defaultFunVO = DefaultFunVO()
 
     @RequiresApi(Build.VERSION_CODES.KITKAT)
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -48,6 +47,13 @@ class CommandActivity : AppCompatActivity() {
             funList.add(i)
         }
 
+        // add default function in this page
+        for (i in 0..defaultFunVO.funList.size - 1) {
+            if (defaultFunVO.funList.get(i).url.equals(url)) {
+                funList.add(defaultFunVO.funList.get(i).description)
+            }
+        }
+
 
         // set spinner
         val adapter = ArrayAdapter(this, android.R.layout.simple_spinner_item, funList)
@@ -60,6 +66,13 @@ class CommandActivity : AppCompatActivity() {
                 id: Long
             ) {
                 selectedFun = funSpinner.getItemAtPosition(position).toString()
+
+                // 기본 제공 명령어를 선택했다면 기본 대사 예시를 뷰에 로드한다.
+                for (i in 0..defaultFunVO.funList.size - 1) {
+                    if (defaultFunVO.funList.get(i).url.equals(url) and defaultFunVO.funList.get(i).description.equals(selectedFun) ) {
+                        line.setText(defaultFunVO.funList.get(i).command.line)
+                    }
+                }
             }
 
             override fun onNothingSelected(p0: AdapterView<*>?) {
@@ -74,7 +87,23 @@ class CommandActivity : AppCompatActivity() {
 
         // set create Btn
         createBtn.setOnClickListener { v ->
-            addCommand(url, line.text.toString(), selectedFun)
+
+            var isAdd = false
+            // 기본 제공 명령어 인지 확인하기
+            for (i in 0..defaultFunVO.funList.size - 1) {
+                if (defaultFunVO.funList.get(i).url.equals(url) and defaultFunVO.funList.get(i).description.equals(selectedFun)) {
+                    addCommand(url, line.text.toString(), defaultFunVO.funList.get(i).command.function)
+                    isAdd = true
+                    break
+                }
+            }
+
+            // 기본 제공 명령어가 아니라면
+            if(!isAdd){
+                addCommand(url, line.text.toString(), selectedFun)
+            }
+
+
             line.setText("")
             Toast.makeText(this, "생성 완료", Toast.LENGTH_SHORT).show()
             refreshListView()
@@ -112,7 +141,7 @@ class CommandActivity : AppCompatActivity() {
 
                 var tmp_command_item = JSONObject()
                 tmp_command_item.put("line", line.text.toString())
-                tmp_command_item.put("function", "#"+jsScript.text.toString())
+                tmp_command_item.put("function", "#" + jsScript.text.toString())
 
                 tmp_command.put(selectedItemPos, tmp_command_item)
                 break
@@ -139,7 +168,7 @@ class CommandActivity : AppCompatActivity() {
 
                 var tmp_command_item = JSONObject()
                 tmp_command_item.put("line", line)
-                tmp_command_item.put("function", "#"+jsScript) // js 스크립트는 #으로 시작하게 만들어 함수와 구분한다.
+                tmp_command_item.put("function", "#" + jsScript) // js 스크립트는 #으로 시작하게 만들어 함수와 구분한다.
                 tmp_command.put(tmp_command_item)
                 break
             }
@@ -150,7 +179,7 @@ class CommandActivity : AppCompatActivity() {
                 var tmp_command = JSONArray()
                 var tmp_command_item = JSONObject()
                 tmp_command_item.put("line", line)
-                tmp_command_item.put("function", "#"+jsScript) // js 스크립트는 #으로 시작하게 만들어 함수와 구분한다.
+                tmp_command_item.put("function", "#" + jsScript) // js 스크립트는 #으로 시작하게 만들어 함수와 구분한다.
 
                 tmp_command.put(tmp_command_item)
                 tmp_item.put("command", tmp_command)
@@ -226,11 +255,11 @@ class CommandActivity : AppCompatActivity() {
         selectedItemPos = position
         line.setText(getCommandOfUrl(url).getJSONObject(position).getString("line"))
         selectedFun = getCommandOfUrl(url).getJSONObject(position).getString("function")
-        if(selectedFun.contains("#")) {
+        if (selectedFun.contains("#")) {
             // js script라면
-            jsScript.setText(selectedFun.replace("#",""))
+            jsScript.setText(selectedFun.replace("#", ""))
 
-        }else{
+        } else {
             for (i in 0..funList.size - 1) {
                 if (funList.get(i).equals(selectedFun)) {
                     funSpinner.setSelection(i)
