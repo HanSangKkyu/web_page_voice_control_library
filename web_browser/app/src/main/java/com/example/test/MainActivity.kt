@@ -4,6 +4,7 @@ import android.Manifest
 import android.app.Dialog
 import android.content.Context
 import android.content.Intent
+import android.graphics.Color
 import android.media.AudioManager
 import android.media.AudioManager.*
 import android.os.Build
@@ -337,8 +338,11 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun recognitionListener() = object : RecognitionListener {
-        override fun onReadyForSpeech(params: Bundle?) =
-            Toast.makeText(this@MainActivity, "음성인식 시작", Toast.LENGTH_SHORT).show()
+        override fun onReadyForSpeech(params: Bundle?) {
+//            Toast.makeText(this@MainActivity, "음성인식 시작", Toast.LENGTH_SHORT).show()
+            micBtn.setTextColor(Color.parseColor("#ff0000"))
+            micBtn.setText("REC")
+        }
 
         override fun onRmsChanged(rmsdB: Float) {}
 
@@ -348,11 +352,18 @@ class MainActivity : AppCompatActivity() {
 
         override fun onEvent(eventType: Int, params: Bundle?) {}
 
-        override fun onBeginningOfSpeech() {}
+        override fun onBeginningOfSpeech() {
+        }
 
-        override fun onEndOfSpeech() {}
+        override fun onEndOfSpeech() {
+            micBtn.setTextColor(Color.parseColor("#ffffff"))
+            micBtn.setText("MIC")
+        }
 
         override fun onError(error: Int) {
+            micBtn.setTextColor(Color.parseColor("#ffffff"))
+            micBtn.setText("MIC")
+
             when (error) {
                 SpeechRecognizer.ERROR_INSUFFICIENT_PERMISSIONS -> Toast.makeText(
                     this@MainActivity,
@@ -366,7 +377,10 @@ class MainActivity : AppCompatActivity() {
         override fun onResults(results: Bundle) {
             var speechText = results.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION)!![0]
             Log.e("음성 인식 결과:", speechText)
-            Toast.makeText(this@MainActivity, "음성 인식 결과: " + speechText, Toast.LENGTH_SHORT).show()
+//            Toast.makeText(this@MainActivity, "음성 인식 결과: " + speechText, Toast.LENGTH_SHORT).show()
+            micBtn.setTextColor(Color.parseColor("#ffffff"))
+            micBtn.setText("MIC")
+
 
             matchCommand(speechText)
 
