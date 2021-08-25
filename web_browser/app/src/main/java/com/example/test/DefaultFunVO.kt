@@ -5,6 +5,28 @@ class DefaultFunVO {
     var funList: ArrayList<Funtion> = ArrayList()
 
     constructor() {
+        // 공통 기능
+        funList.add(
+            Funtion(
+                "common",
+                Command(
+                    "스크롤 내려",
+                    "#scrollTo(document.documentElement.scrollTop, document.documentElement.scrollTop+200);"
+                ),
+                "스크롤 내려"
+            )
+        )
+        funList.add(
+            Funtion(
+                "common",
+                Command(
+                    "스크롤 올려",
+                    "#scrollTo(document.documentElement.scrollTop, document.documentElement.scrollTop-200);"
+                ),
+                "스크롤 올려"
+            )
+        )
+
         // 검색해줘 명령어 (구글, 네이버, 다음, 네이트, 빙, 야후, 유튜브,)
         funList.add(
             Funtion(

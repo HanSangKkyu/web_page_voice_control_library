@@ -36,49 +36,40 @@ class CommandActivity : AppCompatActivity() {
         // get extra
         var intent = getIntent()
         url = getHostPartInUrl(intent.getStringExtra("url").toString())
-        urlTextView.setText(url)
-        var funStr = intent.getStringExtra("fun").toString()
 
-
-        // get function list in this page
-        funList = ArrayList<String>()
-        for (i in funStr.split(',')) {
-
-            funList.add(i)
-        }
-
-        // add default function in this page
-        for (i in 0..defaultFunVO.funList.size - 1) {
-            if (defaultFunVO.funList.get(i).url.equals(url)) {
-                funList.add(defaultFunVO.funList.get(i).description)
-            }
-        }
-
-
-        // set spinner
-        val adapter = ArrayAdapter(this, android.R.layout.simple_spinner_item, funList)
-        funSpinner.adapter = adapter
-        funSpinner.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
+        // set url spinner
+        var urlList: ArrayList<String> = ArrayList()
+        urlList.add("common")
+        urlList.add(url)
+        urlSpinner.adapter = ArrayAdapter(this, android.R.layout.simple_spinner_item, urlList)
+        urlSpinner.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
             override fun onItemSelected(
                 parent: AdapterView<*>?,
                 view: View?,
                 position: Int,
                 id: Long
             ) {
-                selectedFun = funSpinner.getItemAtPosition(position).toString()
-
-                // 기본 제공 명령어를 선택했다면 기본 대사 예시를 뷰에 로드한다.
-                for (i in 0..defaultFunVO.funList.size - 1) {
-                    if (defaultFunVO.funList.get(i).url.equals(url) and defaultFunVO.funList.get(i).description.equals(selectedFun) ) {
-                        line.setText(defaultFunVO.funList.get(i).command.line)
-                    }
+                url = urlSpinner.getItemAtPosition(position).toString()
+                // change fun spinner item
+                if (url == "common") {
+                    initFunSpinnerToCommon()
+                    refreshListView()
+                } else {
+                    // if this page url is selected
+                    initFunSpinnerToThisPage()
+                    refreshListView()
                 }
+
+
             }
 
             override fun onNothingSelected(p0: AdapterView<*>?) {
 
             }
         }
+        urlSpinner.setSelection(1)
+
+        initFunSpinnerToThisPage()
 
 
         // set listView
@@ -91,15 +82,22 @@ class CommandActivity : AppCompatActivity() {
             var isAdd = false
             // 기본 제공 명령어 인지 확인하기
             for (i in 0..defaultFunVO.funList.size - 1) {
-                if (defaultFunVO.funList.get(i).url.equals(url) and defaultFunVO.funList.get(i).description.equals(selectedFun)) {
-                    addCommand(url, line.text.toString(), defaultFunVO.funList.get(i).command.function)
+                if (defaultFunVO.funList.get(i).url.equals(url) and defaultFunVO.funList.get(i).description.equals(
+                        selectedFun
+                    )
+                ) {
+                    addCommand(
+                        url,
+                        line.text.toString(),
+                        defaultFunVO.funList.get(i).command.function
+                    )
                     isAdd = true
                     break
                 }
             }
 
             // 기본 제공 명령어가 아니라면
-            if(!isAdd){
+            if (!isAdd) {
                 addCommand(url, line.text.toString(), selectedFun)
             }
 
@@ -125,6 +123,100 @@ class CommandActivity : AppCompatActivity() {
         // set save Btn
         saveJsBtn.setOnClickListener { v ->
             editJsScriptItem()
+        }
+    }
+
+    private fun initFunSpinnerToCommon() {
+        // add default common function
+        funList = ArrayList()
+        for (i in 0..defaultFunVO.funList.size - 1) {
+            if (defaultFunVO.funList.get(i).url.equals("common")) {
+                funList.add(defaultFunVO.funList.get(i).description)
+            }
+        }
+
+        // set fun spinner
+        funSpinner.adapter = ArrayAdapter(this, android.R.layout.simple_spinner_item, funList)
+        funSpinner.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
+            override fun onItemSelected(
+                parent: AdapterView<*>?,
+                view: View?,
+                position: Int,
+                id: Long
+            ) {
+                selectedFun = funSpinner.getItemAtPosition(position).toString()
+
+                // 기본 제공 명령어를 선택했다면 기본 대사 예시를 뷰에 로드한다.
+                for (i in 0..defaultFunVO.funList.size - 1) {
+                    if (defaultFunVO.funList.get(i).url.equals("common") and defaultFunVO.funList.get(
+                            i
+                        ).description.equals(selectedFun)
+                    ) {
+                        line.setText(defaultFunVO.funList.get(i).command.line)
+                        jsScript.setText(
+                            defaultFunVO.funList.get(i).command.function.replace(
+                                "#",
+                                ""
+                            )
+                        )
+                    }
+                }
+            }
+
+            override fun onNothingSelected(p0: AdapterView<*>?) {
+
+            }
+        }
+    }
+
+    private fun initFunSpinnerToThisPage() {
+        var funStr = getIntent().getStringExtra("fun").toString()
+
+        // get function list in this page
+        funList = ArrayList<String>()
+        for (i in funStr.split(',')) {
+
+            funList.add(i)
+        }
+
+        // add default function in this page
+        for (i in 0..defaultFunVO.funList.size - 1) {
+            if (defaultFunVO.funList.get(i).url.equals(url)) {
+                funList.add(defaultFunVO.funList.get(i).description)
+            }
+        }
+
+        // set fun spinner
+        funSpinner.adapter = ArrayAdapter(this, android.R.layout.simple_spinner_item, funList)
+        funSpinner.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
+            override fun onItemSelected(
+                parent: AdapterView<*>?,
+                view: View?,
+                position: Int,
+                id: Long
+            ) {
+                selectedFun = funSpinner.getItemAtPosition(position).toString()
+
+                // 기본 제공 명령어를 선택했다면 기본 대사 예시를 뷰에 로드한다.
+                for (i in 0..defaultFunVO.funList.size - 1) {
+                    if (defaultFunVO.funList.get(i).url.equals(url) and defaultFunVO.funList.get(i).description.equals(
+                            selectedFun
+                        )
+                    ) {
+                        line.setText(defaultFunVO.funList.get(i).command.line)
+                        jsScript.setText(
+                            defaultFunVO.funList.get(i).command.function.replace(
+                                "#",
+                                ""
+                            )
+                        )
+                    }
+                }
+            }
+
+            override fun onNothingSelected(p0: AdapterView<*>?) {
+
+            }
         }
     }
 

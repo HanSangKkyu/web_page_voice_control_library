@@ -39,7 +39,7 @@ class MainActivity : AppCompatActivity() {
     private var bookmarkDialog: BookmarkDialog? = null
     private var dlg: Dialog? = null
 
-    private var searchSelector : String = ""
+    private var searchSelector: String = ""
     private var searchIndex: Int = 0
     private var searchLength: Int = 0
 
@@ -180,9 +180,10 @@ class MainActivity : AppCompatActivity() {
 
             var intent = Intent(this, CommandActivity::class.java)
             intent.putExtra("url", getNowUrl())
-            val script ="Object.getOwnPropertyNames(window).filter(item => typeof window[item] === 'function' && !(/\\{\\s*\\[native code\\]\\s*\\}/).test('' + window[item]))"
+            val script =
+                "Object.getOwnPropertyNames(window).filter(item => typeof window[item] === 'function' && !(/\\{\\s*\\[native code\\]\\s*\\}/).test('' + window[item]))"
 
-            webview.evaluateJavascript("(function(){return(" + script + "); })();") {
+            getNowTab().webview.evaluateJavascript("(function(){return(" + script + "); })();") {
 
                 // get this page functions
                 var res = it.substring(1, it.length - 1)
@@ -194,6 +195,10 @@ class MainActivity : AppCompatActivity() {
 
 
         }
+    }
+
+    private fun getNowTab(): BlankFragment {
+        return frList.get(tagToIndex(selectedBtnTag)).blankFragment
     }
 
     private fun makeNewTab() {
@@ -431,11 +436,11 @@ class MainActivity : AppCompatActivity() {
 
 
         if (speechText in scollDown) {
-            webview.evaluateJavascript("scrollTo(document.documentElement.scrollTop, document.documentElement.scrollTop+200);") {}
+            getNowTab().webview.evaluateJavascript("scrollTo(document.documentElement.scrollTop, document.documentElement.scrollTop+200);") {}
         } else if (speechText in scollUp) {
-            webview.evaluateJavascript("scrollTo(document.documentElement.scrollTop, document.documentElement.scrollTop-200);") {}
+            getNowTab().webview.evaluateJavascript("scrollTo(document.documentElement.scrollTop, document.documentElement.scrollTop-200);") {}
         } else if (speechText in zoomIn) {
-            webview.evaluateJavascript(
+            getNowTab().webview.evaluateJavascript(
                 "    if(document.body.style.zoom==\"\"){\n" +
                         "        document.body.style.zoom = 110+\"%\";\n" +
                         "    }else{\n" +
@@ -445,7 +450,7 @@ class MainActivity : AppCompatActivity() {
                         "    }"
             ) {}
         } else if (speechText in zoomOut) {
-            webview.evaluateJavascript(
+            getNowTab().webview.evaluateJavascript(
                 "    if(document.body.style.zoom==\"\"){\n" +
                         "        document.body.style.zoom = 90+\"%\";\n" +
                         "    }else{\n" +
@@ -455,39 +460,16 @@ class MainActivity : AppCompatActivity() {
                         "    }"
             ) {}
         } else if (speechText in goBack) {
-            webview.evaluateJavascript(
+            getNowTab().webview.evaluateJavascript(
                 "history.back();"
             ) {}
         } else if (speechText in goForward) {
-            webview.evaluateJavascript(
+            getNowTab().webview.evaluateJavascript(
                 "history.forward();"
             ) {}
         } else if (speechText in click) {
-            webview.evaluateJavascript(
-                "javascript:(function() {" +
-                        "   let queries = document.querySelectorAll('$searchSelector');" +
-                        "   for(let i = 0; i < queries.length; i++) {" +
-                        "       if(queries[i].parentNode.className != 'highlightedByBrowser') {" +
-                        "           let wrapper = document.createElement('div');" +
-                        "           wrapper.className = 'highlightedByBrowser';" +
-                        "           wrapper.style.backgroundColor = (i == $searchIndex ? 'orange' : 'yellow');" +
-                        "           queries[i].parentNode.insertBefore(wrapper, queries[i]);" +
-                        "           wrapper.append(queries[i]);" +
-                        "       }" +
-                        "   }" +
-                        "   if (queries && queries.length > $searchIndex) {" +
-                        "       queries[$searchIndex].scrollIntoView();" +
-                        "       queries[$searchIndex].click();" +
-                        "   }" +
-                        "   return queries.length;" +
-                        "})();"
-            ){
-                Log.e("테스트", it);
-            }
+            clickThis()
 
-//            webview.evaluateJavascript(
-//                "document.activeElement.click();"
-//            ) {}
         } else if (speechText in newTab) {
             Log.e("asdf", "newtab");
             makeNewTab()
@@ -498,7 +480,7 @@ class MainActivity : AppCompatActivity() {
         } else if (speechText in closeTab) {
             closeTab()
         } else if (speechText in refresh) {
-            webview.evaluateJavascript(
+            getNowTab().webview.evaluateJavascript(
                 "location.reload();"
             ) {}
         } else if (speechText in addBookmark) {
@@ -515,7 +497,7 @@ class MainActivity : AppCompatActivity() {
             volUp()
         } else if (speechText in volDown) {
             volDown()
-        }else if (speechText in listing) {
+        } else if (speechText in listing) {
             startlistingElement("a")
         } else if (speechText in nextElement) {
             moveElementList(1)
@@ -527,7 +509,7 @@ class MainActivity : AppCompatActivity() {
             play()
         } else if (speechText in pause) {
             pause()
-        } else{
+        } else {
             // 기본 명령어에 해당되지 않은 요청이 들어왔을 때 사용자 지정 명령어를 검색한다.
             matchCustomCommand(speechText)
         }
@@ -536,10 +518,71 @@ class MainActivity : AppCompatActivity() {
     }
 
     @RequiresApi(Build.VERSION_CODES.KITKAT)
+    private fun clickThis() {
+        getNowTab().webview.evaluateJavascript(
+            "javascript:(function() {" +
+                    "   let queries = document.querySelectorAll('$searchSelector');" +
+                    "   for(let i = 0; i < queries.length; i++) {" +
+                    "       if(queries[i].parentNode.className != 'highlightedByBrowser') {" +
+                    "           let wrapper = document.createElement('div');" +
+                    "           wrapper.className = 'highlightedByBrowser';" +
+                    "           wrapper.style.backgroundColor = (i == $searchIndex ? 'orange' : 'yellow');" +
+                    "           queries[i].parentNode.insertBefore(wrapper, queries[i]);" +
+                    "           wrapper.append(queries[i]);" +
+                    "       }" +
+                    "   }" +
+                    "   if (queries && queries.length > $searchIndex) {" +
+                    "       queries[$searchIndex].scrollIntoView();" +
+                    "       queries[$searchIndex].click();" +
+                    "   }" +
+                    "   return queries.length;" +
+                    "})();"
+        ) {
+
+        }
+    }
+
+    @RequiresApi(Build.VERSION_CODES.KITKAT)
     private fun matchCustomCommand(speechText: String) {
-        val commandArr = getCommandOfUrl(getHostPartInUrl(getNowUrl()))
+        // 사용자 지정 공통 명령어에서 일치하는 것이 있는지 검색한다.
+        var commandArr = getCommandOfUrl("common")
         for (i in 0..commandArr.length() - 1) {
-            // ~ 가 line에 포함되어 있는지 판단하여 적용해야 한다.
+            // * 가 line에 포함되어 있는지 판단하여 적용해야 한다.
+            if (commandArr.getJSONObject(i).getString("line") == speechText) {
+                var function = commandArr.getJSONObject(i).getString("function")
+                var script = function
+                if (function.contains("#")) {
+                    script = function.replace("#", "")
+                }
+
+//                webview.evaluateJavascript("(function(){return(" + script + "); })();") {
+//                    Log.e("asdf", it)
+//                }
+                getNowTab().webview.evaluateJavascript(script) {
+                    Log.e("asdf", it)
+                }
+            } else if (commandArr.getJSONObject(i).getString("line").contains("*")) {
+                // 사용자 지정 명령어가 *(와일드카드)를 가지고 있다면
+                // 사용자의 발화에서 어떤 부분이 와일드 카드이 인지 알아낸다.
+                var commmand = commandArr.getJSONObject(i).getString("line").replace("*", "")
+                var wc = speechText
+                if (wc.contains(commmand)) {
+                    wc = wc.replace(commmand, "")
+
+                    var function = commandArr.getJSONObject(i).getString("function")
+                    var script = function.replace("#", "")
+                    script = script.replace("*", wc)
+                    getNowTab().webview.evaluateJavascript(script) {
+                        Log.e("asdf", it)
+                    }
+                }
+            }
+        }
+
+        // 사용자 지정 명령어 중 이 페이지에 해당하는 것이 있는지 검색한다.
+        commandArr = getCommandOfUrl(getHostPartInUrl(getNowUrl()))
+        for (i in 0..commandArr.length() - 1) {
+            // * 가 line에 포함되어 있는지 판단하여 적용해야 한다.
             if (commandArr.getJSONObject(i).getString("line") == speechText) {
                 var function = commandArr.getJSONObject(i).getString("function")
                 var script = ""
@@ -549,21 +592,21 @@ class MainActivity : AppCompatActivity() {
                     script = "window['" + function + "']()"
                 }
 
-                webview.evaluateJavascript("(function(){return(" + script + "); })();") {
+                getNowTab().webview.evaluateJavascript("(function(){return(" + script + "); })();") {
                     Log.e("asdf", it)
                 }
-            }else if(commandArr.getJSONObject(i).getString("line").contains("*")){
+            } else if (commandArr.getJSONObject(i).getString("line").contains("*")) {
                 // 사용자 지정 명령어가 *(와일드카드)를 가지고 있다면
                 // 사용자의 발화에서 어떤 부분이 와일드 카드이 인지 알아낸다.
-                var commmand = commandArr.getJSONObject(i).getString("line").replace("*","") // 찾아줘
+                var commmand = commandArr.getJSONObject(i).getString("line").replace("*", "")
                 var wc = speechText
                 if (wc.contains(commmand)) {
                     wc = wc.replace(commmand, "")
 
                     var function = commandArr.getJSONObject(i).getString("function")
                     var script = function.replace("#", "")
-                    script = script.replace("*",wc)
-                    webview.evaluateJavascript(script) {
+                    script = script.replace("*", wc)
+                    getNowTab().webview.evaluateJavascript(script) {
                         Log.e("asdf", it)
                     }
                 }
@@ -612,7 +655,7 @@ class MainActivity : AppCompatActivity() {
 
     @RequiresApi(Build.VERSION_CODES.KITKAT)
     fun getHTML() {
-        webview.evaluateJavascript("Object.getOwnPropertyNames(window).filter(item => typeof window[item] === 'function');") {
+        getNowTab().webview.evaluateJavascript("Object.getOwnPropertyNames(window).filter(item => typeof window[item] === 'function');") {
 //                Log.e("it",it)
             val functionList = it.toString().split(",")
             val resFunctionList = ArrayList<String>()
@@ -673,14 +716,14 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun getNowUrl(): String {
-        return frList.get(tagToIndex(selectedBtnTag)).blankFragment.webview.url.toString()
+        return getNowTab().webview.url.toString()
     }
 
     @RequiresApi(Build.VERSION_CODES.KITKAT)
     private fun startlistingElement(selector: String) {
         searchSelector = selector
         searchIndex = 0
-        webview.evaluateJavascript(
+        getNowTab().webview.evaluateJavascript(
             "javascript:(function() {" +
                     "   let queries = document.querySelectorAll('$searchSelector');" +
                     "   for(let i = 0; i < queries.length; i++) {" +
@@ -697,15 +740,15 @@ class MainActivity : AppCompatActivity() {
             try {
                 searchLength = it.toInt()
                 Log.e("테스트", it)
-            } catch(e:Exception) {
+            } catch (e: Exception) {
                 Log.e("테스트", e.localizedMessage)
             }
         }
     }
 
     @RequiresApi(Build.VERSION_CODES.KITKAT)
-    private fun moveElementList(direction : Int) {
-        val oldSearchIndex : Int = searchIndex
+    private fun moveElementList(direction: Int) {
+        val oldSearchIndex: Int = searchIndex
         searchIndex = when {
             (searchIndex + direction) >= searchLength -> {
                 searchIndex + direction - searchLength
@@ -717,7 +760,7 @@ class MainActivity : AppCompatActivity() {
                 searchIndex + direction
             }
         }
-        webview.evaluateJavascript(
+        getNowTab().webview.evaluateJavascript(
             "javascript:(function() {" +
                     "   let queries = document.querySelectorAll('$searchSelector');" +
                     "   for(let i = 0; i < queries.length; i++) {" +
@@ -737,15 +780,15 @@ class MainActivity : AppCompatActivity() {
             try {
                 searchLength = it.toInt()
                 Log.e("테스트", it)
-            } catch(e:Exception) {
-                Log.e("테스트", "why: "+ e.localizedMessage)
+            } catch (e: Exception) {
+                Log.e("테스트", "why: " + e.localizedMessage)
             }
         }
     }
 
     @RequiresApi(Build.VERSION_CODES.KITKAT)
     private fun endListingElement() {
-        webview.evaluateJavascript(
+        getNowTab().webview.evaluateJavascript(
             "javascript:(function() {" +
                     "   let queries=document.querySelectorAll('$searchSelector');" +
                     "   let wrapper;" +
@@ -758,7 +801,7 @@ class MainActivity : AppCompatActivity() {
                     "      " +
                     "   }" +
                     "})();"
-        ){}
+        ) {}
     }
 
     @RequiresApi(Build.VERSION_CODES.KITKAT)
@@ -767,7 +810,7 @@ class MainActivity : AppCompatActivity() {
             searchSelector = "video, audio"
             searchIndex = 0
         }
-        webview.evaluateJavascript(
+        getNowTab().webview.evaluateJavascript(
             "javascript:(function() {" +
                     "   let queries = document.querySelectorAll('$searchSelector');" +
                     "   for(let i = 0; i < queries.length; i++) {" +
@@ -785,7 +828,7 @@ class MainActivity : AppCompatActivity() {
                     "   }" +
                     "   return queries.length;" +
                     "})();"
-        ){
+        ) {
             Log.e("테스트", it);
         }
     }
@@ -796,7 +839,7 @@ class MainActivity : AppCompatActivity() {
             searchSelector = "video, audio"
             searchIndex = 0
         }
-        webview.evaluateJavascript(
+        getNowTab().webview.evaluateJavascript(
             "javascript:(function() {" +
                     "   let queries = document.querySelectorAll('$searchSelector');" +
                     "   for(let i = 0; i < queries.length; i++) {" +
@@ -825,7 +868,7 @@ class MainActivity : AppCompatActivity() {
                     "   }" +
                     "   return $searchIndex;" +
                     "})();"
-        ){
+        ) {
             searchIndex = it.toInt()
         }
     }

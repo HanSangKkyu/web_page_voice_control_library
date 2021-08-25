@@ -9,11 +9,15 @@
               android:focusable="true"
               android:focusableInTouchMode="true">
 
-    <TextView
-        android:id="@+id/urlTextView"
+<!--    <TextView-->
+<!--        android:id="@+id/urlTextView"-->
+<!--        android:layout_width="match_parent"-->
+<!--        android:layout_height="wrap_content"-->
+<!--        android:text="url"/>-->
+    <Spinner
+        android:id="@+id/urlSpinner"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="url"/>
+        android:layout_height="wrap_content"/>
 
     <LinearLayout
         android:layout_width="match_parent"
