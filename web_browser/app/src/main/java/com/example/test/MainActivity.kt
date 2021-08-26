@@ -552,15 +552,17 @@ class MainActivity : AppCompatActivity() {
                 var function = commandArr.getJSONObject(i).getString("function")
                 var script = function
                 if (function.contains("#")) {
+                    // js 스크립트라면
                     script = function.replace("#", "")
+                    getNowTab().webview.evaluateJavascript(script) {
+                        Log.e("asdf", it)
+                    }
+                }else if(function.contains("@")){
+                    // 안드로이드 함수라면
+                    fireAndroidFun(speechText)
                 }
 
-//                webview.evaluateJavascript("(function(){return(" + script + "); })();") {
-//                    Log.e("asdf", it)
-//                }
-                getNowTab().webview.evaluateJavascript(script) {
-                    Log.e("asdf", it)
-                }
+
             } else if (commandArr.getJSONObject(i).getString("line").contains("*")) {
                 // 사용자 지정 명령어가 *(와일드카드)를 가지고 있다면
                 // 사용자의 발화에서 어떤 부분이 와일드 카드이 인지 알아낸다.
@@ -870,6 +872,45 @@ class MainActivity : AppCompatActivity() {
                     "})();"
         ) {
             searchIndex = it.toInt()
+        }
+    }
+
+    @RequiresApi(Build.VERSION_CODES.KITKAT)
+    private fun fireAndroidFun(funStr: String) {
+        if (funStr == "@makeNewtab()") {
+            makeNewTab()
+        } else if (funStr == "@showNextTab()") {
+            showNextTab()
+        } else if (funStr == "@showPreviousTab()") {
+            showPreviousTab()
+        } else if (funStr == "@closeTab()") {
+            closeTab()
+        } else if (funStr == "@addBookmark()") {
+            addBookmark()
+        } else if (funStr == "@volUp()") {
+            volUp()
+        } else if (funStr == "@volDown()") {
+            volDown()
+        } else if (funStr == "@startlistingElement(*)") {
+            startlistingElement("*") // 더 개발 필요
+        } else if (funStr == "@moveElementList(1)") {
+            moveElementList(1)
+        } else if (funStr == "@moveElementList(-1)") {
+            moveElementList(-1)
+        } else if (funStr == "@endListingElement()") {
+            endListingElement()
+        } else if (funStr == "@play()") {
+            play()
+        } else if (funStr == "@pause()") {
+            pause()
+        } else if (funStr == "") {
+
+        } else if (funStr == "") {
+
+        } else if (funStr == "") {
+
+        } else if (funStr == "") {
+
         }
     }
 }

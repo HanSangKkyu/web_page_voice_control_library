@@ -170,20 +170,20 @@ class CommandActivity : AppCompatActivity() {
     }
 
     private fun initFunSpinnerToThisPage() {
-        var funStr = getIntent().getStringExtra("fun").toString()
-
-        // get function list in this page
         funList = ArrayList<String>()
-        for (i in funStr.split(',')) {
-
-            funList.add(i)
-        }
 
         // add default function in this page
         for (i in 0..defaultFunVO.funList.size - 1) {
             if (defaultFunVO.funList.get(i).url.equals(url)) {
                 funList.add(defaultFunVO.funList.get(i).description)
             }
+        }
+
+        // add function list in this page
+        var funStr = getIntent().getStringExtra("fun").toString()
+        for (i in funStr.split(',')) {
+
+            funList.add(i)
         }
 
         // set fun spinner
