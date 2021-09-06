@@ -219,6 +219,16 @@ class DefaultFunVO {
                 "현재 포커스 비디오 정지"
             )
         )
+        funList.add(
+            Funtion(
+                "common",
+                Command(
+                    "네이버 보여 줘",
+                    "@goToSite(m.naver.com)"
+                ),
+                "포털 사이트 이동"
+            )
+        )
 
 
 

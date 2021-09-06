@@ -35,12 +35,19 @@ class CommandActivity : AppCompatActivity() {
     fun init() {
         // get extra
         var intent = getIntent()
-        url = getHostPartInUrl(intent.getStringExtra("url").toString())
+
 
         // set url spinner
         var urlList: ArrayList<String> = ArrayList()
         urlList.add("common")
-        urlList.add(url)
+        try{
+            url = getHostPartInUrl(intent.getStringExtra("url").toString())
+            urlList.add(url)
+            initFunSpinnerToThisPage()
+        }catch (e:Exception){
+            // 새탭은 만들었으나 어떠한 웹페이지로도 이동하지 않았음
+
+        }
         urlSpinner.adapter = ArrayAdapter(this, android.R.layout.simple_spinner_item, urlList)
         urlSpinner.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
             override fun onItemSelected(
@@ -67,10 +74,7 @@ class CommandActivity : AppCompatActivity() {
 
             }
         }
-        urlSpinner.setSelection(1)
-
-        initFunSpinnerToThisPage()
-
+        urlSpinner.setSelection(urlList.size-1) // 기본적으로 가장 마지막 아이템을 선택한다.
 
         // set listView
         refreshListView()
@@ -260,7 +264,14 @@ class CommandActivity : AppCompatActivity() {
 
                 var tmp_command_item = JSONObject()
                 tmp_command_item.put("line", line)
-                tmp_command_item.put("function", "#" + jsScript) // js 스크립트는 #으로 시작하게 만들어 함수와 구분한다.
+                if(jsScript.contains("@")){
+                    // 안드로이드 함수면 #은 제외하고 저장한다.
+                    tmp_command_item.put("function", jsScript) // js 스크립트는 #으로 시작하게 만들어 함수와 구분한다.
+                }else{
+                    // 자바스크립트 함수일 때 #을 추가해서 저장한다.
+                    tmp_command_item.put("function", "#" + jsScript) // js 스크립트는 #으로 시작하게 만들어 함수와 구분한다.
+                }
+
                 tmp_command.put(tmp_command_item)
                 break
             }
@@ -271,7 +282,14 @@ class CommandActivity : AppCompatActivity() {
                 var tmp_command = JSONArray()
                 var tmp_command_item = JSONObject()
                 tmp_command_item.put("line", line)
-                tmp_command_item.put("function", "#" + jsScript) // js 스크립트는 #으로 시작하게 만들어 함수와 구분한다.
+                if(jsScript.contains("@")){
+                    // 안드로이드 함수면 #은 제외하고 저장한다.
+                    tmp_command_item.put("function", jsScript) // js 스크립트는 #으로 시작하게 만들어 함수와 구분한다.
+                }else{
+                    // 자바스크립트 함수일 때 #을 추가해서 저장한다.
+                    tmp_command_item.put("function", "#" + jsScript) // js 스크립트는 #으로 시작하게 만들어 함수와 구분한다.
+                }
+//                tmp_command_item.put("function", "#" + jsScript) // js 스크립트는 #으로 시작하게 만들어 함수와 구분한다.
 
                 tmp_command.put(tmp_command_item)
                 tmp_item.put("command", tmp_command)

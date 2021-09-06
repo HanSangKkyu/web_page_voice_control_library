@@ -471,7 +471,6 @@ class MainActivity : AppCompatActivity() {
             clickThis()
 
         } else if (speechText in newTab) {
-            Log.e("asdf", "newtab");
             makeNewTab()
         } else if (speechText in nexTab) {
             showNextTab()
@@ -548,18 +547,19 @@ class MainActivity : AppCompatActivity() {
         var commandArr = getCommandOfUrl("common")
         for (i in 0..commandArr.length() - 1) {
             // * 가 line에 포함되어 있는지 판단하여 적용해야 한다.
+
             if (commandArr.getJSONObject(i).getString("line") == speechText) {
+
                 var function = commandArr.getJSONObject(i).getString("function")
                 var script = function
                 if (function.contains("#")) {
                     // js 스크립트라면
                     script = function.replace("#", "")
                     getNowTab().webview.evaluateJavascript(script) {
-                        Log.e("asdf", it)
                     }
                 }else if(function.contains("@")){
                     // 안드로이드 함수라면
-                    fireAndroidFun(speechText)
+                    fireAndroidFun(function)
                 }
 
 
@@ -582,40 +582,45 @@ class MainActivity : AppCompatActivity() {
         }
 
         // 사용자 지정 명령어 중 이 페이지에 해당하는 것이 있는지 검색한다.
-        commandArr = getCommandOfUrl(getHostPartInUrl(getNowUrl()))
-        for (i in 0..commandArr.length() - 1) {
-            // * 가 line에 포함되어 있는지 판단하여 적용해야 한다.
-            if (commandArr.getJSONObject(i).getString("line") == speechText) {
-                var function = commandArr.getJSONObject(i).getString("function")
-                var script = ""
-                if (function.contains("#")) {
-                    script = function.replace("#", "")
-                } else {
-                    script = "window['" + function + "']()"
-                }
-
-                getNowTab().webview.evaluateJavascript("(function(){return(" + script + "); })();") {
-                    Log.e("asdf", it)
-                }
-            } else if (commandArr.getJSONObject(i).getString("line").contains("*")) {
-                // 사용자 지정 명령어가 *(와일드카드)를 가지고 있다면
-                // 사용자의 발화에서 어떤 부분이 와일드 카드이 인지 알아낸다.
-                var commmand = commandArr.getJSONObject(i).getString("line").replace("*", "")
-                var wc = speechText
-                if (wc.contains(commmand)) {
-                    wc = wc.replace(commmand, "")
-
+        try{
+            commandArr = getCommandOfUrl(getHostPartInUrl(getNowUrl()))
+            for (i in 0..commandArr.length() - 1) {
+                // * 가 line에 포함되어 있는지 판단하여 적용해야 한다.
+                if (commandArr.getJSONObject(i).getString("line") == speechText) {
                     var function = commandArr.getJSONObject(i).getString("function")
-                    var script = function.replace("#", "")
-                    script = script.replace("*", wc)
-                    getNowTab().webview.evaluateJavascript(script) {
+                    var script = ""
+                    if (function.contains("#")) {
+                        script = function.replace("#", "")
+                    } else {
+                        script = "window['" + function + "']()"
+                    }
+
+                    getNowTab().webview.evaluateJavascript("(function(){return(" + script + "); })();") {
                         Log.e("asdf", it)
                     }
+                } else if (commandArr.getJSONObject(i).getString("line").contains("*")) {
+                    // 사용자 지정 명령어가 *(와일드카드)를 가지고 있다면
+                    // 사용자의 발화에서 어떤 부분이 와일드 카드이 인지 알아낸다.
+                    var commmand = commandArr.getJSONObject(i).getString("line").replace("*", "")
+                    var wc = speechText
+                    if (wc.contains(commmand)) {
+                        wc = wc.replace(commmand, "")
+
+                        var function = commandArr.getJSONObject(i).getString("function")
+                        var script = function.replace("#", "")
+                        script = script.replace("*", wc)
+                        getNowTab().webview.evaluateJavascript(script) {
+                            Log.e("asdf", it)
+                        }
+                    }
+
+
                 }
-
-
             }
+        }catch(e:Exception){
+            Log.e("ERROR","url 정보를 알 수 없음")
         }
+
     }
 
     fun getCommand(): JSONArray {
@@ -875,8 +880,13 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    private fun goToSite(siteUrl:String){
+        frList.get(tagToIndex(selectedBtnTag)).blankFragment.changeUrl(siteUrl)
+    }
+
     @RequiresApi(Build.VERSION_CODES.KITKAT)
     private fun fireAndroidFun(funStr: String) {
+
         if (funStr == "@makeNewtab()") {
             makeNewTab()
         } else if (funStr == "@showNextTab()") {
@@ -903,8 +913,9 @@ class MainActivity : AppCompatActivity() {
             play()
         } else if (funStr == "@pause()") {
             pause()
-        } else if (funStr == "") {
-
+        } else if (funStr.contains("goToSite")) {
+            val url = funStr.substring(funStr.indexOf('(')+1, funStr.indexOf(')'))
+            goToSite(url)
         } else if (funStr == "") {
 
         } else if (funStr == "") {
