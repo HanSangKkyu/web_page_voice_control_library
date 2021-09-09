@@ -8,7 +8,7 @@ class DefaultFunVO {
         // 공통 기능
         funList.add(
             Funtion(
-                "common",
+                "공통 명령어",
                 Command(
                     "스크롤 내려",
                     "#scrollTo(document.documentElement.scrollTop, document.documentElement.scrollTop+200);"
@@ -18,7 +18,7 @@ class DefaultFunVO {
         )
         funList.add(
             Funtion(
-                "common",
+                "공통 명령어",
                 Command(
                     "스크롤 올려",
                     "#scrollTo(document.documentElement.scrollTop, document.documentElement.scrollTop-200);"
@@ -28,7 +28,7 @@ class DefaultFunVO {
         )
         funList.add(
             Funtion(
-                "common",
+                "공통 명령어",
                 Command(
                     "크게",
                     "#if(document.body.style.zoom==\"\"){\n" +
@@ -44,7 +44,7 @@ class DefaultFunVO {
         )
         funList.add(
             Funtion(
-                "common",
+                "공통 명령어",
                 Command(
                     "작게",
                     "#if(document.body.style.zoom==\"\"){\n" +
@@ -60,7 +60,7 @@ class DefaultFunVO {
         )
         funList.add(
             Funtion(
-                "common",
+                "공통 명령어",
                 Command(
                     "이전 페이지",
                     "#history.back();"
@@ -70,7 +70,7 @@ class DefaultFunVO {
         )
         funList.add(
             Funtion(
-                "common",
+                "공통 명령어",
                 Command(
                     "다음 페이지",
                     "#history.forward();"
@@ -80,7 +80,7 @@ class DefaultFunVO {
         )
         funList.add(
             Funtion(
-                "common",
+                "공통 명령어",
                 Command(
                     "새로 고침",
                     "#location.reload();"
@@ -91,7 +91,7 @@ class DefaultFunVO {
         // 공통기능 -> 안드로이드 함수
         funList.add(
             Funtion(
-                "common",
+                "공통 명령어",
                 Command(
                     "새 탭",
                     "@makeNewTab()"
@@ -101,7 +101,7 @@ class DefaultFunVO {
         )
         funList.add(
             Funtion(
-                "common",
+                "공통 명령어",
                 Command(
                     "다음 탭",
                     "@showNextTab()"
@@ -111,7 +111,7 @@ class DefaultFunVO {
         )
         funList.add(
             Funtion(
-                "common",
+                "공통 명령어",
                 Command(
                     "이전 탭",
                     "@showPreviousTab()"
@@ -121,7 +121,7 @@ class DefaultFunVO {
         )
         funList.add(
             Funtion(
-                "common",
+                "공통 명령어",
                 Command(
                     "탭 닫기",
                     "@closeTab()"
@@ -131,7 +131,7 @@ class DefaultFunVO {
         )
         funList.add(
             Funtion(
-                "common",
+                "공통 명령어",
                 Command(
                     "북마크 추가",
                     "@addBookmark()"
@@ -141,7 +141,7 @@ class DefaultFunVO {
         )
         funList.add(
             Funtion(
-                "common",
+                "공통 명령어",
                 Command(
                     "볼륨 업",
                     "@volUp()"
@@ -151,7 +151,7 @@ class DefaultFunVO {
         )
         funList.add(
             Funtion(
-                "common",
+                "공통 명령어",
                 Command(
                     "볼륨 다운",
                     "@volDown()"
@@ -161,7 +161,7 @@ class DefaultFunVO {
         )
         funList.add(
             Funtion(
-                "common",
+                "공통 명령어",
                 Command(
                     "리스트",
                     "@startlistingElement(*)"
@@ -171,7 +171,7 @@ class DefaultFunVO {
         )
         funList.add(
             Funtion(
-                "common",
+                "공통 명령어",
                 Command(
                     "다음",
                     "@moveElementList(1)"
@@ -181,7 +181,7 @@ class DefaultFunVO {
         )
         funList.add(
             Funtion(
-                "common",
+                "공통 명령어",
                 Command(
                     "이전",
                     "@moveElementList(-1)"
@@ -191,7 +191,7 @@ class DefaultFunVO {
         )
         funList.add(
             Funtion(
-                "common",
+                "공통 명령어",
                 Command(
                     "리스트 종료",
                     "@endListingElement()"
@@ -201,7 +201,7 @@ class DefaultFunVO {
         )
         funList.add(
             Funtion(
-                "common",
+                "공통 명령어",
                 Command(
                     "재생",
                     "@play()"
@@ -211,7 +211,7 @@ class DefaultFunVO {
         )
         funList.add(
             Funtion(
-                "common",
+                "공통 명령어",
                 Command(
                     "정지",
                     "@pause()"
@@ -221,7 +221,7 @@ class DefaultFunVO {
         )
         funList.add(
             Funtion(
-                "common",
+                "공통 명령어",
                 Command(
                     "네이버 보여 줘",
                     "@goToSite(m.naver.com)"

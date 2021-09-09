@@ -39,7 +39,7 @@ class CommandActivity : AppCompatActivity() {
 
         // set url spinner
         var urlList: ArrayList<String> = ArrayList()
-        urlList.add("common")
+        urlList.add("공통 명령어")
         try{
             url = getHostPartInUrl(intent.getStringExtra("url").toString())
             urlList.add(url)
@@ -58,7 +58,7 @@ class CommandActivity : AppCompatActivity() {
             ) {
                 url = urlSpinner.getItemAtPosition(position).toString()
                 // change fun spinner item
-                if (url == "common") {
+                if (url == "공통 명령어") {
                     initFunSpinnerToCommon()
                     refreshListView()
                 } else {
@@ -134,7 +134,7 @@ class CommandActivity : AppCompatActivity() {
         // add default common function
         funList = ArrayList()
         for (i in 0..defaultFunVO.funList.size - 1) {
-            if (defaultFunVO.funList.get(i).url.equals("common")) {
+            if (defaultFunVO.funList.get(i).url.equals("공통 명령어")) {
                 funList.add(defaultFunVO.funList.get(i).description)
             }
         }
@@ -152,7 +152,7 @@ class CommandActivity : AppCompatActivity() {
 
                 // 기본 제공 명령어를 선택했다면 기본 대사 예시를 뷰에 로드한다.
                 for (i in 0..defaultFunVO.funList.size - 1) {
-                    if (defaultFunVO.funList.get(i).url.equals("common") and defaultFunVO.funList.get(
+                    if (defaultFunVO.funList.get(i).url.equals("공통 명령어") and defaultFunVO.funList.get(
                             i
                         ).description.equals(selectedFun)
                     ) {
@@ -183,12 +183,12 @@ class CommandActivity : AppCompatActivity() {
             }
         }
 
-        // add function list in this page
-        var funStr = getIntent().getStringExtra("fun").toString()
-        for (i in funStr.split(',')) {
-
-            funList.add(i)
-        }
+//        // add function list in this page
+//        var funStr = getIntent().getStringExtra("fun").toString()
+//        for (i in funStr.split(',')) {
+//
+//            funList.add(i)
+//        }
 
         // set fun spinner
         funSpinner.adapter = ArrayAdapter(this, android.R.layout.simple_spinner_item, funList)

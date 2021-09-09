@@ -17,7 +17,7 @@
             android:id="@+id/menuBtn"
             android:layout_width="70dp"
             android:layout_height="wrap_content"
-            android:text="menu" />
+            android:text="메뉴" />
 
         <EditText
             android:id="@+id/urlEditText"
@@ -68,28 +68,28 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:text="tab" />
+            android:text="새탭" />
 
         <Button
             android:id="@+id/refreshBtn"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:text="refresh" />
+            android:text="새로고침" />
 
         <Button
             android:id="@+id/bookmarkBtn"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:text="bookmark" />
+            android:text="북마크" />
 
         <Button
             android:id="@+id/commandBtn"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:text="command" />
+            android:text="명령어" />
 
     </LinearLayout>
 </LinearLayout>

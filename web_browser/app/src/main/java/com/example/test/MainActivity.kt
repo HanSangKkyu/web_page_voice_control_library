@@ -544,7 +544,7 @@ class MainActivity : AppCompatActivity() {
     @RequiresApi(Build.VERSION_CODES.KITKAT)
     private fun matchCustomCommand(speechText: String) {
         // 사용자 지정 공통 명령어에서 일치하는 것이 있는지 검색한다.
-        var commandArr = getCommandOfUrl("common")
+        var commandArr = getCommandOfUrl("공통 명령어")
         for (i in 0..commandArr.length() - 1) {
             // * 가 line에 포함되어 있는지 판단하여 적용해야 한다.
 
