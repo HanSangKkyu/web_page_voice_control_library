@@ -31,7 +31,7 @@ class BlankFragment : Fragment() {
         webview.settings.javaScriptEnabled = true // 자바 스크립트 허용
 
         // 웹뷰안에 새 창이 뜨지 않도록 방지
-        webview.webViewClient = WebViewClient()
+        webview.webViewClient = MyWebViewClient()
         webview.webChromeClient = WebChromeClient()
 
     }

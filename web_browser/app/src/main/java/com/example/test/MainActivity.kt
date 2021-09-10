@@ -29,6 +29,10 @@ import kotlinx.android.synthetic.main.dialog_bookmark.*
 import kotlinx.android.synthetic.main.fragment_blank.*
 import org.json.JSONArray
 import java.util.*
+import android.animation.AnimatorSet
+import android.animation.ObjectAnimator
+import android.webkit.WebView
+import org.json.JSONObject
 
 
 class MainActivity : AppCompatActivity() {
@@ -405,8 +409,11 @@ class MainActivity : AppCompatActivity() {
     @RequiresApi(Build.VERSION_CODES.KITKAT)
     fun matchCommand(speechText: String) {
         // 형태소 분석을 통한 의도 파악 기술이 들어가야 할 듯하다.
-        val scollDown = arrayOf("내려", "아래로")
-        val scollUp = arrayOf("올려", "위로")
+        val scrollDown = arrayOf("내려", "아래로")
+        val scrollUp = arrayOf("올려", "위로")
+        val scrollUpMax = arrayOf("맨 위로")
+        val scrollLeft = arrayOf("왼쪽으로")
+        val scrollRight = arrayOf("옆으로", "오른쪽으로")
         val zoomIn = arrayOf("크게", "확대")
         val zoomOut = arrayOf("작게", "축소")
         val goBack = arrayOf("뒤로", "백", "이전 페이지")
@@ -435,30 +442,24 @@ class MainActivity : AppCompatActivity() {
 
 
 
-        if (speechText in scollDown) {
-            getNowTab().webview.evaluateJavascript("scrollTo(document.documentElement.scrollTop, document.documentElement.scrollTop+200);") {}
-        } else if (speechText in scollUp) {
-            getNowTab().webview.evaluateJavascript("scrollTo(document.documentElement.scrollTop, document.documentElement.scrollTop-200);") {}
+        if (speechText in scrollDown) {
+            getNowTab().webview.pageDown(false)
+        } else if (speechText in scrollUp) {
+            getNowTab().webview.pageUp(false)
+        } else if (speechText in scrollUpMax) {
+            getNowTab().webview.pageUp(true)
+        } else if (speechText in scrollLeft) {
+            val view = getNowTab().webview
+            val desX = if(0 > view.scrollX - view.width) { 0 } else { view.scrollX - view.width }
+            smoothScrollAnime(view, desX, view.scrollY, 1000)
+        } else if (speechText in scrollRight) {
+            val view = getNowTab().webview
+            val desX = if(view.horizontalScrollableRange < view.scrollX + view.width) { view.horizontalScrollableRange } else { view.scrollX + view.width }
+            smoothScrollAnime(view, desX, view.scrollY, 1000)
         } else if (speechText in zoomIn) {
-            getNowTab().webview.evaluateJavascript(
-                "    if(document.body.style.zoom==\"\"){\n" +
-                        "        document.body.style.zoom = 110+\"%\";\n" +
-                        "    }else{\n" +
-                        "        var zoom = document.body.style.zoom.toString().substring(0, document.body.style.zoom.toString().indexOf(\"%\"));\n" +
-                        "        console.log(zoom);\n" +
-                        "        document.body.style.zoom = (parseInt(zoom)+10)+\"%\";\n" +
-                        "    }"
-            ) {}
+            getNowTab().webview.zoomIn()
         } else if (speechText in zoomOut) {
-            getNowTab().webview.evaluateJavascript(
-                "    if(document.body.style.zoom==\"\"){\n" +
-                        "        document.body.style.zoom = 90+\"%\";\n" +
-                        "    }else{\n" +
-                        "        var zoom = document.body.style.zoom.toString().substring(0, document.body.style.zoom.toString().indexOf(\"%\"));\n" +
-                        "        console.log(zoom);\n" +
-                        "        document.body.style.zoom = (parseInt(zoom)-10)+\"%\";\n" +
-                        "    }"
-            ) {}
+            getNowTab().webview.zoomOut()
         } else if (speechText in goBack) {
             getNowTab().webview.evaluateJavascript(
                 "history.back();"
@@ -726,6 +727,13 @@ class MainActivity : AppCompatActivity() {
         return getNowTab().webview.url.toString()
     }
 
+    private fun smoothScrollAnime(view: WebView, xval: Int, yval: Int, dur: Long) : AnimatorSet {
+        return AnimatorSet().apply {
+            duration = dur
+            play(ObjectAnimator.ofInt(view, "scrollX", view.scrollX, xval)).with(ObjectAnimator.ofInt(view, "scrollY", view.scrollY, yval))
+        }
+    }
+
     @RequiresApi(Build.VERSION_CODES.KITKAT)
     private fun startlistingElement(selector: String) {
         searchSelector = selector
@@ -733,20 +741,47 @@ class MainActivity : AppCompatActivity() {
         getNowTab().webview.evaluateJavascript(
             "javascript:(function() {" +
                     "   let queries = document.querySelectorAll('$searchSelector');" +
-                    "   for(let i = 0; i < queries.length; i++) {" +
-                    "       let wrapper = document.createElement('div');" +
-                    "       wrapper.className = 'highlightedByBrowser';" +
-                    "       wrapper.style.backgroundColor = (i == $searchIndex ? 'orange' : 'yellow');" +
-                    "       queries[i].parentNode.insertBefore(wrapper, queries[i]);" +
-                    "       wrapper.append(queries[i]);" +
+                    "   let wrapper;" +
+                    "   if(queries && queries.length != 0) {" +
+                    "       queries = Array.from(queries).filter(query => query.style.visibility != 'hidden'" +
+                    "       && query.style.display != 'none'" +
+                    "       && query.style.opacity != 1" +
+                    "       && query.offsetWidth != 0" +
+                    "       && query.offsetHeight != 0);" +
+                    "       if(queries && queries.length != 0) {" +
+                    "           let bound;" +
+                    "           for(let i = 0; i < queries.length; i++) {" +
+                    "               if(queries[i].parentNode.className == 'highlightedByBrowser') {" +
+                    "                   wrapper = queries[i].parentNode;" +
+                    "               } else if (queries[i].parentNode.className == 'selectedByBrowser') {" +
+                    "                   wrapper = queries[i].parentNode;" +
+                    "                   wrapper.className = 'highlightedByBrowser';" +
+                    "               } else {" +
+                    "                   wrapper = document.createElement('div');" +
+                    "                   wrapper.className = 'highlightedByBrowser';" +
+                    "                   queries[i].parentNode.insertBefore(wrapper, queries[i]);" +
+                    "                   wrapper.append(queries[i]);" +
+                    "               }" +
+                    "               wrapper.style.backgroundColor = 'yellow';" +
+                    "           }" +
+                    "           queries[0].parentNode.className = 'selectedByBrowser';" +
+                    "           queries[0].parentNode.style.backgroundColor = 'orange';" +
+                    "           bound = queries[0].boundingClientRect();" +
+                    "           return JSON.stringify({ 'length': queries.length," +
+                    "               'selectedLeft' : bound.left," +
+                    "               'selectedRight' : bound.right," +
+                    "               'selectedTop' : bound.top," +
+                    "               'selectedBottom' : bound.bottom" +
+                    "            });" +
+                    "       }" +
                     "   }" +
-                    "   queries[$searchIndex].scrollIntoView();" +
-                    "   return queries.length;" +
+                    "   return 'x';" +
                     "})();"
         ) {
             try {
-                searchLength = it.toInt()
-                Log.e("테스트", it)
+                if(it != "x") {
+                    var json : JSONObject = JSONObject(it.replace("\"", "").replace("\\", "\""))
+                }
             } catch (e: Exception) {
                 Log.e("테스트", e.localizedMessage)
             }
