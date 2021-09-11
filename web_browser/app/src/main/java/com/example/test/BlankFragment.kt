@@ -29,6 +29,9 @@ class BlankFragment : Fragment() {
         super.onStart()
         // 인터넷 연결 되어 있을 때 (셀룰러/와이파이)
         webview.settings.javaScriptEnabled = true // 자바 스크립트 허용
+        webview.settings.builtInZoomControls = true
+        webview.settings.setSupportZoom(true)
+        webview.settings.displayZoomControls = false
 
         // 웹뷰안에 새 창이 뜨지 않도록 방지
         webview.webViewClient = MyWebViewClient()

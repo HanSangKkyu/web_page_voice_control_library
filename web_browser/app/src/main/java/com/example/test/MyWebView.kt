@@ -19,11 +19,11 @@ class MyWebView : WebView {
 
     val verticalScrollableRange: Int
         get() {
-            return computeVerticalScrollRange() - width
+            return computeVerticalScrollRange() - height
         }
 
     val horizontalScrollableRange : Int
         get() {
-            return computeHorizontalScrollRange() - height
+            return computeHorizontalScrollRange() - width
         }
 }

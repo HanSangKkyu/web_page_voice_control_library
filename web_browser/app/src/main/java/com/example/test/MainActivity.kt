@@ -116,8 +116,13 @@ class MainActivity : AppCompatActivity() {
         urlEditText.setOnKeyListener(View.OnKeyListener { v, keyCode, event ->
             if (event.action == KeyEvent.ACTION_DOWN && keyCode == KeyEvent.KEYCODE_ENTER) {
                 v.clearFocus()
-                if (frList.isEmpty()) {
-                    makeNewTab()
+                try {
+                    if (frList.isEmpty()) {
+                        makeNewTab()
+                        //getNowTab().changeUrl(urlEditText.text.toString())
+                    }
+                } catch (e : Exception) {
+                    Log.e("테스트", e.localizedMessage)
                 }
                 Handler().postDelayed({
                     frList.get(tagToIndex(selectedBtnTag)).blankFragment.changeUrl(urlEditText.text.toString())
@@ -205,50 +210,53 @@ class MainActivity : AppCompatActivity() {
         return frList.get(tagToIndex(selectedBtnTag)).blankFragment
     }
 
-    private fun makeNewTab() {
+    private fun makeNewTab(): BlankFragment {
         val newTabBtn = Button(this)
 
         val randomString = makeRanStr()
-
-        newTabBtn.setLayoutParams(
-            TableLayout.LayoutParams(
-                ViewGroup.LayoutParams.WRAP_CONTENT,
-                ViewGroup.LayoutParams.WRAP_CONTENT,
-                1f
+        try {
+            newTabBtn.setLayoutParams(
+                TableLayout.LayoutParams(
+                    ViewGroup.LayoutParams.WRAP_CONTENT,
+                    ViewGroup.LayoutParams.WRAP_CONTENT,
+                    1f
+                )
             )
-        )
-        newTabBtn.tag = randomString
-        newTabBtn.text = randomString
-        selectedBtnTag = randomString
+            newTabBtn.tag = randomString
+            newTabBtn.text = randomString
+            selectedBtnTag = randomString
 
 
-        // 탭 화면 띄우기
-        newTabBtn.setOnClickListener { v ->
+            // 탭 화면 띄우기
+            newTabBtn.setOnClickListener { v ->
+                supportFragmentManager.beginTransaction()
+                    .hide(frList.get(tagToIndex(selectedBtnTag)).blankFragment)
+                    .commit()
+                supportFragmentManager.beginTransaction()
+                    .show(frList.get(tagToIndex(newTabBtn.tag.toString())).blankFragment).commit()
+                selectedBtnTag = newTabBtn.tag.toString()
+            }
+
+            // 탭 닫기
+            newTabBtn.setOnLongClickListener { v ->
+                supportFragmentManager.beginTransaction()
+                    .remove(frList.get(tagToIndex(selectedBtnTag)).blankFragment)
+                    .commit()
+                frList.removeAt(tagToIndex(selectedBtnTag))
+                newTabBtn.visibility = View.GONE
+                return@setOnLongClickListener true
+            }
+
+            tabList.addView(newTabBtn)
+            frList.add(TabInfo(newTabBtn.tag.toString(), BlankFragment(), newTabBtn))
             supportFragmentManager.beginTransaction()
-                .hide(frList.get(tagToIndex(selectedBtnTag)).blankFragment)
+                .add(R.id.frame, frList.get(tagToIndex(newTabBtn.tag.toString())).blankFragment)
                 .commit()
-            supportFragmentManager.beginTransaction()
-                .show(frList.get(tagToIndex(newTabBtn.tag.toString())).blankFragment).commit()
-            selectedBtnTag = newTabBtn.tag.toString()
+        } catch (e :Exception) {
+            Log.v("테스트", e.localizedMessage)
         }
 
-        // 탭 닫기
-        newTabBtn.setOnLongClickListener { v ->
-            supportFragmentManager.beginTransaction()
-                .remove(frList.get(tagToIndex(selectedBtnTag)).blankFragment)
-                .commit()
-            frList.removeAt(tagToIndex(selectedBtnTag))
-            newTabBtn.visibility = View.GONE
-            return@setOnLongClickListener true
-        }
-
-        tabList.addView(newTabBtn)
-        frList.add(TabInfo(newTabBtn.tag.toString(), BlankFragment(), newTabBtn))
-        supportFragmentManager.beginTransaction()
-            .add(R.id.frame, frList.get(tagToIndex(newTabBtn.tag.toString())).blankFragment)
-            .commit()
-
-
+        return frList.get(tagToIndex(newTabBtn.tag.toString())).blankFragment
     }
 
     private fun showNextTab() {
@@ -451,11 +459,11 @@ class MainActivity : AppCompatActivity() {
         } else if (speechText in scrollLeft) {
             val view = getNowTab().webview
             val desX = if(0 > view.scrollX - view.width) { 0 } else { view.scrollX - view.width }
-            smoothScrollAnime(view, desX, view.scrollY, 1000)
+            smoothScrollAnime(view, desX, view.scrollY, 1000).start()
         } else if (speechText in scrollRight) {
             val view = getNowTab().webview
             val desX = if(view.horizontalScrollableRange < view.scrollX + view.width) { view.horizontalScrollableRange } else { view.scrollX + view.width }
-            smoothScrollAnime(view, desX, view.scrollY, 1000)
+            smoothScrollAnime(view, desX, view.scrollY, 1000).start()
         } else if (speechText in zoomIn) {
             getNowTab().webview.zoomIn()
         } else if (speechText in zoomOut) {
