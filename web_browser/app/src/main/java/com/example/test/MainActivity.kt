@@ -9,7 +9,6 @@ import android.media.AudioManager
 import android.media.AudioManager.*
 import android.os.Build
 import android.os.Bundle
-import android.os.Handler
 import android.speech.RecognitionListener
 import android.speech.RecognizerIntent
 import android.speech.SpeechRecognizer
@@ -31,6 +30,7 @@ import org.json.JSONArray
 import java.util.*
 import android.animation.AnimatorSet
 import android.animation.ObjectAnimator
+import android.animation.ValueAnimator
 import android.webkit.WebView
 import org.json.JSONObject
 
@@ -70,11 +70,8 @@ class MainActivity : AppCompatActivity() {
             AdapterView.OnItemClickListener { parent, view, position, id ->
                 val selectItem = parent.getItemAtPosition(position) as String
                 if (frList.isEmpty()) {
-                    makeNewTab()
+                    makeNewTab().changeUrl(selectItem.toString())
                 }
-                Handler().postDelayed({
-                    frList.get(tagToIndex(selectedBtnTag)).blankFragment.changeUrl(selectItem.toString())
-                }, 1000L)
 
                 dlg?.dismiss()
             }
@@ -95,7 +92,7 @@ class MainActivity : AppCompatActivity() {
 
     @RequiresApi(Build.VERSION_CODES.KITKAT)
     private fun initWidget() {
-        // 마이크
+        // 마이크 버튼
         micBtn.setOnClickListener(View.OnClickListener() {
             startSTT()
         })
@@ -116,38 +113,25 @@ class MainActivity : AppCompatActivity() {
         urlEditText.setOnKeyListener(View.OnKeyListener { v, keyCode, event ->
             if (event.action == KeyEvent.ACTION_DOWN && keyCode == KeyEvent.KEYCODE_ENTER) {
                 v.clearFocus()
-                try {
-                    if (frList.isEmpty()) {
-                        makeNewTab()
-                        //getNowTab().changeUrl(urlEditText.text.toString())
-                    }
-                } catch (e : Exception) {
-                    Log.e("테스트", e.localizedMessage)
+                if (frList.isEmpty()) {
+                    makeNewTab().changeUrl(urlEditText.text.toString())
                 }
-                Handler().postDelayed({
-                    frList.get(tagToIndex(selectedBtnTag)).blankFragment.changeUrl(urlEditText.text.toString())
-                }, 1000L)
-
-
                 return@OnKeyListener true
             }
             false
         })
 
+        // 엔터 버튼
         enterBtn.setOnClickListener { v ->
             v.clearFocus()
             if (frList.isEmpty()) {
-                makeNewTab()
+                makeNewTab().changeUrl(urlEditText.text.toString())
             }
-            Handler().postDelayed({
-                frList.get(tagToIndex(selectedBtnTag)).blankFragment.changeUrl(urlEditText.text.toString())
-            }, 1000L)
-
-
         }
 
         // 새로고침 버튼
         refreshBtn.setOnClickListener { v ->
+            getNowTab().webview.reload()
             // 앱에서 자바스크립트 코드 실행시키기
 //            webview.loadUrl("javascript:location.reload()");
 //
@@ -171,7 +155,7 @@ class MainActivity : AppCompatActivity() {
 //            addBookmark()
         }
 
-        // 새탭 추가
+        // 새탭 버튼
         tabBtn.setOnClickListener { v ->
             makeNewTab()
         }
@@ -201,8 +185,6 @@ class MainActivity : AppCompatActivity() {
                 intent.putExtra("fun", res)
                 startActivity(intent)
             }
-
-
         }
     }
 
@@ -214,47 +196,42 @@ class MainActivity : AppCompatActivity() {
         val newTabBtn = Button(this)
 
         val randomString = makeRanStr()
-        try {
-            newTabBtn.setLayoutParams(
-                TableLayout.LayoutParams(
-                    ViewGroup.LayoutParams.WRAP_CONTENT,
-                    ViewGroup.LayoutParams.WRAP_CONTENT,
-                    1f
-                )
+        newTabBtn.setLayoutParams(
+            TableLayout.LayoutParams(
+                ViewGroup.LayoutParams.WRAP_CONTENT,
+                ViewGroup.LayoutParams.WRAP_CONTENT,
+                1f
             )
-            newTabBtn.tag = randomString
-            newTabBtn.text = randomString
-            selectedBtnTag = randomString
+        )
+        newTabBtn.tag = randomString
+        newTabBtn.text = randomString
+        selectedBtnTag = randomString
 
-
-            // 탭 화면 띄우기
-            newTabBtn.setOnClickListener { v ->
-                supportFragmentManager.beginTransaction()
-                    .hide(frList.get(tagToIndex(selectedBtnTag)).blankFragment)
-                    .commit()
-                supportFragmentManager.beginTransaction()
-                    .show(frList.get(tagToIndex(newTabBtn.tag.toString())).blankFragment).commit()
-                selectedBtnTag = newTabBtn.tag.toString()
-            }
-
-            // 탭 닫기
-            newTabBtn.setOnLongClickListener { v ->
-                supportFragmentManager.beginTransaction()
-                    .remove(frList.get(tagToIndex(selectedBtnTag)).blankFragment)
-                    .commit()
-                frList.removeAt(tagToIndex(selectedBtnTag))
-                newTabBtn.visibility = View.GONE
-                return@setOnLongClickListener true
-            }
-
-            tabList.addView(newTabBtn)
-            frList.add(TabInfo(newTabBtn.tag.toString(), BlankFragment(), newTabBtn))
+        // 탭 화면 띄우기
+        newTabBtn.setOnClickListener { v ->
             supportFragmentManager.beginTransaction()
-                .add(R.id.frame, frList.get(tagToIndex(newTabBtn.tag.toString())).blankFragment)
+                .hide(frList.get(tagToIndex(selectedBtnTag)).blankFragment)
                 .commit()
-        } catch (e :Exception) {
-            Log.v("테스트", e.localizedMessage)
+            supportFragmentManager.beginTransaction()
+                .show(frList.get(tagToIndex(newTabBtn.tag.toString())).blankFragment).commit()
+            selectedBtnTag = newTabBtn.tag.toString()
         }
+
+        // 탭 닫기
+        newTabBtn.setOnLongClickListener { v ->
+            supportFragmentManager.beginTransaction()
+                .remove(frList.get(tagToIndex(selectedBtnTag)).blankFragment)
+                .commit()
+            frList.removeAt(tagToIndex(selectedBtnTag))
+            newTabBtn.visibility = View.GONE
+            return@setOnLongClickListener true
+        }
+
+        tabList.addView(newTabBtn)
+        frList.add(TabInfo(newTabBtn.tag.toString(), BlankFragment(), newTabBtn))
+        supportFragmentManager.beginTransaction()
+            .add(R.id.frame, frList.get(tagToIndex(newTabBtn.tag.toString())).blankFragment)
+            .commit()
 
         return frList.get(tagToIndex(newTabBtn.tag.toString())).blankFragment
     }
@@ -406,11 +383,9 @@ class MainActivity : AppCompatActivity() {
     }
 
     override fun onDestroy() {
-
         if (speechRecognizer != null) {
             speechRecognizer!!.stopListening()
         }
-
         super.onDestroy()
     }
 
@@ -448,8 +423,6 @@ class MainActivity : AppCompatActivity() {
         val play = arrayOf("재생")
         val pause = arrayOf("정지")
 
-
-
         if (speechText in scrollDown) {
             getNowTab().webview.pageDown(false)
         } else if (speechText in scrollUp) {
@@ -478,7 +451,6 @@ class MainActivity : AppCompatActivity() {
             ) {}
         } else if (speechText in click) {
             clickThis()
-
         } else if (speechText in newTab) {
             makeNewTab()
         } else if (speechText in nexTab) {
@@ -488,18 +460,16 @@ class MainActivity : AppCompatActivity() {
         } else if (speechText in closeTab) {
             closeTab()
         } else if (speechText in refresh) {
-            getNowTab().webview.evaluateJavascript(
-                "location.reload();"
-            ) {}
+            getNowTab().webview.reload()
         } else if (speechText in addBookmark) {
             addBookmark()
-        } else if (speechText in zoomOut) {
+        } else if (speechText in findKeyword) {
 
-        } else if (speechText in zoomOut) {
+        } else if (speechText in readScreen) {
 
-        } else if (speechText in zoomOut) {
+        } else if (speechText in nextFocus) {
 
-        } else if (speechText in zoomOut) {
+        } else if (speechText in showFocus) {
 
         } else if (speechText in volUp) {
             volUp()
@@ -521,8 +491,6 @@ class MainActivity : AppCompatActivity() {
             // 기본 명령어에 해당되지 않은 요청이 들어왔을 때 사용자 지정 명령어를 검색한다.
             matchCustomCommand(speechText)
         }
-
-
     }
 
     @RequiresApi(Build.VERSION_CODES.KITKAT)
@@ -728,7 +696,6 @@ class MainActivity : AppCompatActivity() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1) {
             bookmarkDialog?.addBookmark(getNowUrl())
         }
-
     }
 
     private fun getNowUrl(): String {
@@ -741,6 +708,17 @@ class MainActivity : AppCompatActivity() {
             play(ObjectAnimator.ofInt(view, "scrollX", view.scrollX, xval)).with(ObjectAnimator.ofInt(view, "scrollY", view.scrollY, yval))
         }
     }
+
+//     오류가 많고 zoom 설정을 직접 제어할 수 있는 코드를 주지 않아 제어가 힘듦듦.
+//   @RequiresApi(Build.VERSION_CODES.O)
+//    private fun smoothZoomAnime(view: WebView, zoomScale: Float, dur: Long): ValueAnimator {
+//        return ValueAnimator.ofFloat((view.webViewClient as MyWebViewClient).presentScale, zoomScale).apply {
+//            duration = dur
+//            addUpdateListener {
+//                view.zoomBy(it.animatedValue as Float)
+//            }
+//        }
+//    }
 
     @RequiresApi(Build.VERSION_CODES.KITKAT)
     private fun startlistingElement(selector: String) {
@@ -774,12 +752,12 @@ class MainActivity : AppCompatActivity() {
                     "           }" +
                     "           queries[0].parentNode.className = 'selectedByBrowser';" +
                     "           queries[0].parentNode.style.backgroundColor = 'orange';" +
-                    "           bound = queries[0].boundingClientRect();" +
+                    "           bound = queries[0].getBoundingClientRect();" +
                     "           return JSON.stringify({ 'length': queries.length," +
-                    "               'selectedLeft' : bound.left," +
-                    "               'selectedRight' : bound.right," +
-                    "               'selectedTop' : bound.top," +
-                    "               'selectedBottom' : bound.bottom" +
+                    "               'selectedLeft' : bound.left + window.pageXOffset," +
+                    "               'selectedRight' : bound.right + window.pageXOffset," +
+                    "               'selectedTop' : bound.top + window.pageYOffset," +
+                    "               'selectedBottom' : bound.bottom + window.pageYOffset" +
                     "            });" +
                     "       }" +
                     "   }" +
@@ -789,6 +767,7 @@ class MainActivity : AppCompatActivity() {
             try {
                 if(it != "x") {
                     var json : JSONObject = JSONObject(it.replace("\"", "").replace("\\", "\""))
+                    Log.v("테스트", json.toString())
                 }
             } catch (e: Exception) {
                 Log.e("테스트", e.localizedMessage)
@@ -813,23 +792,55 @@ class MainActivity : AppCompatActivity() {
         getNowTab().webview.evaluateJavascript(
             "javascript:(function() {" +
                     "   let queries = document.querySelectorAll('$searchSelector');" +
-                    "   for(let i = 0; i < queries.length; i++) {" +
-                    "       if(queries[i].parentNode.className != 'highlightedByBrowser') {" +
-                    "           let wrapper = document.createElement('div');" +
-                    "           wrapper.className = 'highlightedByBrowser';" +
-                    "           queries.parentNode.insertBefore(wrapper, queries[i]);" +
-                    "           wrapper.append(queries[i]);" +
+                    "   let wrapper;" +
+                    "   if(queries && queries.length != 0) {" +
+                    "       queries = Array.from(queries).filter(query => query.style.visibility != 'hidden'" +
+                    "       && query.style.display != 'none'" +
+                    "       && query.style.opacity != 1" +
+                    "       && query.offsetWidth != 0" +
+                    "       && query.offsetHeight != 0);" +
+                    "       if(queries && queries.length != 0) {" +
+                    "           let bound;" +
+                    "           let index = -1;" +
+                    "           for(let i = 0; i < queries.length; i++) {" +
+                    "               if(queries[i].parentNode.className == 'highlightedByBrowser') {" +
+                    "                   wrapper = queries[i].parentNode;" +
+                    "               } else if (queries[i].parentNode.className == 'selectedByBrowser') {" +
+                    "                   index = i;" +
+                    "                   wrapper = queries[i].parentNode;" +
+                    "                   wrapper.className = 'highlightedByBrowser';" +
+                    "               } else {" +
+                    "                   wrapper = document.createElement('div');" +
+                    "                   wrapper.className = 'highlightedByBrowser';" +
+                    "                   queries[i].parentNode.insertBefore(wrapper, queries[i]);" +
+                    "                   wrapper.append(queries[i]);" +
+                    "               }" +
+                    "               wrapper.style.backgroundColor = 'yellow';" +
+                    "           }" +
+                    "           if(index != -1) {" +
+                    "               index = (index + 1) % queries.length;" +
+                    "           } else {" +
+                    "               index = 0;" +
+                    "           }" +
+                    "           queries[index].parentNode.className = 'selectedByBrowser';" +
+                    "           queries[index].parentNode.style.backgroundColor = 'orange';" +
+                    "           bound = queries[index].getBoundingClientRect();" +
+                    "           return JSON.stringify({ 'length': queries.length," +
+                    "               'selectedLeft' : bound.left + window.pageXOffset," +
+                    "               'selectedRight' : bound.right + window.pageXOffset," +
+                    "               'selectedTop' : bound.top + window.pageYOffset," +
+                    "               'selectedBottom' : bound.bottom + window.pageYOffset" +
+                    "            });" +
                     "       }" +
-                    "       queries[i].parentNode.style.backgroundColor = 'yellow';" +
                     "   }" +
-                    "   queries[$searchIndex].parentNode.style.backgroundColor = 'orange';" +
-                    "   queries[$searchIndex].scrollIntoView();" +
-                    "   return queries.length;" +
+                    "   return 'x';" +
                     "})();"
         ) {
             try {
-                searchLength = it.toInt()
-                Log.e("테스트", it)
+                if(it != "x") {
+                    var json : JSONObject = JSONObject(it.replace("\"", "").replace("\\", "\""))
+                    Log.v("테스트", json.toString())
+                }
             } catch (e: Exception) {
                 Log.e("테스트", "why: " + e.localizedMessage)
             }

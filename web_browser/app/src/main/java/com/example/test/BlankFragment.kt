@@ -24,6 +24,8 @@ class BlankFragment : Fragment() {
     // TODO: Rename and change types of parameters
     private var param1: String? = null
     private var param2: String? = null
+    private var isWebViewReady = false
+    private var tempStr :String = ""
 
     override fun onStart() {
         super.onStart()
@@ -37,10 +39,12 @@ class BlankFragment : Fragment() {
         webview.webViewClient = MyWebViewClient()
         webview.webChromeClient = WebChromeClient()
 
+        // 웹뷰의 준비가 다 됐으면 상태를 업데이트하고 tempStr에 보관된 주소로 접속
+        isWebViewReady = true
+        if (tempStr != "") {
+            webview.loadUrl("http://" + tempStr)
+        }
     }
-
-
-
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -89,6 +93,10 @@ class BlankFragment : Fragment() {
     }
 
     fun changeUrl(url:String){
-        webview.loadUrl("http://"+url)
+        if (isWebViewReady) {
+            webview.loadUrl("http://" + url)
+        } else {
+            tempStr = url
+        }
     }
 }
