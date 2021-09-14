@@ -204,7 +204,7 @@ class MainActivity : AppCompatActivity() {
             )
         )
         newTabBtn.tag = randomString
-        newTabBtn.text = randomString
+        newTabBtn.text = "새 탭"
         selectedBtnTag = randomString
 
         // 탭 화면 띄우기

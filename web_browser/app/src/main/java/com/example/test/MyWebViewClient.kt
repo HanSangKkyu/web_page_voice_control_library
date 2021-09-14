@@ -1,11 +1,16 @@
 package com.example.test
 
+import android.graphics.Bitmap
 import android.os.Build
 import android.util.Log
 import android.webkit.WebView
 import android.webkit.WebViewClient
+import androidx.annotation.RequiresApi
 import org.json.JSONException
 import org.json.JSONObject
+import org.jsoup.Jsoup
+import org.jsoup.nodes.Document
+import org.jsoup.select.Elements
 
 class MyWebViewClient : WebViewClient() {
 
@@ -101,4 +106,18 @@ class MyWebViewClient : WebViewClient() {
         super.onScaleChanged(view, oldScale, newScale)
         presentScale = newScale
     }
+
+    @RequiresApi(Build.VERSION_CODES.LOLLIPOP)
+    override fun onPageStarted(view: WebView?, url: String?, favicon: Bitmap?) {
+        super.onPageStarted(view, url, favicon)
+
+        val doc: Document = Jsoup.connect(url).get()
+//        val title: Elements = doc.select("title")
+
+        Log.e("asdf",url.toString())
+        Log.e("asdf",doc.title())
+//        Log.e("asdf",view?.transitionName.toString())
+    }
+
+
 }

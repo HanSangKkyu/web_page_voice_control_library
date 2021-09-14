@@ -232,7 +232,7 @@ class DefaultFunVO {
 
 
 
-        // 검색해줘 명령어 (구글, 네이버, 다음, 네이트, 빙, 야후, 유튜브,)
+        // 검색해줘 명령어 (구글, 네이버, 다음, 네이트, 빙, 야후, 유튜브)
         funList.add(
             Funtion(
                 "m.naver.com",
