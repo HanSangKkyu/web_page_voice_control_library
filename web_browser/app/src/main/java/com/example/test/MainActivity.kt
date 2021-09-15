@@ -1,6 +1,8 @@
 package com.example.test
 
 import android.Manifest
+import android.animation.AnimatorSet
+import android.animation.ObjectAnimator
 import android.app.Dialog
 import android.content.Context
 import android.content.Intent
@@ -9,6 +11,7 @@ import android.media.AudioManager
 import android.media.AudioManager.*
 import android.os.Build
 import android.os.Bundle
+import android.os.Handler
 import android.speech.RecognitionListener
 import android.speech.RecognizerIntent
 import android.speech.SpeechRecognizer
@@ -16,6 +19,7 @@ import android.util.Log
 import android.view.KeyEvent
 import android.view.View
 import android.view.ViewGroup
+import android.webkit.WebView
 import android.widget.AdapterView
 import android.widget.Button
 import android.widget.TableLayout
@@ -27,35 +31,67 @@ import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.dialog_bookmark.*
 import kotlinx.android.synthetic.main.fragment_blank.*
 import org.json.JSONArray
-import java.util.*
-import android.animation.AnimatorSet
-import android.animation.ObjectAnimator
-import android.animation.ValueAnimator
-import android.webkit.WebView
 import org.json.JSONObject
+import java.util.*
 
 
 class MainActivity : AppCompatActivity() {
 
     private var speechRecognizer: SpeechRecognizer? = null
-    private var frList: ArrayList<TabInfo> = ArrayList()
-    private var selectedBtnTag: String = ""
     private var bookmarkDialog: BookmarkDialog? = null
     private var dlg: Dialog? = null
-
     private var searchSelector: String = ""
     private var searchIndex: Int = 0
     private var searchLength: Int = 0
+
+    companion object {
+        val handler = Handler(){
+            when (it.what) {
+                0 ->{
+                    getNowBtn().text = nowBtnTitle
+                }
+            }
+            true
+        }
+
+        var frList: ArrayList<TabInfo> = ArrayList()
+        private var selectedBtnTag: String = ""
+        var nowBtnTitle = ""
+
+        fun changeBtnTitle(title:String){
+            nowBtnTitle = title
+            handler.sendEmptyMessage(0)
+        }
+
+        fun getNowBtn(): Button {
+            return frList.get(tagToIndex(selectedBtnTag)).button
+        }
+
+        fun tagToIndex(_tag: String): Int {
+            for (i in 0..frList.size) {
+                try {
+                    if (frList.get(i).tag == _tag) {
+                        return i
+                    }
+                } catch (e: Exception) {
+                    if (frList.size > 0) {
+                        return 0
+                    } else {
+                        return -1
+                    }
+                }
+            }
+            return -1
+        }
+    }
 
     @RequiresApi(Build.VERSION_CODES.KITKAT)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
-
         requestMic()
         initWidget()
         initDialog()
-
     }
 
     @RequiresApi(Build.VERSION_CODES.JELLY_BEAN_MR1)
@@ -188,7 +224,7 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    private fun getNowTab(): BlankFragment {
+    fun getNowTab(): BlankFragment {
         return frList.get(tagToIndex(selectedBtnTag)).blankFragment
     }
 
@@ -228,10 +264,14 @@ class MainActivity : AppCompatActivity() {
         }
 
         tabList.addView(newTabBtn)
-        frList.add(TabInfo(newTabBtn.tag.toString(), BlankFragment(), newTabBtn))
+        var bf = BlankFragment()
+
         supportFragmentManager.beginTransaction()
-            .add(R.id.frame, frList.get(tagToIndex(newTabBtn.tag.toString())).blankFragment)
+            .add(R.id.frame, bf)
             .commit()
+
+        frList.add(TabInfo(newTabBtn.tag.toString(), bf, newTabBtn))
+
 
         return frList.get(tagToIndex(newTabBtn.tag.toString())).blankFragment
     }
@@ -657,23 +697,9 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    fun tagToIndex(_tag: String): Int {
-        for (i in 0..frList.size) {
-            try {
-                if (frList.get(i).tag == _tag) {
-                    return i
-                }
-            } catch (e: Exception) {
-                Log.d("dd", e.toString())
-                if (frList.size > 0) {
-                    return 0
-                } else {
-                    return -1
-                }
-            }
-        }
-        return -1
-    }
+
+
+
 
     fun closeTab() {
         supportFragmentManager.beginTransaction()

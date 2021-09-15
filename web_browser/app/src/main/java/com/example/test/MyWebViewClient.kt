@@ -18,6 +18,7 @@ class MyWebViewClient : WebViewClient() {
     var maxScale: Float = 5.0f
     var minScale: Float = 1.0f
     var presentScale: Float = 1.0f
+
     // 페이지 로드 후 name 속성이 viewport인 meta 태그의 내용을 분석하여
     // 확대 가능 여부, 최대/최소 확대 가능 수치를 받아오며
     // 강제 줌을 세팅한 경우 그에 맞게 meta 태그를 변형한다.
@@ -111,12 +112,22 @@ class MyWebViewClient : WebViewClient() {
     override fun onPageStarted(view: WebView?, url: String?, favicon: Bitmap?) {
         super.onPageStarted(view, url, favicon)
 
-        val doc: Document = Jsoup.connect(url).get()
-//        val title: Elements = doc.select("title")
 
-        Log.e("asdf",url.toString())
-        Log.e("asdf",doc.title())
-//        Log.e("asdf",view?.transitionName.toString())
+        try{
+            Thread(Runnable {
+                val doc: Document = Jsoup.connect(url).get()
+                val title: Elements = doc.select("title")
+                Log.e("asdf",url.toString())
+                Log.e("asdf",doc.title())
+                MainActivity.changeBtnTitle(doc.title())
+            }).start()
+        }
+        catch(e : Exception){
+            e.printStackTrace()
+        }
+
+
+
     }
 
 
