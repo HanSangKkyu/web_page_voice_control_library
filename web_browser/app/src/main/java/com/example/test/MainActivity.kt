@@ -108,6 +108,8 @@ class MainActivity : AppCompatActivity() {
                 val selectItem = parent.getItemAtPosition(position) as String
                 if (frList.isEmpty()) {
                     makeNewTab().changeUrl(selectItem.toString())
+                }else{
+                    goToSite(urlEditText.text.toString())
                 }
 
                 dlg?.dismiss()
@@ -152,6 +154,8 @@ class MainActivity : AppCompatActivity() {
                 v.clearFocus()
                 if (frList.isEmpty()) {
                     makeNewTab().changeUrl(urlEditText.text.toString())
+                }else{
+                    goToSite(urlEditText.text.toString())
                 }
                 return@OnKeyListener true
             }
@@ -163,6 +167,8 @@ class MainActivity : AppCompatActivity() {
             v.clearFocus()
             if (frList.isEmpty()) {
                 makeNewTab().changeUrl(urlEditText.text.toString())
+            }else{
+                goToSite(urlEditText.text.toString())
             }
         }
 
@@ -261,22 +267,9 @@ class MainActivity : AppCompatActivity() {
 
         // 탭 닫기
         newTabBtn.setOnLongClickListener { v ->
-
             if(newTabBtn.tag == frList.get(tagToIndex(selectedBtnTag)).button.tag) {
-                supportFragmentManager.beginTransaction()
-                    .remove(frList.get(tagToIndex(selectedBtnTag)).blankFragment)
-                    .commit()
-                frList.removeAt(tagToIndex(selectedBtnTag))
-                newTabBtn.visibility = View.GONE
-
-                // 옆 탭 띄우기 필요
-                if(!frList.isEmpty()){
-                    selectedBtnTag = frList.get(0).button.tag.toString()
-                    changeBtnTextColor()
-
-                    supportFragmentManager.beginTransaction()
-                        .show(frList.get(tagToIndex(selectedBtnTag)).blankFragment).commit()
-                }
+                // 사용 중인 탭만 닫을 수 있다.
+                closeTab()
             }
             return@setOnLongClickListener true
         }
