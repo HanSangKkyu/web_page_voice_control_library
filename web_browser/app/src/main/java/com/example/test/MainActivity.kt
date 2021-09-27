@@ -28,6 +28,7 @@ import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import kotlinx.android.synthetic.main.activity_main.*
+import kotlinx.android.synthetic.main.activity_main.view.*
 import kotlinx.android.synthetic.main.dialog_bookmark.*
 import kotlinx.android.synthetic.main.fragment_blank.*
 import org.json.JSONArray
@@ -213,7 +214,6 @@ class MainActivity : AppCompatActivity() {
                 "Object.getOwnPropertyNames(window).filter(item => typeof window[item] === 'function' && !(/\\{\\s*\\[native code\\]\\s*\\}/).test('' + window[item]))"
 
             getNowTab().webview.evaluateJavascript("(function(){return(" + script + "); })();") {
-
                 // get this page functions
                 var res = it.substring(1, it.length - 1)
                 res = res.replace("\"", "")
@@ -245,21 +245,39 @@ class MainActivity : AppCompatActivity() {
 
         // 탭 화면 띄우기
         newTabBtn.setOnClickListener { v ->
+
             supportFragmentManager.beginTransaction()
                 .hide(frList.get(tagToIndex(selectedBtnTag)).blankFragment)
                 .commit()
             supportFragmentManager.beginTransaction()
                 .show(frList.get(tagToIndex(newTabBtn.tag.toString())).blankFragment).commit()
             selectedBtnTag = newTabBtn.tag.toString()
+
+            changeBtnTextColor()
+
+
+
         }
 
         // 탭 닫기
         newTabBtn.setOnLongClickListener { v ->
-            supportFragmentManager.beginTransaction()
-                .remove(frList.get(tagToIndex(selectedBtnTag)).blankFragment)
-                .commit()
-            frList.removeAt(tagToIndex(selectedBtnTag))
-            newTabBtn.visibility = View.GONE
+
+            if(newTabBtn.tag == frList.get(tagToIndex(selectedBtnTag)).button.tag) {
+                supportFragmentManager.beginTransaction()
+                    .remove(frList.get(tagToIndex(selectedBtnTag)).blankFragment)
+                    .commit()
+                frList.removeAt(tagToIndex(selectedBtnTag))
+                newTabBtn.visibility = View.GONE
+
+                // 옆 탭 띄우기 필요
+                if(!frList.isEmpty()){
+                    selectedBtnTag = frList.get(0).button.tag.toString()
+                    changeBtnTextColor()
+
+                    supportFragmentManager.beginTransaction()
+                        .show(frList.get(tagToIndex(selectedBtnTag)).blankFragment).commit()
+                }
+            }
             return@setOnLongClickListener true
         }
 
@@ -272,6 +290,7 @@ class MainActivity : AppCompatActivity() {
 
         frList.add(TabInfo(newTabBtn.tag.toString(), bf, newTabBtn))
 
+        changeBtnTextColor()
 
         return frList.get(tagToIndex(newTabBtn.tag.toString())).blankFragment
     }
@@ -706,6 +725,15 @@ class MainActivity : AppCompatActivity() {
             .remove(frList.get(tagToIndex(selectedBtnTag)).blankFragment).commit()
         frList.get(tagToIndex(selectedBtnTag)).button.visibility = View.GONE
         frList.removeAt(tagToIndex(selectedBtnTag))
+
+        if(!frList.isEmpty()){
+            selectedBtnTag = frList.get(0).button.tag.toString()
+            changeBtnTextColor()
+
+            supportFragmentManager.beginTransaction()
+                .show(frList.get(tagToIndex(selectedBtnTag)).blankFragment).commit()
+        }
+
     }
 
     private fun volUp() {
@@ -1002,6 +1030,16 @@ class MainActivity : AppCompatActivity() {
 
         } else if (funStr == "") {
 
+        }
+    }
+
+    fun changeBtnTextColor(){
+        // 현재 사용중인 탭 버튼만 색을 빨간색으로 바꾼다.
+        for(tmpTabInfo in frList){
+            tmpTabInfo.button.setTextColor(Color.parseColor("#ffffff"))
+            if(tmpTabInfo.button.tag.toString() == selectedBtnTag){
+                tmpTabInfo.button.setTextColor(Color.parseColor("#ff0000"))
+            }
         }
     }
 }
