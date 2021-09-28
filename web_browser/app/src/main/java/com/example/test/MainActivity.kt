@@ -16,6 +16,8 @@ import android.os.Bundle
 import android.os.Handler
 import android.speech.RecognitionListener
 import android.speech.SpeechRecognizer
+import android.util.Base64.NO_WRAP
+import android.util.Base64.encodeToString
 import android.util.Log
 import android.view.KeyEvent
 import android.view.View
@@ -31,6 +33,7 @@ import androidx.core.app.ActivityCompat
 import com.android.volley.Request
 import com.android.volley.Response
 import com.android.volley.toolbox.HttpHeaderParser
+import com.android.volley.toolbox.StringRequest
 import com.android.volley.toolbox.Volley
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.activity_main.view.*
@@ -42,6 +45,7 @@ import java.io.*
 import java.nio.ByteBuffer
 import java.nio.charset.Charset
 import java.util.*
+import kotlin.collections.HashMap
 import kotlin.experimental.and
 
 
@@ -56,11 +60,9 @@ class MainActivity : AppCompatActivity() {
     private var recorder: MediaRecorder? = null
     private val recordingFilePath: String by lazy {
         "${externalCacheDir?.absolutePath}/recording.pcm"
-//        "${externalCacheDir?.absolutePath}/recording.wav"
     }
     private val wavFilePath: String by lazy {
         "${externalCacheDir?.absolutePath}/recording.wav"
-//        "${externalCacheDir?.absolutePath}/recording.wav"
     }
     val audioRecord : OnlyAudioRecorder = OnlyAudioRecorder.instance
 
@@ -409,7 +411,7 @@ class MainActivity : AppCompatActivity() {
         audioRecord.PCMPath = recordingFilePath
         audioRecord.WAVPath = wavFilePath
 
-        audioRecord.startRecord()//Start recording
+        audioRecord.startRecord() //Start recording
 
         Thread(Runnable {
             var startFlag = false
@@ -441,7 +443,17 @@ class MainActivity : AppCompatActivity() {
     private fun stopREC() {
 
         audioRecord.stopRecord()
-        requestSTT()
+
+        Thread(Runnable {
+            while(true) {
+                Thread.sleep(100L) // 0.1초 마다 wav파일이 완성되었는지 확인한다.
+                if(audioRecord.isWavComplete){
+                    requestSTT()
+                    break
+                }
+            }
+        }).start()
+
 
 //        음성인식 결과 듣고 싶을 때 사용
 //        var mediaPlayer = MediaPlayer()
@@ -451,48 +463,93 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun requestSTT() {
-        val request = object : VolleyFileUploadRequest(
-            Request.Method.POST,
-            "https://westus.stt.speech.microsoft.com/speech/recognition/conversation/cognitiveservices/v1?language=ko-KR",
-            Response.Listener {
-                val response = it
-                val json = String(
-                    response?.data ?: ByteArray(0),
-                    Charset.forName(HttpHeaderParser.parseCharset(response?.headers)))
+        val queue = Volley.newRequestQueue(this)
+        val url = "https://speech.googleapis.com/v1/speech:recognize?key=AIzaSyAq7bI-K6mDlK1Hd706j5eSaQbUgiB6m2Q"
 
-                println("error is: $it $json")
-            },
-            Response.ErrorListener {
-                val response = it.networkResponse
-                val json = String(
-                    response?.data ?: ByteArray(0),
-                    Charset.forName(HttpHeaderParser.parseCharset(response?.headers)))
+        val bytes = File(wavFilePath).readBytes()
+        var base64 = encodeToString(bytes, 0)
+        base64 = base64.replace("\n","")
+        base64 = base64.replace("\"","")
+//        println("base64 $base64")
 
-                println("error is: $it $json")
+        val stringReq : StringRequest =
+            object : StringRequest(Method.POST, url,
+                Response.Listener { response ->
+                    // response
+                    var strResp = response.toString()
+                    Log.d("API", strResp)
+
+                },
+                Response.ErrorListener { error ->
+                    val json = String(
+                        error.networkResponse?.data ?: ByteArray(0),
+                        Charset.forName(HttpHeaderParser.parseCharset(error.networkResponse?.headers)))
+                    Log.d("API", "error => $json")
+                }
+            ){
+                override fun getBody(): ByteArray {
+                    val raw = "{\n" +
+                            "  \"config\":{\n" +
+                            "      \"languageCode\":\"ko-KR\"\n" +
+                            "  },\n" +
+                            "  \"audio\":{\n" +
+                            "    \"content\":\""+base64+"\"\n" +
+                            "  }\n" +
+                            "}"
+                    return raw.toByteArray()
+                }
+
+                override fun getHeaders(): MutableMap<String, String> {
+                    val headers = HashMap<String, String>()
+                    headers["Content-Type"] = "application/json"
+                    return headers
+                }
             }
-        ) {
-//            override fun getByteData(): MutableMap<String, FileDataPart> {
-//                var params = HashMap<String, FileDataPart>()
-////                params["file\"; filename=\"recording.wav\""] = FileDataPart("recording", File(recordingFilePath).readBytes(), "wav")
-////                params["file"] = FileDataPart("recording", File(recordingFilePath).readBytes(), "wav")
-//                return params
+        queue.add(stringReq)
+
+
+//        val request = object : VolleyFileUploadRequest(
+//            Request.Method.POST,
+//            "https://westus.stt.speech.microsoft.com/speech/recognition/conversation/cognitiveservices/v1?language=ko-KR",
+//            Response.Listener {
+//                val response = it
+//                val json = String(
+//                    response?.data ?: ByteArray(0),
+//                    Charset.forName(HttpHeaderParser.parseCharset(response?.headers)))
+//
+//                println("error is: $it $json")
+//            },
+//            Response.ErrorListener {
+//                val response = it.networkResponse
+//                val json = String(
+//                    response?.data ?: ByteArray(0),
+//                    Charset.forName(HttpHeaderParser.parseCharset(response?.headers)))
+//
+//                println("error is: $it $json")
 //            }
-
-            override fun getBody(): ByteArray {
-                return File(wavFilePath).readBytes()
-            }
-
-            // Providing Request Headers
-            override fun getHeaders(): MutableMap<String, String> {
-                // Create HashMap of your Headers as the example provided below
-
-                val headers = HashMap<String, String>()
-                headers["Ocp-Apim-Subscription-Key"] = "11dee688d18444d9837321f89ce98c38"
-                headers["Content-Type"] = "audio/wav"
-                return headers
-            }
-        }
-        Volley.newRequestQueue(this).add(request)
+//        ) {
+////            override fun getByteData(): MutableMap<String, FileDataPart> {
+////                var params = HashMap<String, FileDataPart>()
+//////                params["file\"; filename=\"recording.wav\""] = FileDataPart("recording", File(recordingFilePath).readBytes(), "wav")
+//////                params["file"] = FileDataPart("recording", File(recordingFilePath).readBytes(), "wav")
+////                return params
+////            }
+//
+//            override fun getBody(): ByteArray {
+//                return File(wavFilePath).readBytes()
+//            }
+//
+//            // Providing Request Headers
+//            override fun getHeaders(): MutableMap<String, String> {
+//                // Create HashMap of your Headers as the example provided below
+//
+//                val headers = HashMap<String, String>()
+//                headers["Ocp-Apim-Subscription-Key"] = "11dee688d18444d9837321f89ce98c38"
+//                headers["Content-Type"] = "audio/wav"
+//                return headers
+//            }
+//        }
+//        Volley.newRequestQueue(this).add(request)
 
     }
 

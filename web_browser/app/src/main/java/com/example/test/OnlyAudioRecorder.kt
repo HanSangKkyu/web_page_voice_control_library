@@ -3,12 +3,18 @@ import android.media.AudioFormat
 import android.media.AudioRecord
 import android.media.MediaRecorder
 import android.os.Environment
+import android.util.Base64
 import android.util.Log
+import com.android.volley.Response
+import com.android.volley.toolbox.HttpHeaderParser
+import com.android.volley.toolbox.StringRequest
+import com.android.volley.toolbox.Volley
 import java.io.BufferedOutputStream
 import java.io.File
 import java.io.FileInputStream
 import java.io.FileOutputStream
 import java.lang.Exception
+import java.nio.charset.Charset
 
 /**
  *@author :
@@ -38,7 +44,8 @@ class OnlyAudioRecorder private constructor(){
     }
     var PCMPath = Environment.getExternalStorageDirectory().path.toString()+"/RawAudio.pcm"
     var WAVPath = Environment.getExternalStorageDirectory().path.toString()+"/FinalAudio.wav"
-    var Amplitude = 0;
+    var Amplitude = 0
+    var isWavComplete = false // wav 파일을 완성했는지
 
     private var bufferSizeInByte:Int = 0//Minimum recording buffer
     private var audioRecorder:AudioRecord? = null//Recording object
@@ -62,6 +69,8 @@ class OnlyAudioRecorder private constructor(){
             isRecord = true
 
             AudioRecordToFile().start()
+            isWavComplete = false
+
             return 0
         }
     }
@@ -99,7 +108,13 @@ class OnlyAudioRecorder private constructor(){
                 Amplitude = sum
             }
 
-            length = audioRecorder!!.read(audioData, 0, bufferSizeInByte)//Get audio data
+            try{
+                length = audioRecorder!!.read(audioData, 0, bufferSizeInByte)//Get audio data
+            }catch (e:Exception){
+                Log.e("asdf",e.toString())
+            }
+
+
             if (AudioRecord.ERROR_INVALID_OPERATION != length) {
                 try{
                     out.write(audioData, 0, length)//write file
@@ -129,6 +144,8 @@ class OnlyAudioRecorder private constructor(){
         }
         fileIn.close()
         fileOut.close()
+
+        isWavComplete = true
     }
 
     //Add file header in WAV format
