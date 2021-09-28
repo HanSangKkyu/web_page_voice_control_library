@@ -9,6 +9,7 @@ import android.content.Intent
 import android.graphics.Color
 import android.media.AudioManager
 import android.media.AudioManager.*
+import android.media.MediaPlayer
 import android.media.MediaRecorder
 import android.os.Build
 import android.os.Bundle
@@ -37,16 +38,11 @@ import kotlinx.android.synthetic.main.dialog_bookmark.*
 import kotlinx.android.synthetic.main.fragment_blank.*
 import org.json.JSONArray
 import org.json.JSONObject
-import java.io.File
-import java.io.IOException
+import java.io.*
+import java.nio.ByteBuffer
 import java.nio.charset.Charset
 import java.util.*
-
-
-
-
-
-
+import kotlin.experimental.and
 
 
 class MainActivity : AppCompatActivity() {
@@ -59,9 +55,14 @@ class MainActivity : AppCompatActivity() {
     private var searchLength: Int = 0
     private var recorder: MediaRecorder? = null
     private val recordingFilePath: String by lazy {
-        "${externalCacheDir?.absolutePath}/recording.3gp"
+        "${externalCacheDir?.absolutePath}/recording.pcm"
 //        "${externalCacheDir?.absolutePath}/recording.wav"
     }
+    private val wavFilePath: String by lazy {
+        "${externalCacheDir?.absolutePath}/recording.wav"
+//        "${externalCacheDir?.absolutePath}/recording.wav"
+    }
+    val audioRecord : OnlyAudioRecorder = OnlyAudioRecorder.instance
 
     companion object {
         val handler = Handler(){
@@ -404,39 +405,27 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun startREC(){
-        WavAudioRecorder.getInstanse()
-        AndroidAudioConverter.load(this, Environment.getExternalStorageDirectory() + "/audio_test/recorded_audio.wav");
+        // 파일 경로 설정
+        audioRecord.PCMPath = recordingFilePath
+        audioRecord.WAVPath = wavFilePath
 
-        recorder = MediaRecorder().apply {
-            setAudioSource(MediaRecorder.AudioSource.MIC)
-            setOutputFormat(MediaRecorder.OutputFormat.THREE_GPP)
-            setOutputFile(recordingFilePath)
-            setAudioEncoder(MediaRecorder.AudioEncoder.AMR_NB)
+        audioRecord.startRecord()//Start recording
 
-            try {
-                prepare()
-            } catch (e: IOException) {
-                Log.e("recording error", "prepare() failed")
-            }
-
-            start()
-        }
-//        recorder?.start()
         Thread(Runnable {
             var startFlag = false
             var cnt = 10 // 1초 동안 말이 없으면 녹음을 멈춘다.
             while(true) {
                 Thread.sleep(100L) // 0.1초 마다 발화를 하고 있는 상태인지 확인한다.
-                var Amplitude =  recorder?.getMaxAmplitude()
+                var Amplitude =  audioRecord.Amplitude
                 Log.e("asdf",Amplitude.toString())
-                if(Amplitude.toString().toInt() > 300){
+                if(Amplitude.toString().toInt() > 40000){
                     if(!startFlag) {
                         startFlag = true
                     }
                     cnt = 10
                 }
 
-                if(Amplitude.toString().toInt() < 300 && startFlag){
+                if(Amplitude.toString().toInt() < 40000 && startFlag){
                     cnt --
                     if(cnt == 0){
                         stopREC()
@@ -446,23 +435,19 @@ class MainActivity : AppCompatActivity() {
 
             }
         }).start()
+
     }
 
     private fun stopREC() {
-        recorder?.run {
-            stop()
-            release()
 
-            // 녹음 파일이 완전한지 들어보기
-            requestSTT()
-//            var mediaPlayer = MediaPlayer()
-//            mediaPlayer.setDataSource(recordingFilePath)
-//            mediaPlayer.prepare()
-//            mediaPlayer.start()
+        audioRecord.stopRecord()
+        requestSTT()
 
-        }
-        recorder = null
-
+//        음성인식 결과 듣고 싶을 때 사용
+//        var mediaPlayer = MediaPlayer()
+//        mediaPlayer.setDataSource(wavFilePath)
+//        mediaPlayer.prepare()
+//        mediaPlayer.start()
     }
 
     private fun requestSTT() {
@@ -470,7 +455,12 @@ class MainActivity : AppCompatActivity() {
             Request.Method.POST,
             "https://westus.stt.speech.microsoft.com/speech/recognition/conversation/cognitiveservices/v1?language=ko-KR",
             Response.Listener {
-                println("response is: $it")
+                val response = it
+                val json = String(
+                    response?.data ?: ByteArray(0),
+                    Charset.forName(HttpHeaderParser.parseCharset(response?.headers)))
+
+                println("error is: $it $json")
             },
             Response.ErrorListener {
                 val response = it.networkResponse
@@ -479,9 +469,6 @@ class MainActivity : AppCompatActivity() {
                     Charset.forName(HttpHeaderParser.parseCharset(response?.headers)))
 
                 println("error is: $it $json")
-//                success(
-//                    Gson().fromJson(json),
-//                    HttpHeaderParser.parseCacheHeaders(response))
             }
         ) {
 //            override fun getByteData(): MutableMap<String, FileDataPart> {
@@ -492,9 +479,7 @@ class MainActivity : AppCompatActivity() {
 //            }
 
             override fun getBody(): ByteArray {
-                return File(recordingFilePath).readBytes()
-                val audiofile = File(recordingFilePath).readBytes()
-                audiofile
+                return File(wavFilePath).readBytes()
             }
 
             // Providing Request Headers
@@ -509,41 +494,6 @@ class MainActivity : AppCompatActivity() {
         }
         Volley.newRequestQueue(this).add(request)
 
-//        val multipartWebservice = MultipartWebservice(this)
-//        multipartWebservice.sendMultipartRequest(POST,
-//            "https://westus.stt.speech.microsoft.com/speech/recognition/conversation/cognitiveservices/v1?language=ko-KR",
-//            File(recordingFilePath).readBytes(),
-//            "recording.wav",
-//            Response.Listener {
-//                Log.e("asdf",it.toString())
-//            },
-//            Response.ErrorListener {
-//                Log.e("asdf","error occured!"+it.toString())
-//            })
-
-
-
-//        val volleyEnrollRequest = object : JsonObjectRequest(POST,
-//            "https://westus.stt.speech.microsoft.com/speech/recognition/conversation/cognitiveservices/v1?language=ko-KR",
-//            "",
-//            Response.Listener {
-//                // Success Part
-//            },
-//
-//            Response.ErrorListener {
-//                // Failure Part
-//            }
-//        ) {
-//            // Providing Request Headers
-//            override fun getHeaders(): Map<String, String> {
-//                // Create HashMap of your Headers as the example provided below
-//
-//                val headers = HashMap<String, String>()
-//                headers["Ocp-Apim-Subscription-Key"] = "11dee688d18444d9837321f89ce98c38"
-//                headers["Content-Type"] = "audio/wav"
-//                return headers
-//            }
-//        }
     }
 
     private fun recognitionListener() = object : RecognitionListener {
@@ -1200,4 +1150,5 @@ class MainActivity : AppCompatActivity() {
             }
         }
     }
+
 }
