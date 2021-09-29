@@ -9,12 +9,16 @@ import android.content.Intent
 import android.graphics.Color
 import android.media.AudioManager
 import android.media.AudioManager.*
+import android.media.MediaPlayer
+import android.media.MediaRecorder
 import android.os.Build
 import android.os.Bundle
 import android.os.Handler
 import android.speech.RecognitionListener
 import android.speech.RecognizerIntent
 import android.speech.SpeechRecognizer
+import android.util.Base64.NO_WRAP
+import android.util.Base64.encodeToString
 import android.util.Log
 import android.view.KeyEvent
 import android.view.View
@@ -27,13 +31,23 @@ import android.widget.Toast
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
+import com.android.volley.Request
+import com.android.volley.Response
+import com.android.volley.toolbox.HttpHeaderParser
+import com.android.volley.toolbox.StringRequest
+import com.android.volley.toolbox.Volley
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.activity_main.view.*
 import kotlinx.android.synthetic.main.dialog_bookmark.*
 import kotlinx.android.synthetic.main.fragment_blank.*
 import org.json.JSONArray
 import org.json.JSONObject
+import java.io.*
+import java.nio.ByteBuffer
+import java.nio.charset.Charset
 import java.util.*
+import kotlin.collections.HashMap
+import kotlin.experimental.and
 
 
 class MainActivity : AppCompatActivity() {
@@ -44,6 +58,40 @@ class MainActivity : AppCompatActivity() {
     private var searchSelector: String = ""
     private var searchIndex: Int = 0
     private var searchLength: Int = 0
+    private var recorder: MediaRecorder? = null
+    private val recordingFilePath: String by lazy {
+        "${externalCacheDir?.absolutePath}/recording.pcm"
+    }
+    private val wavFilePath: String by lazy {
+        "${externalCacheDir?.absolutePath}/recording.wav"
+    }
+    val audioRecord : OnlyAudioRecorder = OnlyAudioRecorder.instance
+    private var STTresult:String = "" // STT의 결과를 담는다.
+    private var SRresult:String = ""// SR의 결과를 담는다.
+
+    @RequiresApi(Build.VERSION_CODES.KITKAT)
+    val handlerOutSide = Handler(){
+        when (it.what) {
+            0 ->{
+                micBtn.setTextColor(Color.parseColor("#ffffff"))
+                micBtn.setText("MIC")
+
+                // 사용성을 위해 잠깐 딜레이 주고 startSTT()를 호출하는 것이 더 깔금해보인다.
+                startSTT()
+            }
+            1->{
+                Toast.makeText(this, "화자인식을 활성화 했을 때는 4초 이상 말해야만 됩니다.", Toast.LENGTH_SHORT).show()
+            }
+            2->{
+                Toast.makeText(this, "아무것도 입력되지 않았습니다.", Toast.LENGTH_SHORT).show()
+            }
+            3 ->{
+                micBtn.setTextColor(Color.parseColor("#ffffff"))
+                micBtn.setText("MIC")
+            }
+        }
+        true
+    }
 
     companion object {
         val handler = Handler(){
@@ -228,6 +276,13 @@ class MainActivity : AppCompatActivity() {
                 startActivity(intent)
             }
         }
+
+        // 메뉴 버튼
+        menuBtn.setOnClickListener{v->
+            // 화자 식별 기능으로 이동
+            val intent = Intent(this, SpeakerRecnitionActivity::class.java)
+            startActivity(intent)
+        }
     }
 
     fun getNowTab(): BlankFragment {
@@ -370,16 +425,277 @@ class MainActivity : AppCompatActivity() {
     }
 
     // RecognitionListener 사용한 예제
+    @RequiresApi(Build.VERSION_CODES.KITKAT)
     private fun startSTT() {
-        val speechRecognizerIntent = Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH).apply {
-            putExtra(RecognizerIntent.EXTRA_CALLING_PACKAGE, packageName)
-            putExtra(RecognizerIntent.EXTRA_LANGUAGE, Locale.getDefault())
-        }
+        if(getOnSRChk() == "on"){
+            startREC()
+        }else{
+            // off
+            // 화자 인식 기술을 사용하지 않으면 speechRecognizer를 이용한다.
+            val speechRecognizerIntent = Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH).apply {
+                putExtra(RecognizerIntent.EXTRA_CALLING_PACKAGE, packageName)
+                putExtra(RecognizerIntent.EXTRA_LANGUAGE, Locale.getDefault())
+            }
 
-        speechRecognizer = SpeechRecognizer.createSpeechRecognizer(this).apply {
-            setRecognitionListener(recognitionListener())
-            startListening(speechRecognizerIntent)
+            speechRecognizer = SpeechRecognizer.createSpeechRecognizer(this).apply {
+                setRecognitionListener(recognitionListener())
+                startListening(speechRecognizerIntent)
+            }
         }
+    }
+
+    @RequiresApi(Build.VERSION_CODES.KITKAT)
+    private fun startREC(){
+        // 결과 초기화
+        STTresult = "" // STT의 결과를 담는다.
+        SRresult = ""// SR의 결과를 담는다.
+
+        // 파일 경로 설정
+        audioRecord.PCMPath = recordingFilePath
+        audioRecord.WAVPath = wavFilePath
+
+        // REC 중이라고 버튼에 표기하기
+        micBtn.setTextColor(Color.parseColor("#ff0000"))
+        micBtn.setText("REC")
+
+        audioRecord.startRecord() //Start recording
+
+        Thread(Runnable {
+            var startFlag = false
+            var cnt = 10 // 1초 동안 말이 없으면 녹음을 멈춘다.
+            var secCnt = 30 // 3초 동안 시작을 안하면 녹음을 멈춘다.
+            while(true) {
+                Thread.sleep(100L) // 0.1초 마다 발화를 하고 있는 상태인지 확인한다.
+                var Amplitude =  audioRecord.Amplitude
+                Log.e("Amplitude",Amplitude.toString())
+                if(Amplitude.toString().toInt() > 100000){
+                    if(!startFlag) {
+                        startFlag = true
+                    }
+                    cnt = 10
+                }
+
+                if(Amplitude.toString().toInt() < 100000 && startFlag){
+                    cnt --
+                    if(cnt == 0){
+                        stopREC()
+                        break
+                    }
+                }
+
+                if(!startFlag){
+                    secCnt --
+                    if(secCnt == 0){
+                        // 마이크 제자리
+                        println("3초 입력 없었음")
+                        handlerOutSide.sendEmptyMessage(3)
+                        audioRecord.stopRecord()
+                        break
+                    }
+                }
+
+            }
+        }).start()
+
+    }
+
+    @RequiresApi(Build.VERSION_CODES.KITKAT)
+    private fun stopREC() {
+        // 마이크 제자리
+        handlerOutSide.sendEmptyMessage(3)
+
+        audioRecord.stopRecord()
+
+        Thread(Runnable {
+            while(true) {
+                Thread.sleep(100L) // 0.1초 마다 wav파일이 완성되었는지 확인한다.
+                if(audioRecord.isWavComplete){
+                    requestSTT() // STT를 요청한다.
+                    requestSR()
+
+                    Thread(Runnable {
+                        while(true) {
+                            Thread.sleep(100L) // 0.1초 마다 STT와 SR이 완료되었는지 확인한다.
+                            if(STTresult.length > 0 && SRresult.length > 0){
+                                println("sangkyu $STTresult $SRresult")
+
+                                handlerOutSide.sendEmptyMessage(0) // REC으로 표시된 버튼은 MIC바꾸는 작업을 수행하라고 핸들러에게 알린다.
+
+                                if(SRresult == "Accept"){
+                                    matchCommand(STTresult)
+                                }else if(SRresult == "Reject"){
+                                    println("사용자가 다릅니다. 안됩니다. SRresult: $SRresult 입니다.")
+                                }else if(SRresult == "Invalid audio length. Minimum allowed length is 4 second(s)."){
+                                    handlerOutSide.sendEmptyMessage(1)
+                                }else if(SRresult == "No value for message"){
+                                    handlerOutSide.sendEmptyMessage(2)
+                                }
+
+                                break
+                            }
+                        }
+                    }).start()
+
+                    break
+                }
+            }
+        }).start()
+
+
+//        음성인식 결과 듣고 싶을 때 사용
+//        var mediaPlayer = MediaPlayer()
+//        mediaPlayer.setDataSource(wavFilePath)
+//        mediaPlayer.prepare()
+//        mediaPlayer.start()
+    }
+
+    private fun requestSR() {
+        // 화자 인식을 요청한다.
+        val request = object : VolleyFileUploadRequest(
+            Request.Method.POST,
+            "https://westus.api.cognitive.microsoft.com/speaker/verification/v2.0/text-independent/profiles/"+getProfileID()+"/verify",
+            Response.Listener {
+                val response = it
+                val json = String(
+                    response?.data ?: ByteArray(0),
+                    Charset.forName(HttpHeaderParser.parseCharset(response?.headers)))
+
+                val jObject = JSONObject(json)
+                SRresult = jObject.getString("recognitionResult")
+
+                println("error is: $it $json")
+            },
+            Response.ErrorListener {
+                val response = it.networkResponse
+                val json = String(
+                    response?.data ?: ByteArray(0),
+                    Charset.forName(HttpHeaderParser.parseCharset(response?.headers)))
+
+                val jObject = JSONObject(json)
+                try{
+                    SRresult = jObject.getString("message")
+                }catch (e:Exception){
+                    SRresult = "No value for message"
+                    Log.e("asdf",e.toString())
+                }
+
+                println("error is: $it $json")
+            }
+        ) {
+            // wav 파일 보내기
+            override fun getBody(): ByteArray {
+                return File(wavFilePath).readBytes()
+            }
+
+            // Providing Request Headers
+            override fun getHeaders(): MutableMap<String, String> {
+                // Create HashMap of your Headers as the example provided below
+
+                val headers = HashMap<String, String>()
+                headers["Ocp-Apim-Subscription-Key"] = "11dee688d18444d9837321f89ce98c38"
+                headers["Content-Type"] = "audio/wav"
+                return headers
+            }
+        }
+        Volley.newRequestQueue(this).add(request)
+    }
+
+    private fun requestSTT() {
+        val queue = Volley.newRequestQueue(this)
+        val url = "https://speech.googleapis.com/v1/speech:recognize?key=AIzaSyAq7bI-K6mDlK1Hd706j5eSaQbUgiB6m2Q"
+
+        val bytes = File(wavFilePath).readBytes()
+        var base64 = encodeToString(bytes, 0)
+        base64 = base64.replace("\n","")
+        base64 = base64.replace("\"","")
+//        println("base64 $base64")
+
+        val stringReq : StringRequest =
+            object : StringRequest(Method.POST, url,
+                Response.Listener { response ->
+                    // response
+                    var json = response.toString()
+
+                    val jObject = JSONObject(json)
+                    try{
+                        STTresult =  jObject.getJSONArray("results").getJSONObject(0).getJSONArray("alternatives").getJSONObject(0).getString("transcript")
+                    }catch (e:Exception){
+                        Log.e("asdf", e.toString())
+                        STTresult = "No value for results"
+                    }
+
+                    Log.d("API", json)
+                },
+                Response.ErrorListener { error ->
+                    val json = String(
+                        error.networkResponse?.data ?: ByteArray(0),
+                        Charset.forName(HttpHeaderParser.parseCharset(error.networkResponse?.headers)))
+                    Log.d("API", "error => $json")
+                }
+            ){
+                override fun getBody(): ByteArray {
+                    val raw = "{\n" +
+                            "  \"config\":{\n" +
+                            "      \"languageCode\":\"ko-KR\"\n" +
+                            "  },\n" +
+                            "  \"audio\":{\n" +
+                            "    \"content\":\""+base64+"\"\n" +
+                            "  }\n" +
+                            "}"
+                    return raw.toByteArray()
+                }
+
+                override fun getHeaders(): MutableMap<String, String> {
+                    val headers = HashMap<String, String>()
+                    headers["Content-Type"] = "application/json"
+                    return headers
+                }
+            }
+        queue.add(stringReq)
+
+
+//        val request = object : VolleyFileUploadRequest(
+//            Request.Method.POST,
+//            "https://westus.stt.speech.microsoft.com/speech/recognition/conversation/cognitiveservices/v1?language=ko-KR",
+//            Response.Listener {
+//                val response = it
+//                val json = String(
+//                    response?.data ?: ByteArray(0),
+//                    Charset.forName(HttpHeaderParser.parseCharset(response?.headers)))
+//
+//                println("error is: $it $json")
+//            },
+//            Response.ErrorListener {
+//                val response = it.networkResponse
+//                val json = String(
+//                    response?.data ?: ByteArray(0),
+//                    Charset.forName(HttpHeaderParser.parseCharset(response?.headers)))
+//
+//                println("error is: $it $json")
+//            }
+//        ) {
+////            override fun getByteData(): MutableMap<String, FileDataPart> {
+////                var params = HashMap<String, FileDataPart>()
+//////                params["file\"; filename=\"recording.wav\""] = FileDataPart("recording", File(recordingFilePath).readBytes(), "wav")
+//////                params["file"] = FileDataPart("recording", File(recordingFilePath).readBytes(), "wav")
+////                return params
+////            }
+//
+//            override fun getBody(): ByteArray {
+//                return File(wavFilePath).readBytes()
+//            }
+//
+//            // Providing Request Headers
+//            override fun getHeaders(): MutableMap<String, String> {
+//                // Create HashMap of your Headers as the example provided below
+//
+//                val headers = HashMap<String, String>()
+//                headers["Ocp-Apim-Subscription-Key"] = "11dee688d18444d9837321f89ce98c38"
+//                headers["Content-Type"] = "audio/wav"
+//                return headers
+//            }
+//        }
+//        Volley.newRequestQueue(this).add(request)
 
     }
 
@@ -426,10 +742,7 @@ class MainActivity : AppCompatActivity() {
 //            Toast.makeText(this@MainActivity, "음성 인식 결과: " + speechText, Toast.LENGTH_SHORT).show()
             micBtn.setTextColor(Color.parseColor("#ffffff"))
             micBtn.setText("MIC")
-
-
             matchCommand(speechText)
-
             startSTT()
         }
     }
@@ -1035,4 +1348,15 @@ class MainActivity : AppCompatActivity() {
             }
         }
     }
+
+    fun getProfileID(): String? {
+        val sharedPref = getSharedPreferences("profileId", Context.MODE_PRIVATE)
+        return sharedPref.getString("profileId", "not Created")
+    }
+
+    fun getOnSRChk(): String? {
+        val sharedPref = getSharedPreferences("onSRChk", Context.MODE_PRIVATE)
+        return sharedPref.getString("onSRChk", "off")
+    }
+
 }
