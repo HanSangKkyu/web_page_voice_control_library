@@ -189,16 +189,11 @@ class SpeakerRecnitionActivity : AppCompatActivity() {
                 val jObject = JSONObject(json)
                 val enrollmentStatus: String = jObject.getString("enrollmentStatus")
 
-                try{
-                    val enrollmentSpeechLength = jObject.getInt("enrollmentSpeechLength")
-                    if(enrollmentStatus != "Enrolled"){
-                        infoText.text = "더 입력해서 등록을 완료해주세요. 총 20초의 음성을 입력해야 합니다. 현재 총 $enrollmentSpeechLength 초 입력되었습니다."
-                    }else{
-                        infoText.text = "등록이 완료되었습니다."
-                    }
-
-                }catch (e:Exception){
-                    Log.e("asdf",e.toString())
+                val enrollmentsSpeechLength = jObject.getInt("enrollmentsSpeechLength")
+                if(enrollmentStatus != "Enrolled"){
+                    infoText.text = "더 입력해서 등록을 완료해주세요. 총 20초의 음성을 입력해야 합니다. 현재 총 $enrollmentsSpeechLength 초 입력되었습니다."
+                }else{
+                    infoText.text = "등록이 완료되었습니다."
                 }
 
                 println("error is: $it $json")

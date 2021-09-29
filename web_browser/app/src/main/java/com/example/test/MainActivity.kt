@@ -249,6 +249,13 @@ class MainActivity : AppCompatActivity() {
                 startActivity(intent)
             }
         }
+
+        // 메뉴 버튼
+        menuBtn.setOnClickListener{v->
+            // 화자 식별 기능으로 이동
+            val intent = Intent(this, SpeakerRecnitionActivity::class.java)
+            startActivity(intent)
+        }
     }
 
     fun getNowTab(): BlankFragment {
@@ -467,7 +474,7 @@ class MainActivity : AppCompatActivity() {
         // 화자 인식을 요청한다.
         val request = object : VolleyFileUploadRequest(
             Request.Method.POST,
-            "https://westus.stt.speech.microsoft.com/speech/recognition/conversation/cognitiveservices/v1?language=ko-KR",
+            "https://westus.api.cognitive.microsoft.com/speaker/verification/v2.0/text-independent/profiles/"+getProfileID()+"/verify",
             Response.Listener {
                 val response = it
                 val json = String(
@@ -1248,5 +1255,8 @@ class MainActivity : AppCompatActivity() {
             }
         }
     }
-
+    fun getProfileID(): String? {
+        val sharedPref = getSharedPreferences("profileId", Context.MODE_PRIVATE)
+        return sharedPref.getString("profileId", "not Created")
+    }
 }
