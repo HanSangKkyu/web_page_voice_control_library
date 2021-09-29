@@ -85,6 +85,10 @@ class MainActivity : AppCompatActivity() {
             2->{
                 Toast.makeText(this, "아무것도 입력되지 않았습니다.", Toast.LENGTH_SHORT).show()
             }
+            3 ->{
+                micBtn.setTextColor(Color.parseColor("#ffffff"))
+                micBtn.setText("MIC")
+            }
         }
         true
     }
@@ -459,6 +463,7 @@ class MainActivity : AppCompatActivity() {
         Thread(Runnable {
             var startFlag = false
             var cnt = 10 // 1초 동안 말이 없으면 녹음을 멈춘다.
+            var secCnt = 30 // 3초 동안 시작을 안하면 녹음을 멈춘다.
             while(true) {
                 Thread.sleep(100L) // 0.1초 마다 발화를 하고 있는 상태인지 확인한다.
                 var Amplitude =  audioRecord.Amplitude
@@ -478,6 +483,17 @@ class MainActivity : AppCompatActivity() {
                     }
                 }
 
+                if(!startFlag){
+                    secCnt --
+                    if(secCnt == 0){
+                        // 마이크 제자리
+                        println("3초 입력 없었음")
+                        handlerOutSide.sendEmptyMessage(3)
+                        audioRecord.stopRecord()
+                        break
+                    }
+                }
+
             }
         }).start()
 
@@ -485,6 +501,8 @@ class MainActivity : AppCompatActivity() {
 
     @RequiresApi(Build.VERSION_CODES.KITKAT)
     private fun stopREC() {
+        // 마이크 제자리
+        handlerOutSide.sendEmptyMessage(3)
 
         audioRecord.stopRecord()
 

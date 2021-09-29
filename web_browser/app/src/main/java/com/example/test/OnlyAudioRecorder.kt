@@ -76,11 +76,14 @@ class OnlyAudioRecorder private constructor(){
     }
 
     fun stopRecord() {
-
-        audioRecorder?.stop()
-        audioRecorder?.release()
-        isRecord = false
-        audioRecorder = null
+//        try{
+            audioRecorder?.stop()
+            audioRecorder?.release()
+            isRecord = false
+            audioRecorder = null
+//        }catch (e:Exception){
+//            Log.e("stopRecord",e.toString())
+//        }
     }
 
     private fun writeDateTOFile() {
