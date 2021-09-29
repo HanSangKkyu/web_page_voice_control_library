@@ -6,6 +6,7 @@ import android.os.Build
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
+import android.widget.CompoundButton
 import androidx.core.app.ActivityCompat
 import com.android.volley.Request
 import com.android.volley.Response
@@ -49,12 +50,45 @@ class SpeakerRecnitionActivity : AppCompatActivity() {
         registBtn.setOnClickListener{ v ->
             startREC()
         }
+
+
+        if(getOnSRChk() == "on"){
+            onSRChk.isChecked = true
+        }else{
+            // off
+            onSRChk.isChecked = false
+        }
+
+        onSRChk.setOnCheckedChangeListener  { _, isChecked ->
+            val sharedPref = getSharedPreferences("onSRChk", Context.MODE_PRIVATE)
+            if (isChecked) {
+                with(sharedPref.edit()) {
+                    putString("onSRChk", "on")
+                    commit()
+                }
+            }else {
+                with(sharedPref.edit()) {
+                    putString("onSRChk", "off")
+                    commit()
+                }
+            }
+        }
+
+
+
     }
 
     fun getProfileID(): String? {
         val sharedPref = getSharedPreferences("profileId", Context.MODE_PRIVATE)
         return sharedPref.getString("profileId", "not Created")
     }
+
+    fun getOnSRChk(): String? {
+        val sharedPref = getSharedPreferences("onSRChk", Context.MODE_PRIVATE)
+        return sharedPref.getString("onSRChk", "off")
+    }
+
+
     private fun requestMic() {
         // 마이크를 허용해달라고 요청한다.
         val REQUEST_CODE = 1

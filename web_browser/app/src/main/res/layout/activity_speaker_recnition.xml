@@ -6,13 +6,18 @@
     android:orientation="vertical"
     tools:context=".SpeakerRecnitionActivity">
 
+    <CheckBox
+        android:id="@+id/onSRChk"
+        android:text="화자인식 on/off"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"/>
+
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_weight="1"
         android:gravity="center"
-        android:orientation="horizontal">
-
+        android:orientation="vertical">
         <TextView
             android:id="@+id/infoText"
             android:layout_width="wrap_content"

@@ -15,6 +15,7 @@ import android.os.Build
 import android.os.Bundle
 import android.os.Handler
 import android.speech.RecognitionListener
+import android.speech.RecognizerIntent
 import android.speech.SpeechRecognizer
 import android.util.Base64.NO_WRAP
 import android.util.Base64.encodeToString
@@ -65,6 +66,28 @@ class MainActivity : AppCompatActivity() {
         "${externalCacheDir?.absolutePath}/recording.wav"
     }
     val audioRecord : OnlyAudioRecorder = OnlyAudioRecorder.instance
+    private var STTresult:String = "" // STT의 결과를 담는다.
+    private var SRresult:String = ""// SR의 결과를 담는다.
+
+    @RequiresApi(Build.VERSION_CODES.KITKAT)
+    val handlerOutSide = Handler(){
+        when (it.what) {
+            0 ->{
+                micBtn.setTextColor(Color.parseColor("#ffffff"))
+                micBtn.setText("MIC")
+
+                // 사용성을 위해 잠깐 딜레이 주고 startSTT()를 호출하는 것이 더 깔금해보인다.
+                startSTT()
+            }
+            1->{
+                Toast.makeText(this, "화자인식을 활성화 했을 때는 4초 이상 말해야만 됩니다.", Toast.LENGTH_SHORT).show()
+            }
+            2->{
+                Toast.makeText(this, "아무것도 입력되지 않았습니다.", Toast.LENGTH_SHORT).show()
+            }
+        }
+        true
+    }
 
     companion object {
         val handler = Handler(){
@@ -398,25 +421,38 @@ class MainActivity : AppCompatActivity() {
     }
 
     // RecognitionListener 사용한 예제
+    @RequiresApi(Build.VERSION_CODES.KITKAT)
     private fun startSTT() {
+        if(getOnSRChk() == "on"){
+            startREC()
+        }else{
+            // off
+            // 화자 인식 기술을 사용하지 않으면 speechRecognizer를 이용한다.
+            val speechRecognizerIntent = Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH).apply {
+                putExtra(RecognizerIntent.EXTRA_CALLING_PACKAGE, packageName)
+                putExtra(RecognizerIntent.EXTRA_LANGUAGE, Locale.getDefault())
+            }
 
-        startREC()
-//        val speechRecognizerIntent = Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH).apply {
-//            putExtra(RecognizerIntent.EXTRA_CALLING_PACKAGE, packageName)
-//            putExtra(RecognizerIntent.EXTRA_LANGUAGE, Locale.getDefault())
-//        }
-//
-//        speechRecognizer = SpeechRecognizer.createSpeechRecognizer(this).apply {
-//            setRecognitionListener(recognitionListener())
-//            startListening(speechRecognizerIntent)
-//        }
-
+            speechRecognizer = SpeechRecognizer.createSpeechRecognizer(this).apply {
+                setRecognitionListener(recognitionListener())
+                startListening(speechRecognizerIntent)
+            }
+        }
     }
 
+    @RequiresApi(Build.VERSION_CODES.KITKAT)
     private fun startREC(){
+        // 결과 초기화
+        STTresult = "" // STT의 결과를 담는다.
+        SRresult = ""// SR의 결과를 담는다.
+
         // 파일 경로 설정
         audioRecord.PCMPath = recordingFilePath
         audioRecord.WAVPath = wavFilePath
+
+        // REC 중이라고 버튼에 표기하기
+        micBtn.setTextColor(Color.parseColor("#ff0000"))
+        micBtn.setText("REC")
 
         audioRecord.startRecord() //Start recording
 
@@ -426,7 +462,7 @@ class MainActivity : AppCompatActivity() {
             while(true) {
                 Thread.sleep(100L) // 0.1초 마다 발화를 하고 있는 상태인지 확인한다.
                 var Amplitude =  audioRecord.Amplitude
-                Log.e("asdf",Amplitude.toString())
+                Log.e("Amplitude",Amplitude.toString())
                 if(Amplitude.toString().toInt() > 100000){
                     if(!startFlag) {
                         startFlag = true
@@ -447,6 +483,7 @@ class MainActivity : AppCompatActivity() {
 
     }
 
+    @RequiresApi(Build.VERSION_CODES.KITKAT)
     private fun stopREC() {
 
         audioRecord.stopRecord()
@@ -457,6 +494,30 @@ class MainActivity : AppCompatActivity() {
                 if(audioRecord.isWavComplete){
                     requestSTT() // STT를 요청한다.
                     requestSR()
+
+                    Thread(Runnable {
+                        while(true) {
+                            Thread.sleep(100L) // 0.1초 마다 STT와 SR이 완료되었는지 확인한다.
+                            if(STTresult.length > 0 && SRresult.length > 0){
+                                println("sangkyu $STTresult $SRresult")
+
+                                handlerOutSide.sendEmptyMessage(0) // REC으로 표시된 버튼은 MIC바꾸는 작업을 수행하라고 핸들러에게 알린다.
+
+                                if(SRresult == "Accept"){
+                                    matchCommand(STTresult)
+                                }else if(SRresult == "Reject"){
+                                    println("사용자가 다릅니다. 안됩니다. SRresult: $SRresult 입니다.")
+                                }else if(SRresult == "Invalid audio length. Minimum allowed length is 4 second(s)."){
+                                    handlerOutSide.sendEmptyMessage(1)
+                                }else if(SRresult == "No value for message"){
+                                    handlerOutSide.sendEmptyMessage(2)
+                                }
+
+                                break
+                            }
+                        }
+                    }).start()
+
                     break
                 }
             }
@@ -481,6 +542,9 @@ class MainActivity : AppCompatActivity() {
                     response?.data ?: ByteArray(0),
                     Charset.forName(HttpHeaderParser.parseCharset(response?.headers)))
 
+                val jObject = JSONObject(json)
+                SRresult = jObject.getString("recognitionResult")
+
                 println("error is: $it $json")
             },
             Response.ErrorListener {
@@ -488,6 +552,14 @@ class MainActivity : AppCompatActivity() {
                 val json = String(
                     response?.data ?: ByteArray(0),
                     Charset.forName(HttpHeaderParser.parseCharset(response?.headers)))
+
+                val jObject = JSONObject(json)
+                try{
+                    SRresult = jObject.getString("message")
+                }catch (e:Exception){
+                    SRresult = "No value for message"
+                    Log.e("asdf",e.toString())
+                }
 
                 println("error is: $it $json")
             }
@@ -524,9 +596,17 @@ class MainActivity : AppCompatActivity() {
             object : StringRequest(Method.POST, url,
                 Response.Listener { response ->
                     // response
-                    var strResp = response.toString()
-                    Log.d("API", strResp)
+                    var json = response.toString()
 
+                    val jObject = JSONObject(json)
+                    try{
+                        STTresult =  jObject.getJSONArray("results").getJSONObject(0).getJSONArray("alternatives").getJSONObject(0).getString("transcript")
+                    }catch (e:Exception){
+                        Log.e("asdf", e.toString())
+                        STTresult = "No value for results"
+                    }
+
+                    Log.d("API", json)
                 },
                 Response.ErrorListener { error ->
                     val json = String(
@@ -606,7 +686,6 @@ class MainActivity : AppCompatActivity() {
 //            Toast.makeText(this@MainActivity, "음성인식 시작", Toast.LENGTH_SHORT).show()
             micBtn.setTextColor(Color.parseColor("#ff0000"))
             micBtn.setText("REC")
-            startREC()
         }
 
         override fun onRmsChanged(rmsdB: Float) {}
@@ -645,11 +724,7 @@ class MainActivity : AppCompatActivity() {
 //            Toast.makeText(this@MainActivity, "음성 인식 결과: " + speechText, Toast.LENGTH_SHORT).show()
             micBtn.setTextColor(Color.parseColor("#ffffff"))
             micBtn.setText("MIC")
-
-
             matchCommand(speechText)
-            stopREC()
-
             startSTT()
         }
     }
@@ -1255,8 +1330,15 @@ class MainActivity : AppCompatActivity() {
             }
         }
     }
+
     fun getProfileID(): String? {
         val sharedPref = getSharedPreferences("profileId", Context.MODE_PRIVATE)
         return sharedPref.getString("profileId", "not Created")
     }
+
+    fun getOnSRChk(): String? {
+        val sharedPref = getSharedPreferences("onSRChk", Context.MODE_PRIVATE)
+        return sharedPref.getString("onSRChk", "off")
+    }
+
 }
