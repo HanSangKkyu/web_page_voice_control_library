@@ -420,14 +420,14 @@ class MainActivity : AppCompatActivity() {
                 Thread.sleep(100L) // 0.1초 마다 발화를 하고 있는 상태인지 확인한다.
                 var Amplitude =  audioRecord.Amplitude
                 Log.e("asdf",Amplitude.toString())
-                if(Amplitude.toString().toInt() > 40000){
+                if(Amplitude.toString().toInt() > 100000){
                     if(!startFlag) {
                         startFlag = true
                     }
                     cnt = 10
                 }
 
-                if(Amplitude.toString().toInt() < 40000 && startFlag){
+                if(Amplitude.toString().toInt() < 100000 && startFlag){
                     cnt --
                     if(cnt == 0){
                         stopREC()
@@ -448,7 +448,8 @@ class MainActivity : AppCompatActivity() {
             while(true) {
                 Thread.sleep(100L) // 0.1초 마다 wav파일이 완성되었는지 확인한다.
                 if(audioRecord.isWavComplete){
-                    requestSTT()
+                    requestSTT() // STT를 요청한다.
+                    requestSR()
                     break
                 }
             }
@@ -460,6 +461,46 @@ class MainActivity : AppCompatActivity() {
 //        mediaPlayer.setDataSource(wavFilePath)
 //        mediaPlayer.prepare()
 //        mediaPlayer.start()
+    }
+
+    private fun requestSR() {
+        // 화자 인식을 요청한다.
+        val request = object : VolleyFileUploadRequest(
+            Request.Method.POST,
+            "https://westus.stt.speech.microsoft.com/speech/recognition/conversation/cognitiveservices/v1?language=ko-KR",
+            Response.Listener {
+                val response = it
+                val json = String(
+                    response?.data ?: ByteArray(0),
+                    Charset.forName(HttpHeaderParser.parseCharset(response?.headers)))
+
+                println("error is: $it $json")
+            },
+            Response.ErrorListener {
+                val response = it.networkResponse
+                val json = String(
+                    response?.data ?: ByteArray(0),
+                    Charset.forName(HttpHeaderParser.parseCharset(response?.headers)))
+
+                println("error is: $it $json")
+            }
+        ) {
+            // wav 파일 보내기
+            override fun getBody(): ByteArray {
+                return File(wavFilePath).readBytes()
+            }
+
+            // Providing Request Headers
+            override fun getHeaders(): MutableMap<String, String> {
+                // Create HashMap of your Headers as the example provided below
+
+                val headers = HashMap<String, String>()
+                headers["Ocp-Apim-Subscription-Key"] = "11dee688d18444d9837321f89ce98c38"
+                headers["Content-Type"] = "audio/wav"
+                return headers
+            }
+        }
+        Volley.newRequestQueue(this).add(request)
     }
 
     private fun requestSTT() {

@@ -33,7 +33,7 @@ class OnlyAudioRecorder private constructor(){
     companion object{
         private const val TAG:String = "OnlyAudioRecorder"
         private const val AudioSource = MediaRecorder.AudioSource.MIC//Student source
-        private const val SampleRate = 16000//sampling rate
+        private const val SampleRate = 44100//sampling rate
         private const val Channel = AudioFormat.CHANNEL_IN_MONO//Mono channel
         private const val EncodingType = AudioFormat.ENCODING_PCM_16BIT//data format
 
@@ -208,7 +208,9 @@ class OnlyAudioRecorder private constructor(){
             super.run()
 
             writeDateTOFile()
-            copyWaveFile(PCMPath, WAVPath)
+            wavFormatter().rawToWave(File(PCMPath), File(WAVPath))
+            isWavComplete = true
+//            copyWaveFile(PCMPath, WAVPath)
         }
     }
 }
