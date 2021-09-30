@@ -75,9 +75,6 @@ class MainActivity : AppCompatActivity() {
             0 ->{
                 micBtn.setTextColor(Color.parseColor("#ffffff"))
                 micBtn.setText("MIC")
-
-                // 사용성을 위해 잠깐 딜레이 주고 startSTT()를 호출하는 것이 더 깔금해보인다.
-                startSTT()
             }
             1->{
                 Toast.makeText(this, "화자인식을 활성화 했을 때는 4초 이상 말해야만 됩니다.", Toast.LENGTH_SHORT).show()
@@ -88,6 +85,14 @@ class MainActivity : AppCompatActivity() {
             3 ->{
                 micBtn.setTextColor(Color.parseColor("#ffffff"))
                 micBtn.setText("MIC")
+            }
+            4->{
+                Toast.makeText(this, "음성 프로필이 등록되지 않았습니다.", Toast.LENGTH_SHORT).show()
+            }
+            5->{
+                println("매칭 시작 $STTresult")
+                matchCommand(STTresult)
+                startSTT()
             }
         }
         true
@@ -521,14 +526,19 @@ class MainActivity : AppCompatActivity() {
 
                                 handlerOutSide.sendEmptyMessage(0) // REC으로 표시된 버튼은 MIC바꾸는 작업을 수행하라고 핸들러에게 알린다.
 
-                                if(SRresult == "Accept"){
-                                    matchCommand(STTresult)
-                                }else if(SRresult == "Reject"){
+                                if(SRresult == "Reject"){
                                     println("사용자가 다릅니다. 안됩니다. SRresult: $SRresult 입니다.")
-                                }else if(SRresult == "Invalid audio length. Minimum allowed length is 4 second(s)."){
-                                    handlerOutSide.sendEmptyMessage(1)
-                                }else if(SRresult == "No value for message"){
-                                    handlerOutSide.sendEmptyMessage(2)
+                                }else{
+                                    handlerOutSide.sendEmptyMessage(5) // matchCommand()
+                                    if(SRresult == "Accept"){
+                                        println("등록된 사용자가 맞습니다.")
+                                    }else if(SRresult == "Invalid audio length. Minimum allowed length is 4 second(s)."){
+                                        handlerOutSide.sendEmptyMessage(1)
+                                    }else if(SRresult == "No value for message"){
+                                        handlerOutSide.sendEmptyMessage(2)
+                                    }else if(SRresult == "Profile is not enrolled."){
+                                        handlerOutSide.sendEmptyMessage(4)
+                                    }
                                 }
 
                                 break
