@@ -317,6 +317,16 @@ class DefaultFunVO {
             )
         )
 
+        // 만개의 레시피 특화 명령어
+        funList.add(
+            Funtion(
+                "m.10000recipe.com",
+                Command("*검색해 줘", "#location.href='https://www.10000recipe.com/recipe/list.html?q=*';"),
+                "음성 검색"
+            )
+        )
+
+
 
     }
 }

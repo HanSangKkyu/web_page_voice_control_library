@@ -4,7 +4,18 @@ import java.io.*;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 
-public class wavFormatter {
+public class WavFormatter {
+    //Instance
+    private static WavFormatter instance;
+
+    //private construct
+    private WavFormatter() {}
+
+    public static WavFormatter getInstance() {
+        if (instance == null) { instance = new WavFormatter();}
+        return instance;
+    }
+
     public void rawToWave(final File rawFile, final File waveFile) throws IOException {
 
         byte[] rawData = new byte[(int) rawFile.length()];

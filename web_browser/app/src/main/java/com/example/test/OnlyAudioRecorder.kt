@@ -211,7 +211,7 @@ class OnlyAudioRecorder private constructor(){
             super.run()
 
             writeDateTOFile()
-            wavFormatter().rawToWave(File(PCMPath), File(WAVPath))
+            WavFormatter.getInstance().rawToWave(File(PCMPath), File(WAVPath))
             isWavComplete = true
 //            copyWaveFile(PCMPath, WAVPath)
         }
