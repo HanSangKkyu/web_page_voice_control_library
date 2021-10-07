@@ -24,10 +24,7 @@ import android.view.KeyEvent
 import android.view.View
 import android.view.ViewGroup
 import android.webkit.WebView
-import android.widget.AdapterView
-import android.widget.Button
-import android.widget.TableLayout
-import android.widget.Toast
+import android.widget.*
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
@@ -80,7 +77,7 @@ class MainActivity : AppCompatActivity() {
                 Toast.makeText(this, "화자인식을 활성화 했을 때는 4초 이상 말해야만 됩니다.", Toast.LENGTH_SHORT).show()
             }
             2->{
-                Toast.makeText(this, "아무것도 입력되지 않았습니다.", Toast.LENGTH_SHORT).show()
+//                Toast.makeText(this, "아무것도 입력되지 않았습니다.", Toast.LENGTH_SHORT).show()
             }
             3 ->{
                 micBtn.setTextColor(Color.parseColor("#ffffff"))
@@ -92,6 +89,7 @@ class MainActivity : AppCompatActivity() {
             5->{
                 println("매칭 시작 $STTresult")
                 matchCommand(STTresult)
+                showToast(STTresult)
                 startSTT()
             }
         }
@@ -103,6 +101,7 @@ class MainActivity : AppCompatActivity() {
             when (it.what) {
                 0 ->{
                     getNowBtn().text = nowBtnTitle
+                    urlEditTextView?.setText(getNowUrl())
                 }
             }
             true
@@ -111,6 +110,7 @@ class MainActivity : AppCompatActivity() {
         var frList: ArrayList<TabInfo> = ArrayList()
         private var selectedBtnTag: String = ""
         var nowBtnTitle = ""
+        var urlEditTextView: EditText? = null
 
         fun changeBtnTitle(title:String){
             nowBtnTitle = title
@@ -136,6 +136,15 @@ class MainActivity : AppCompatActivity() {
                 }
             }
             return -1
+        }
+
+
+        fun getNowUrl(): String {
+            return getNowTab().webview.url.toString()
+        }
+
+        fun getNowTab(): BlankFragment {
+            return frList.get(tagToIndex(selectedBtnTag)).blankFragment
         }
     }
 
@@ -214,6 +223,8 @@ class MainActivity : AppCompatActivity() {
             }
             false
         })
+        urlEditTextView = urlEditText
+
 
         // 엔터 버튼
         enterBtn.setOnClickListener { v ->
@@ -290,9 +301,7 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    fun getNowTab(): BlankFragment {
-        return frList.get(tagToIndex(selectedBtnTag)).blankFragment
-    }
+
 
     private fun makeNewTab(): BlankFragment {
         val newTabBtn = Button(this)
@@ -749,12 +758,21 @@ class MainActivity : AppCompatActivity() {
         override fun onResults(results: Bundle) {
             var speechText = results.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION)!![0]
             Log.e("음성 인식 결과:", speechText)
-//            Toast.makeText(this@MainActivity, "음성 인식 결과: " + speechText, Toast.LENGTH_SHORT).show()
+            showToast(speechText)
+
             micBtn.setTextColor(Color.parseColor("#ffffff"))
             micBtn.setText("MIC")
             matchCommand(speechText)
             startSTT()
         }
+    }
+
+    fun showToast(text: String){
+        var to = Toast.makeText(this@MainActivity, text, Toast.LENGTH_SHORT)
+        to.show()
+        Handler().postDelayed({
+            to.cancel()
+        },500)
     }
 
     override fun onDestroy() {
@@ -1068,9 +1086,6 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    private fun getNowUrl(): String {
-        return getNowTab().webview.url.toString()
-    }
 
     private fun smoothScrollAnime(view: WebView, xval: Int, yval: Int, dur: Long) : AnimatorSet {
         return AnimatorSet().apply {
