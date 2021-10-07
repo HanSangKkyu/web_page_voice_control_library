@@ -20,7 +20,6 @@ class CommandActivity : AppCompatActivity() {
     var selectedItemPos = -1
     var commandList = ArrayList<Command>()
     var funList = ArrayList<String>()
-    var defaultFunVO = DefaultFunVO()
 
     @RequiresApi(Build.VERSION_CODES.KITKAT)
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -28,7 +27,6 @@ class CommandActivity : AppCompatActivity() {
         setContentView(R.layout.activity_command)
 
         init()
-
     }
 
     @RequiresApi(Build.VERSION_CODES.KITKAT)
@@ -85,15 +83,15 @@ class CommandActivity : AppCompatActivity() {
 
             var isAdd = false
             // 기본 제공 명령어 인지 확인하기
-            for (i in 0..defaultFunVO.funList.size - 1) {
-                if (defaultFunVO.funList.get(i).url.equals(url) and defaultFunVO.funList.get(i).description.equals(
+            for (i in 0..DefaultFunVO.funList.size - 1) {
+                if (DefaultFunVO.funList.get(i).url.equals(url) and DefaultFunVO.funList.get(i).description.equals(
                         selectedFun
                     )
                 ) {
                     addCommand(
                         url,
                         line.text.toString(),
-                        defaultFunVO.funList.get(i).command.function
+                        DefaultFunVO.funList.get(i).command.function
                     )
                     isAdd = true
                     break
@@ -133,9 +131,9 @@ class CommandActivity : AppCompatActivity() {
     private fun initFunSpinnerToCommon() {
         // add default common function
         funList = ArrayList()
-        for (i in 0..defaultFunVO.funList.size - 1) {
-            if (defaultFunVO.funList.get(i).url.equals("공통 명령어")) {
-                funList.add(defaultFunVO.funList.get(i).description)
+        for (i in 0..DefaultFunVO.funList.size - 1) {
+            if (DefaultFunVO.funList.get(i).url.equals("공통 명령어")) {
+                funList.add(DefaultFunVO.funList.get(i).description)
             }
         }
 
@@ -151,14 +149,14 @@ class CommandActivity : AppCompatActivity() {
                 selectedFun = funSpinner.getItemAtPosition(position).toString()
 
                 // 기본 제공 명령어를 선택했다면 기본 대사 예시를 뷰에 로드한다.
-                for (i in 0..defaultFunVO.funList.size - 1) {
-                    if (defaultFunVO.funList.get(i).url.equals("공통 명령어") and defaultFunVO.funList.get(
+                for (i in 0..DefaultFunVO.funList.size - 1) {
+                    if (DefaultFunVO.funList.get(i).url.equals("공통 명령어") and DefaultFunVO.funList.get(
                             i
                         ).description.equals(selectedFun)
                     ) {
-                        line.setText(defaultFunVO.funList.get(i).command.line)
+                        line.setText(DefaultFunVO.funList.get(i).command.line)
                         jsScript.setText(
-                            defaultFunVO.funList.get(i).command.function.replace(
+                            DefaultFunVO.funList.get(i).command.function.replace(
                                 "#",
                                 ""
                             )
@@ -177,9 +175,9 @@ class CommandActivity : AppCompatActivity() {
         funList = ArrayList<String>()
 
         // add default function in this page
-        for (i in 0..defaultFunVO.funList.size - 1) {
-            if (defaultFunVO.funList.get(i).url.equals(url)) {
-                funList.add(defaultFunVO.funList.get(i).description)
+        for (i in 0..DefaultFunVO.funList.size - 1) {
+            if (DefaultFunVO.funList.get(i).url.equals(url)) {
+                funList.add(DefaultFunVO.funList.get(i).description)
             }
         }
 
@@ -202,14 +200,14 @@ class CommandActivity : AppCompatActivity() {
                 selectedFun = funSpinner.getItemAtPosition(position).toString()
 
                 // 기본 제공 명령어를 선택했다면 기본 대사 예시를 뷰에 로드한다.
-                for (i in 0..defaultFunVO.funList.size - 1) {
-                    if (defaultFunVO.funList.get(i).url.equals(url) and defaultFunVO.funList.get(i).description.equals(
+                for (i in 0..DefaultFunVO.funList.size - 1) {
+                    if (DefaultFunVO.funList.get(i).url.equals(url) and DefaultFunVO.funList.get(i).description.equals(
                             selectedFun
                         )
                     ) {
-                        line.setText(defaultFunVO.funList.get(i).command.line)
+                        line.setText(DefaultFunVO.funList.get(i).command.line)
                         jsScript.setText(
-                            defaultFunVO.funList.get(i).command.function.replace(
+                            DefaultFunVO.funList.get(i).command.function.replace(
                                 "#",
                                 ""
                             )

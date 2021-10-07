@@ -154,9 +154,12 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
+        DefaultFunVO() // 기본 명령어를 만든다.
+
         requestMic()
         initWidget()
         initDialog()
+        initCommonCommand()
     }
 
     @RequiresApi(Build.VERSION_CODES.JELLY_BEAN_MR1)
@@ -786,106 +789,106 @@ class MainActivity : AppCompatActivity() {
 
     @RequiresApi(Build.VERSION_CODES.KITKAT)
     fun matchCommand(speechText: String) {
-        // 형태소 분석을 통한 의도 파악 기술이 들어가야 할 듯하다.
-        val scrollDown = arrayOf("내려", "아래로")
-        val scrollUp = arrayOf("올려", "위로")
-        val scrollUpMax = arrayOf("맨 위로")
-        val scrollLeft = arrayOf("왼쪽으로")
-        val scrollRight = arrayOf("옆으로", "오른쪽으로")
-        val zoomIn = arrayOf("크게", "확대")
-        val zoomOut = arrayOf("작게", "축소")
-        val goBack = arrayOf("뒤로", "백", "이전 페이지")
-        val goForward = arrayOf("앞으로", "다음 페이지")
-        val click = arrayOf("클릭", "누르기", "터치")
-        val newTab = arrayOf("새 탭", "새 탭 열기", "새 탭 만들기")
-        val nexTab = arrayOf("다음 탭", "앞 탭")
-        val previousTab = arrayOf("이전 탭", "전 탭")
-        val closeTab = arrayOf("탭 닫기", "닫기")
-        val refresh = arrayOf("새로 고침", "리프레쉬")
-        val addBookmark = arrayOf("즐겨찾기 추가", "북마크 추가")
-        val removeBookmark = arrayOf("즐겨찾기 제거", "북마크 제거")
-        val showBookmark = arrayOf("북마크", "즐겨찾기", "북마크 보여줘", "증겨찾기 보여줘")
-        val findKeyword = arrayOf("~찾기")
-        val readScreen = arrayOf("", "")
-        val nextFocus = arrayOf("", "")
-        val showFocus = arrayOf("", "")
-        val volUp = arrayOf("볼륨 업", "소리 키워 줘")
-        val volDown = arrayOf("볼륨 다운", "소리 줄여 줘")
-        val listing = arrayOf("리스트", "리스트 시작")
-        val prevElement = arrayOf("이전")
-        val nextElement = arrayOf("다음")
-        val endListing = arrayOf("리스트 종료")
-        val play = arrayOf("재생")
-        val pause = arrayOf("정지")
-
-        if (speechText in scrollDown) {
-            getNowTab().webview.pageDown(false)
-        } else if (speechText in scrollUp) {
-            getNowTab().webview.pageUp(false)
-        } else if (speechText in scrollUpMax) {
-            getNowTab().webview.pageUp(true)
-        } else if (speechText in scrollLeft) {
-            val view = getNowTab().webview
-            val desX = if(0 > view.scrollX - view.width) { 0 } else { view.scrollX - view.width }
-            smoothScrollAnime(view, desX, view.scrollY, 1000).start()
-        } else if (speechText in scrollRight) {
-            val view = getNowTab().webview
-            val desX = if(view.horizontalScrollableRange < view.scrollX + view.width) { view.horizontalScrollableRange } else { view.scrollX + view.width }
-            smoothScrollAnime(view, desX, view.scrollY, 1000).start()
-        } else if (speechText in zoomIn) {
-            getNowTab().webview.zoomIn()
-        } else if (speechText in zoomOut) {
-            getNowTab().webview.zoomOut()
-        } else if (speechText in goBack) {
-            getNowTab().webview.evaluateJavascript(
-                "history.back();"
-            ) {}
-        } else if (speechText in goForward) {
-            getNowTab().webview.evaluateJavascript(
-                "history.forward();"
-            ) {}
-        } else if (speechText in click) {
-            clickThis()
-        } else if (speechText in newTab) {
-            makeNewTab()
-        } else if (speechText in nexTab) {
-            showNextTab()
-        } else if (speechText in previousTab) {
-            showPreviousTab()
-        } else if (speechText in closeTab) {
-            closeTab()
-        } else if (speechText in refresh) {
-            getNowTab().webview.reload()
-        } else if (speechText in addBookmark) {
-            addBookmark()
-        } else if (speechText in findKeyword) {
-
-        } else if (speechText in readScreen) {
-
-        } else if (speechText in nextFocus) {
-
-        } else if (speechText in showFocus) {
-
-        } else if (speechText in volUp) {
-            volUp()
-        } else if (speechText in volDown) {
-            volDown()
-        } else if (speechText in listing) {
-            startlistingElement("a")
-        } else if (speechText in nextElement) {
-            moveElementList(1)
-        } else if (speechText in prevElement) {
-            moveElementList(-1)
-        } else if (speechText in endListing) {
-            endListingElement()
-        } else if (speechText in play) {
-            play()
-        } else if (speechText in pause) {
-            pause()
-        } else {
+        matchCustomCommand(speechText)
+//        val scrollDown = arrayOf("내려", "아래로")
+//        val scrollUp = arrayOf("올려", "위로")
+//        val scrollUpMax = arrayOf("맨 위로")
+//        val scrollLeft = arrayOf("왼쪽으로")
+//        val scrollRight = arrayOf("옆으로", "오른쪽으로")
+//        val zoomIn = arrayOf("크게", "확대")
+//        val zoomOut = arrayOf("작게", "축소")
+//        val goBack = arrayOf("뒤로", "백", "이전 페이지")
+//        val goForward = arrayOf("앞으로", "다음 페이지")
+//        val click = arrayOf("클릭", "누르기", "터치")
+//        val newTab = arrayOf("새 탭", "새 탭 열기", "새 탭 만들기")
+//        val nexTab = arrayOf("다음 탭", "앞 탭")
+//        val previousTab = arrayOf("이전 탭", "전 탭")
+//        val closeTab = arrayOf("탭 닫기", "닫기")
+//        val refresh = arrayOf("새로 고침", "리프레쉬")
+//        val addBookmark = arrayOf("즐겨찾기 추가", "북마크 추가")
+//        val removeBookmark = arrayOf("즐겨찾기 제거", "북마크 제거")
+//        val showBookmark = arrayOf("북마크", "즐겨찾기", "북마크 보여줘", "증겨찾기 보여줘")
+//        val findKeyword = arrayOf("~찾기")
+//        val readScreen = arrayOf("", "")
+//        val nextFocus = arrayOf("", "")
+//        val showFocus = arrayOf("", "")
+//        val volUp = arrayOf("볼륨 업", "소리 키워 줘")
+//        val volDown = arrayOf("볼륨 다운", "소리 줄여 줘")
+//        val listing = arrayOf("리스트", "리스트 시작")
+//        val prevElement = arrayOf("이전")
+//        val nextElement = arrayOf("다음")
+//        val endListing = arrayOf("리스트 종료")
+//        val play = arrayOf("재생")
+//        val pause = arrayOf("정지")
+//
+//        if (speechText in scrollDown) {
+//            getNowTab().webview.pageDown(false)
+//        } else if (speechText in scrollUp) {
+//            getNowTab().webview.pageUp(false)
+//        } else if (speechText in scrollUpMax) {
+//            getNowTab().webview.pageUp(true)
+//        } else if (speechText in scrollLeft) {
+//            val view = getNowTab().webview
+//            val desX = if(0 > view.scrollX - view.width) { 0 } else { view.scrollX - view.width }
+//            smoothScrollAnime(view, desX, view.scrollY, 1000).start()
+//        } else if (speechText in scrollRight) {
+//            val view = getNowTab().webview
+//            val desX = if(view.horizontalScrollableRange < view.scrollX + view.width) { view.horizontalScrollableRange } else { view.scrollX + view.width }
+//            smoothScrollAnime(view, desX, view.scrollY, 1000).start()
+//        } else if (speechText in zoomIn) {
+//            getNowTab().webview.zoomIn()
+//        } else if (speechText in zoomOut) {
+//            getNowTab().webview.zoomOut()
+//        } else if (speechText in goBack) {
+//            getNowTab().webview.evaluateJavascript(
+//                "history.back();"
+//            ) {}
+//        } else if (speechText in goForward) {
+//            getNowTab().webview.evaluateJavascript(
+//                "history.forward();"
+//            ) {}
+//        } else if (speechText in click) {
+//            clickThis()
+//        } else if (speechText in newTab) {
+//            makeNewTab()
+//        } else if (speechText in nexTab) {
+//            showNextTab()
+//        } else if (speechText in previousTab) {
+//            showPreviousTab()
+//        } else if (speechText in closeTab) {
+//            closeTab()
+//        } else if (speechText in refresh) {
+//            getNowTab().webview.reload()
+//        } else if (speechText in addBookmark) {
+//            addBookmark()
+//        } else if (speechText in findKeyword) {
+//
+//        } else if (speechText in readScreen) {
+//
+//        } else if (speechText in nextFocus) {
+//
+//        } else if (speechText in showFocus) {
+//
+//        } else if (speechText in volUp) {
+//            volUp()
+//        } else if (speechText in volDown) {
+//            volDown()
+//        } else if (speechText in listing) {
+//            startlistingElement("a")
+//        } else if (speechText in nextElement) {
+//            moveElementList(1)
+//        } else if (speechText in prevElement) {
+//            moveElementList(-1)
+//        } else if (speechText in endListing) {
+//            endListingElement()
+//        } else if (speechText in play) {
+//            play()
+//        } else if (speechText in pause) {
+//            pause()
+//        } else {
             // 기본 명령어에 해당되지 않은 요청이 들어왔을 때 사용자 지정 명령어를 검색한다.
-            matchCustomCommand(speechText)
-        }
+//            matchCustomCommand(speechText)
+//        }
     }
 
     @RequiresApi(Build.VERSION_CODES.KITKAT)
@@ -1357,13 +1360,52 @@ class MainActivity : AppCompatActivity() {
         } else if (funStr.contains("goToSite")) {
             val url = funStr.substring(funStr.indexOf('(')+1, funStr.indexOf(')'))
             goToSite(url)
-        } else if (funStr == "") {
+        } else if (funStr == "@zoomIn()") {
+            getNowTab().webview.zoomIn()
 
-        } else if (funStr == "") {
+        } else if (funStr == "@zoomOut()") {
+            getNowTab().webview.zoomOut()
 
-        } else if (funStr == "") {
+        } else if (funStr == "@goBack()") {
+            getNowTab().webview.evaluateJavascript(
+                "history.back();"
+            ) {}
+        }else if (funStr == "@goForward()") {
+            getNowTab().webview.evaluateJavascript(
+                "history.forward();"
+            ) {}
+        } else if (funStr == "@scrollDown()") {
+            getNowTab().webview.pageDown(false)
+
+        }else if (funStr == "@scrollUp()") {
+            getNowTab().webview.pageUp(false)
+
+        } else if (funStr == "@scrollUpMax()") {
+            getNowTab().webview.pageUp(true)
+
+        }else if (funStr == "@scrollLeft()") {
+            val view = getNowTab().webview
+            val desX = if(0 > view.scrollX - view.width) { 0 } else { view.scrollX - view.width }
+            smoothScrollAnime(view, desX, view.scrollY, 1000).start()
+
+        } else if (funStr == "@scrollRight()") {
+            val view = getNowTab().webview
+            val desX = if(view.horizontalScrollableRange < view.scrollX + view.width) { view.horizontalScrollableRange } else { view.scrollX + view.width }
+            smoothScrollAnime(view, desX, view.scrollY, 1000).start()
+
+        }else if (funStr == "@") {
+
+        } else if (funStr == "@") {
+
+        }else if (funStr == "@") {
+
+        } else if (funStr == "@") {
 
         }
+
+
+
+
     }
 
     fun changeBtnTextColor(){
@@ -1384,6 +1426,63 @@ class MainActivity : AppCompatActivity() {
     fun getOnSRChk(): String? {
         val sharedPref = getSharedPreferences("onSRChk", Context.MODE_PRIVATE)
         return sharedPref.getString("onSRChk", "off")
+    }
+
+    fun addCommand(url: String, line: String, function: String) {
+        var sharedPref = getSharedPreferences("command", Context.MODE_PRIVATE)
+
+        var json = getCommand()
+        for (i in 0..json.length() - 1) {
+            var tmp_url = json.getJSONObject(i).getString("url")
+            if (tmp_url.equals(url)) {
+                var tmp_command = json.getJSONObject(i).getJSONArray("command")
+
+                var tmp_command_item = JSONObject()
+                tmp_command_item.put("line", line)
+                tmp_command_item.put("function", function)
+                tmp_command.put(tmp_command_item)
+                break
+            }
+            if (i == json.length() - 1) {
+                // 기존에 있던 url이 아닌 경우
+                var tmp_item = JSONObject()
+                tmp_item.put("url", url)
+                var tmp_command = JSONArray()
+                var tmp_command_item = JSONObject()
+                tmp_command_item.put("line", line)
+                tmp_command_item.put("function", function)
+
+                tmp_command.put(tmp_command_item)
+                tmp_item.put("command", tmp_command)
+                json.put(tmp_item)
+
+            }
+        }
+
+        with(sharedPref.edit()) {
+            putString("command", json.toString())
+            commit()
+        }
+    }
+
+
+
+    private fun initCommonCommand() {
+        //  공통 명령어를 디폴트로 등록한다.
+
+        var sharedPref = getSharedPreferences("first", Context.MODE_PRIVATE)
+        val command = sharedPref.getString("first", "false")
+        if(command == "false"){
+            // 어플리케이션을 처음 설치했을 때만 발동한다.
+            for (item in DefaultFunVO.funList){
+                addCommand(item.url,item.command.line,item.command.function)
+            }
+            with(sharedPref.edit()) {
+                putString("first", "true")
+                commit()
+            }
+        }
+
     }
 
 }

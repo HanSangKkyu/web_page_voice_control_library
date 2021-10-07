@@ -2,7 +2,9 @@ package com.example.test
 
 
 class DefaultFunVO {
-    var funList: ArrayList<Funtion> = ArrayList()
+    companion object{
+        var funList: ArrayList<Funtion> = ArrayList()
+    }
 
     constructor() {
         // 공통 기능
@@ -11,7 +13,7 @@ class DefaultFunVO {
                 "공통 명령어",
                 Command(
                     "스크롤 내려",
-                    "#scrollTo(document.documentElement.scrollTop, document.documentElement.scrollTop+200);"
+                    "@scrollDown()"
                 ),
                 "스크롤 내려"
             )
@@ -21,7 +23,7 @@ class DefaultFunVO {
                 "공통 명령어",
                 Command(
                     "스크롤 올려",
-                    "#scrollTo(document.documentElement.scrollTop, document.documentElement.scrollTop-200);"
+                    "@scrollUp()"
                 ),
                 "스크롤 올려"
             )
@@ -30,14 +32,38 @@ class DefaultFunVO {
             Funtion(
                 "공통 명령어",
                 Command(
+                    "맨 위로",
+                    "@scrollUpMax()"
+                ),
+                "맨 위로 스크롤을 이동시킨다"
+            )
+        )
+        funList.add(
+            Funtion(
+                "공통 명령어",
+                Command(
+                    "왼쪽으로",
+                    "@scrollLeft()"
+                ),
+                "왼쪽으로 스크롤을 이동시킨다"
+            )
+        )
+        funList.add(
+            Funtion(
+                "공통 명령어",
+                Command(
+                    "옆으로,오른쪽으로",
+                    "@scrollRight()"
+                ),
+                "오른쪽으 스크롤을 이동시킨다"
+            )
+        )
+        funList.add(
+            Funtion(
+                "공통 명령어",
+                Command(
                     "크게",
-                    "#if(document.body.style.zoom==\"\"){\n" +
-                        "        document.body.style.zoom = 110+\"%\";\n" +
-                        "    }else{\n" +
-                        "        var zoom = document.body.style.zoom.toString().substring(0, document.body.style.zoom.toString().indexOf(\"%\"));\n" +
-                        "        console.log(zoom);\n" +
-                        "        document.body.style.zoom = (parseInt(zoom)+10)+\"%\";\n" +
-                        "    }"
+                    "@zoomIn()"
                 ),
                 "화면 확대"
             )
@@ -47,13 +73,7 @@ class DefaultFunVO {
                 "공통 명령어",
                 Command(
                     "작게",
-                    "#if(document.body.style.zoom==\"\"){\n" +
-                            "        document.body.style.zoom = 90+\"%\";\n" +
-                            "    }else{\n" +
-                            "        var zoom = document.body.style.zoom.toString().substring(0, document.body.style.zoom.toString().indexOf(\"%\"));\n" +
-                            "        console.log(zoom);\n" +
-                            "        document.body.style.zoom = (parseInt(zoom)-10)+\"%\";\n" +
-                            "    }"
+                    "@zoomOut()"
                 ),
                 "화면 축소"
             )
