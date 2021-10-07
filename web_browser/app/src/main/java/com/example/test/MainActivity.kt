@@ -101,7 +101,9 @@ class MainActivity : AppCompatActivity() {
             when (it.what) {
                 0 ->{
                     getNowBtn().text = nowBtnTitle
-                    urlEditTextView?.setText(getNowUrl())
+                    var now_url = getNowUrl()
+                    now_url = now_url.replace("https://","")
+                    urlEditTextView?.setText(now_url)
                 }
             }
             true
@@ -307,20 +309,19 @@ class MainActivity : AppCompatActivity() {
         val newTabBtn = Button(this)
 
         val randomString = makeRanStr()
-        newTabBtn.setLayoutParams(
-            TableLayout.LayoutParams(
-                ViewGroup.LayoutParams.WRAP_CONTENT,
-                ViewGroup.LayoutParams.WRAP_CONTENT,
-                1f
-            )
-        )
+//        newTabBtn.setLayoutParams(
+//            LayoutParams(
+//                50,
+//                ViewGroup.LayoutParams.WRAP_CONTENT,
+//                1f
+//            )
+//        )
         newTabBtn.tag = randomString
         newTabBtn.text = "새 탭"
         selectedBtnTag = randomString
 
         // 탭 화면 띄우기
         newTabBtn.setOnClickListener { v ->
-
             supportFragmentManager.beginTransaction()
                 .hide(frList.get(tagToIndex(selectedBtnTag)).blankFragment)
                 .commit()
@@ -329,9 +330,6 @@ class MainActivity : AppCompatActivity() {
             selectedBtnTag = newTabBtn.tag.toString()
 
             changeBtnTextColor()
-
-
-
         }
 
         // 탭 닫기
@@ -343,7 +341,7 @@ class MainActivity : AppCompatActivity() {
             return@setOnLongClickListener true
         }
 
-        tabList.addView(newTabBtn)
+        tabList.addView(newTabBtn, ViewGroup.LayoutParams(200,100))
         var bf = BlankFragment()
 
         supportFragmentManager.beginTransaction()

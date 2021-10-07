@@ -116,10 +116,13 @@ class MyWebViewClient : WebViewClient() {
         try{
             Thread(Runnable {
                 val doc: Document = Jsoup.connect(url).get()
-                val title: Elements = doc.select("title")
                 Log.e("asdf",url.toString())
                 Log.e("asdf",doc.title())
-                MainActivity.changeBtnTitle(doc.title())
+                var titleText = doc.title()
+                if(titleText.length > 5){
+                    titleText = titleText.substring(0,5)+".."
+                }
+                MainActivity.changeBtnTitle(titleText)
             }).start()
         }
         catch(e : Exception){
