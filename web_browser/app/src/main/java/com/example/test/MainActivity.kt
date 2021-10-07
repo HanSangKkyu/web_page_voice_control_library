@@ -372,6 +372,8 @@ class MainActivity : AppCompatActivity() {
                 flag = true
             }
         }
+
+        changeBtnTextColor()
     }
 
     private fun showPreviousTab() {
@@ -391,6 +393,8 @@ class MainActivity : AppCompatActivity() {
                 flag = true
             }
         }
+
+        changeBtnTextColor()
     }
 
     @RequiresApi(Build.VERSION_CODES.JELLY_BEAN_MR1)
