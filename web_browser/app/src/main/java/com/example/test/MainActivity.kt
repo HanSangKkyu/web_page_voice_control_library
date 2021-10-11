@@ -932,9 +932,11 @@ class MainActivity : AppCompatActivity() {
                     script = function.replace("#", "")
                     getNowTab().webview.evaluateJavascript(script) {
                     }
+                    return
                 }else if(function.contains("@")){
                     // 안드로이드 함수라면
                     fireAndroidFun(function)
+                    return
                 }
 
 
@@ -1330,8 +1332,7 @@ class MainActivity : AppCompatActivity() {
 
     @RequiresApi(Build.VERSION_CODES.KITKAT)
     private fun fireAndroidFun(funStr: String) {
-
-        if (funStr == "@makeNewtab()") {
+        if (funStr.equals("@makeNewTab()")) {
             makeNewTab()
         } else if (funStr == "@showNextTab()") {
             showNextTab()
@@ -1376,6 +1377,7 @@ class MainActivity : AppCompatActivity() {
             ) {}
         } else if (funStr == "@scrollDown()") {
             getNowTab().webview.pageDown(false)
+
 
         }else if (funStr == "@scrollUp()") {
             getNowTab().webview.pageUp(false)
