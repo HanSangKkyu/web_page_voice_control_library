@@ -9,7 +9,6 @@ import android.content.Intent
 import android.graphics.Color
 import android.media.AudioManager
 import android.media.AudioManager.*
-import android.media.MediaPlayer
 import android.media.MediaRecorder
 import android.os.Build
 import android.os.Bundle
@@ -17,7 +16,6 @@ import android.os.Handler
 import android.speech.RecognitionListener
 import android.speech.RecognizerIntent
 import android.speech.SpeechRecognizer
-import android.util.Base64.NO_WRAP
 import android.util.Base64.encodeToString
 import android.util.Log
 import android.view.KeyEvent
@@ -40,11 +38,9 @@ import kotlinx.android.synthetic.main.fragment_blank.*
 import org.json.JSONArray
 import org.json.JSONObject
 import java.io.*
-import java.nio.ByteBuffer
 import java.nio.charset.Charset
 import java.util.*
 import kotlin.collections.HashMap
-import kotlin.experimental.and
 
 
 class MainActivity : AppCompatActivity() {
@@ -92,8 +88,38 @@ class MainActivity : AppCompatActivity() {
                 showToast(STTresult)
                 startSTT()
             }
+            6->{
+
+            }
         }
         true
+    }
+
+    fun getTabStore(): ArrayList<String> {
+        var sharedPref = getSharedPreferences("tabStore", Context.MODE_PRIVATE)
+        return ArrayList(sharedPref?.getString("tabStore", "").toString().split(','))
+    }
+
+    fun updateTabStore(){
+        var str = ""
+
+        for (i in 0..frList.size-1){
+            if (frList.get(i).blankFragment.isWebViewReady){
+                Log.e("here","ready"+frList.get(i).blankFragment.getUrl())
+                str += frList.get(i).blankFragment.getUrl()+","
+            }else{
+                Log.e("here","not ready")
+            }
+        }
+
+        var sharedPref = getSharedPreferences("tabStore", Context.MODE_PRIVATE)
+        with (sharedPref.edit()) {
+            if(str.length>1){
+                Log.e("here",str.substring(0,str.length-1)+" tabStore")
+                putString("tabStore", str.substring(0,str.length-1))
+                commit()
+            }
+        }
     }
 
     companion object {
@@ -124,7 +150,7 @@ class MainActivity : AppCompatActivity() {
         }
 
         fun tagToIndex(_tag: String): Int {
-            for (i in 0..frList.size) {
+            for (i in 0..frList.size-1) {
                 try {
                     if (frList.get(i).tag == _tag) {
                         return i
@@ -161,11 +187,43 @@ class MainActivity : AppCompatActivity() {
         initDialog()
         initCommonCommand()
 
-        if(frList.isEmpty()){
-            // 이상하게 이렇게 생성된 탭은 사용자 명령어 페이지를 들어갔다 나오면
+        loadTab()
+
+    }
+
+    private fun loadTab() {
+        val turls = getTabStore()
+        for(i in 0..turls.size-1){
+            Log.e("here",turls.get(i)+" ijijiurl")
+        }
+
+        if(frList.isEmpty() && getTabStore()[0].length == 0){
+            // 추천 명령어 사이트 띄우기
+            // 이상하게 이렇게 생성된 탭은 사용자 명령어 페이지를 들어갔다 나오면 무조건 추천 명령어 사이트로 리다이렉트 된다.
             makeNewTab().changeUrl("raw.githubusercontent.com/HanSangKkyu/web_page_voice_control_library/main/web_browser/description.txt")
+            updateTabStore()
+        }else{
+            // 이전에 보고 있던 탭이 있을 경우
+            for (i in 0..getTabStore().size-1){
+                makeNewTab()
+            }
+            Handler().postDelayed({
+                getNowTab().changeUrl(getTabStore().get(getTabStore().size-1))
+                if(frList.size > 1){
+                    val urls = getTabStore()
+                    for (i in 0..getTabStore().size-2){
+//                    for (i in 0..getTabStore().size-1){
+                        urls.set(i, urls.get(i).replace("https://",""))
+                        urls.set(i, urls.get(i).replace("http://",""))
+                        urls.set(i, urls.get(i).substring(0,5))
+                        frList.get(i).button.text = urls.get(i)
+                    }
+                }
+            }, 100)
+
         }
     }
+
 
     @RequiresApi(Build.VERSION_CODES.JELLY_BEAN_MR1)
     private fun initDialog() {
@@ -180,6 +238,7 @@ class MainActivity : AppCompatActivity() {
                 val selectItem = parent.getItemAtPosition(position) as String
                 if (frList.isEmpty()) {
                     makeNewTab().changeUrl(selectItem.toString())
+                    updateTabStore()
                 }else{
                     goToSite(urlEditText.text.toString())
                 }
@@ -226,6 +285,8 @@ class MainActivity : AppCompatActivity() {
                 v.clearFocus()
                 if (frList.isEmpty()) {
                     makeNewTab().changeUrl(urlEditText.text.toString())
+                    updateTabStore()
+
                 }else{
                     goToSite(urlEditText.text.toString())
                 }
@@ -241,6 +302,8 @@ class MainActivity : AppCompatActivity() {
             v.clearFocus()
             if (frList.isEmpty()) {
                 makeNewTab().changeUrl(urlEditText.text.toString())
+                updateTabStore()
+
             }else{
                 goToSite(urlEditText.text.toString())
             }
@@ -248,28 +311,10 @@ class MainActivity : AppCompatActivity() {
 
         // 새로고침 버튼
         refreshBtn.setOnClickListener { v ->
-            getNowTab().webview.reload()
-            // 앱에서 자바스크립트 코드 실행시키기
-//            webview.loadUrl("javascript:location.reload()");
-//
-//            webview.evaluateJavascript("(function(){return('<html>'+document.getElementsByTagName('html')[0].innerHTML+'</html>'); })();"){
-//                Log.e("it",it)
-//            }
+//            getNowTab().webview.reload()
 
-//            webview.evaluateJavascript("(function(){return('<html>'+document.getElementsByTagName('html')[0].innerHTML+'</html>'); })();"){
-//                Log.e("it",it)
-//            }
-//            showNextTab()
-//            addBookmark()
-//            matchCustomCommand("efefef")
+            makeNewTab().changeUrl("naver.com")
 
-//            var script = ""
-//            webview.evaluateJavascript("(function(){return("+script+"); })();"){
-//                Log.e("it",it)
-//            }
-//            addBookmark()
-//            matchCommand("대한민국 검색 해 줘")
-//            addBookmark()
         }
 
         // 새탭 버튼
@@ -314,16 +359,17 @@ class MainActivity : AppCompatActivity() {
 
 
     private fun makeNewTab(): BlankFragment {
-        val newTabBtn = Button(this)
+        // create Fragment
+        var bf = BlankFragment()
+        supportFragmentManager.beginTransaction()
+            .add(R.id.frame, bf)
+            .commitNow()
 
+
+        // create tab button
+        val newTabBtn = Button(this)
         val randomString = makeRanStr()
-//        newTabBtn.setLayoutParams(
-//            LayoutParams(
-//                50,
-//                ViewGroup.LayoutParams.WRAP_CONTENT,
-//                1f
-//            )
-//        )
+
         newTabBtn.tag = randomString
         newTabBtn.text = "새 탭"
         selectedBtnTag = randomString
@@ -332,11 +378,18 @@ class MainActivity : AppCompatActivity() {
         newTabBtn.setOnClickListener { v ->
             supportFragmentManager.beginTransaction()
                 .hide(frList.get(tagToIndex(selectedBtnTag)).blankFragment)
-                .commit()
+                .commitNow()
             supportFragmentManager.beginTransaction()
-                .show(frList.get(tagToIndex(newTabBtn.tag.toString())).blankFragment).commit()
+                .show(frList.get(tagToIndex(newTabBtn.tag.toString())).blankFragment).commitNow()
             selectedBtnTag = newTabBtn.tag.toString()
 
+            // loadTab()에 의해 만들어진 탭 설정하기 flag
+            if(newTabBtn.text != "새 탭" || newTabBtn.text != ""){
+                Log.e("here",frList.get(tagToIndex(selectedBtnTag)).blankFragment.getUrl()+" lllloo")
+                if(frList.get(tagToIndex(selectedBtnTag)).blankFragment.getUrl().toString() == "null"){
+                    getNowTab().changeUrl(getTabStore().get(tagToIndex(selectedBtnTag)))
+                }
+            }
             changeBtnTextColor()
         }
 
@@ -350,11 +403,7 @@ class MainActivity : AppCompatActivity() {
         }
 
         tabList.addView(newTabBtn, ViewGroup.LayoutParams(200,100))
-        var bf = BlankFragment()
 
-        supportFragmentManager.beginTransaction()
-            .add(R.id.frame, bf)
-            .commit()
 
         frList.add(TabInfo(newTabBtn.tag.toString(), bf, newTabBtn))
 
@@ -370,9 +419,9 @@ class MainActivity : AppCompatActivity() {
             if (flag) {
                 supportFragmentManager.beginTransaction()
                     .hide(frList.get(tagToIndex(selectedBtnTag)).blankFragment)
-                    .commit()
+                    .commitNow()
                 supportFragmentManager.beginTransaction()
-                    .show(frList.get(tagToIndex(item.tag)).blankFragment).commit()
+                    .show(frList.get(tagToIndex(item.tag)).blankFragment).commitNow()
                 selectedBtnTag = item.tag
                 break
             }
@@ -391,9 +440,9 @@ class MainActivity : AppCompatActivity() {
             if (flag) {
                 supportFragmentManager.beginTransaction()
                     .hide(frList.get(tagToIndex(selectedBtnTag)).blankFragment)
-                    .commit()
+                    .commitNow()
                 supportFragmentManager.beginTransaction()
-                    .show(frList.get(tagToIndex(item.tag)).blankFragment).commit()
+                    .show(frList.get(tagToIndex(item.tag)).blankFragment).commitNow()
                 selectedBtnTag = item.tag
                 break
             }
@@ -1068,7 +1117,7 @@ class MainActivity : AppCompatActivity() {
 
     fun closeTab() {
         supportFragmentManager.beginTransaction()
-            .remove(frList.get(tagToIndex(selectedBtnTag)).blankFragment).commit()
+            .remove(frList.get(tagToIndex(selectedBtnTag)).blankFragment).commitNow()
         frList.get(tagToIndex(selectedBtnTag)).button.visibility = View.GONE
         frList.removeAt(tagToIndex(selectedBtnTag))
 
@@ -1077,9 +1126,10 @@ class MainActivity : AppCompatActivity() {
             changeBtnTextColor()
 
             supportFragmentManager.beginTransaction()
-                .show(frList.get(tagToIndex(selectedBtnTag)).blankFragment).commit()
+                .show(frList.get(tagToIndex(selectedBtnTag)).blankFragment).commitNow()
         }
 
+        updateTabStore()
     }
 
     private fun volUp() {
@@ -1334,6 +1384,7 @@ class MainActivity : AppCompatActivity() {
     private fun goToSite(siteUrl:String){
 //        frList.get(tagToIndex(selectedBtnTag)).blankFragment.changeUrl(siteUrl)
         getNowTab().changeUrl(siteUrl)
+        updateTabStore()
     }
 
     @RequiresApi(Build.VERSION_CODES.KITKAT)
