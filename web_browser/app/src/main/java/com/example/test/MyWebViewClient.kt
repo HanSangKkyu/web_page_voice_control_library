@@ -45,56 +45,58 @@ class MyWebViewClient : WebViewClient() {
                             "})()"
                 ) {
                     Log.v("테스트", it)
-                    json = JSONObject(it.replace("\"", "").replace("\\", "\""))
-                    var doesUserScalableExist = false
-                    var doesMaxScaleExist = false
-                    var doesMinScaleExist = false
-                    var doesInitialScaleExist = false
-                    for (key in json.keys()) {
-                        if (key == "user-scalable" && view is MyWebView && view.forcedZoom == true) {
-                            doesUserScalableExist = true
-                            json.put("user-scalable", "yes")
-                        }
-                        if (key == "maximum-scale") {
-                            doesMaxScaleExist = true
-                            if (json.getString(key).toFloat() < 5.0f) {
-                                json.put("maximum-scale", "5.0")
+                    if(it != "null"){
+                        json = JSONObject(it.replace("\"", "").replace("\\", "\""))
+                        var doesUserScalableExist = false
+                        var doesMaxScaleExist = false
+                        var doesMinScaleExist = false
+                        var doesInitialScaleExist = false
+                        for (key in json.keys()) {
+                            if (key == "user-scalable" && view is MyWebView && view.forcedZoom == true) {
+                                doesUserScalableExist = true
+                                json.put("user-scalable", "yes")
+                            }
+                            if (key == "maximum-scale") {
+                                doesMaxScaleExist = true
+                                if (json.getString(key).toFloat() < 5.0f) {
+                                    json.put("maximum-scale", "5.0")
+                                }
+                            }
+                            if (key == "minimum-scale") {
+                                doesMinScaleExist = true
+                            }
+                            if (key == "initial-scale") {
+                                doesInitialScaleExist = true
                             }
                         }
-                        if (key == "minimum-scale") {
-                            doesMinScaleExist = true
+                        if (!doesUserScalableExist) {
+                            json.put("user-scalable", "yes")
+                    }
+                        if (!doesMaxScaleExist) {
+                            json.put("maximum-scale", "5.0")
                         }
-                        if (key == "initial-scale") {
-                            doesInitialScaleExist = true
+                        if (!doesMinScaleExist) {
+                            json.put("minimum-scale", "1.0")
                         }
+                        if (!doesInitialScaleExist) {
+                            json.put("initial-scale", "1.0")
+                        }
+                        var newStr: String = ""
+                        for (key in json.keys()) {
+                            newStr = newStr.plus(key).plus('=').plus(json.getString(key)).plus(',')
+                        }
+                        newStr = newStr.substring(0, newStr.length-1)
+                        view?.evaluateJavascript(
+                            "javascript:(function() {" +
+                                    "   document.querySelector('meta[name=\"viewport\"]').content = '$newStr';" +
+                                    "   return document.querySelector('meta[name=\"viewport\"]').content" +
+                                    "})()"
+                        ) {}
+                        zoomable = json.getString("user-scalable") == "yes"
+                        maxScale = json.getString("maximum-scale").toFloat()
+                        minScale = json.getString("minimum-scale").toFloat()
+    //                    presentScale = json.getString("initial-scale").toFloat()
                     }
-                    if (!doesUserScalableExist) {
-                        json.put("user-scalable", "yes")
-                }
-                    if (!doesMaxScaleExist) {
-                        json.put("maximum-scale", "5.0")
-                    }
-                    if (!doesMinScaleExist) {
-                        json.put("minimum-scale", "1.0")
-                    }
-                    if (!doesInitialScaleExist) {
-                        json.put("initial-scale", "1.0")
-                    }
-                    var newStr: String = ""
-                    for (key in json.keys()) {
-                        newStr = newStr.plus(key).plus('=').plus(json.getString(key)).plus(',')
-                    }
-                    newStr = newStr.substring(0, newStr.length-1)
-                    view?.evaluateJavascript(
-                        "javascript:(function() {" +
-                                "   document.querySelector('meta[name=\"viewport\"]').content = '$newStr';" +
-                                "   return document.querySelector('meta[name=\"viewport\"]').content" +
-                                "})()"
-                    ) {}
-                    zoomable = json.getString("user-scalable") == "yes"
-                    maxScale = json.getString("maximum-scale").toFloat()
-                    minScale = json.getString("minimum-scale").toFloat()
-//                    presentScale = json.getString("initial-scale").toFloat()
                 }
             }
 

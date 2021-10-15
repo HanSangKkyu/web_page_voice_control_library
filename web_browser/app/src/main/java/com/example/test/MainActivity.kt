@@ -160,6 +160,11 @@ class MainActivity : AppCompatActivity() {
         initWidget()
         initDialog()
         initCommonCommand()
+
+        if(frList.isEmpty()){
+            // 이상하게 이렇게 생성된 탭은 사용자 명령어 페이지를 들어갔다 나오면
+            makeNewTab().changeUrl("raw.githubusercontent.com/HanSangKkyu/web_page_voice_control_library/main/web_browser/description.txt")
+        }
     }
 
     @RequiresApi(Build.VERSION_CODES.JELLY_BEAN_MR1)
@@ -1327,7 +1332,8 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun goToSite(siteUrl:String){
-        frList.get(tagToIndex(selectedBtnTag)).blankFragment.changeUrl(siteUrl)
+//        frList.get(tagToIndex(selectedBtnTag)).blankFragment.changeUrl(siteUrl)
+        getNowTab().changeUrl(siteUrl)
     }
 
     @RequiresApi(Build.VERSION_CODES.KITKAT)
