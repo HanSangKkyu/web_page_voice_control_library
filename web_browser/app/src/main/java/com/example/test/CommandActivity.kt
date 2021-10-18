@@ -3,6 +3,7 @@ package com.example.test
 import android.content.Context
 import android.os.Build
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -78,41 +79,41 @@ class CommandActivity : AppCompatActivity() {
         refreshListView()
 
 
-        // set create Btn
-        createBtn.setOnClickListener { v ->
-
-            var isAdd = false
-            // 기본 제공 명령어 인지 확인하기
-            for (i in 0..DefaultFunVO.funList.size - 1) {
-                if (DefaultFunVO.funList.get(i).url.equals(url) and DefaultFunVO.funList.get(i).description.equals(
-                        selectedFun
-                    )
-                ) {
-                    addCommand(
-                        url,
-                        line.text.toString(),
-                        DefaultFunVO.funList.get(i).command.function
-                    )
-                    isAdd = true
-                    break
-                }
-            }
-
-            // 기본 제공 명령어가 아니라면
-            if (!isAdd) {
-                addCommand(url, line.text.toString(), selectedFun)
-            }
-
-
-            line.setText("")
-            Toast.makeText(this, "생성 완료", Toast.LENGTH_SHORT).show()
-            refreshListView()
-        }
-
-        // set save Btn
-        saveBtn.setOnClickListener { v ->
-            editCommandItem()
-        }
+//        // set create Btn
+//        createBtn.setOnClickListener { v ->
+//
+//            var isAdd = false
+//            // 기본 제공 명령어 인지 확인하기
+//            for (i in 0..DefaultFunVO.funList.size - 1) {
+//                if (DefaultFunVO.funList.get(i).url.equals(url) and DefaultFunVO.funList.get(i).description.equals(
+//                        selectedFun
+//                    )
+//                ) {
+//                    addCommand(
+//                        url,
+//                        line.text.toString(),
+//                        DefaultFunVO.funList.get(i).command.function
+//                    )
+//                    isAdd = true
+//                    break
+//                }
+//            }
+//
+//            // 기본 제공 명령어가 아니라면
+//            if (!isAdd) {
+//                addCommand(url, line.text.toString(), selectedFun)
+//            }
+//
+//
+//            line.setText("")
+//            Toast.makeText(this, "생성 완료", Toast.LENGTH_SHORT).show()
+//            refreshListView()
+//        }
+//
+//        // set save Btn
+//        saveBtn.setOnClickListener { v ->
+//            editCommandItem()
+//        }
 
         // set create Btn
         createJsBtn.setOnClickListener { v ->
@@ -124,7 +125,7 @@ class CommandActivity : AppCompatActivity() {
 
         // set save Btn
         saveJsBtn.setOnClickListener { v ->
-            editJsScriptItem()
+            editJsScriptItem(jsScript.text.toString())
         }
     }
 
@@ -223,7 +224,7 @@ class CommandActivity : AppCompatActivity() {
     }
 
     @RequiresApi(Build.VERSION_CODES.KITKAT)
-    private fun editJsScriptItem() {
+    private fun editJsScriptItem(jsScript: String) {
         var sharedPref = getSharedPreferences("command", Context.MODE_PRIVATE)
 
         var json = getCommand()
@@ -235,7 +236,15 @@ class CommandActivity : AppCompatActivity() {
 
                 var tmp_command_item = JSONObject()
                 tmp_command_item.put("line", line.text.toString())
-                tmp_command_item.put("function", "#" + jsScript.text.toString())
+                if(jsScript.contains("@")){
+                    // 안드로이드 함수면 #은 제외하고 저장한다.
+                    tmp_command_item.put("function", jsScript) // js 스크립트는 #으로 시작하게 만들어 함수와 구분한다.
+                }else{
+                    // 자바스크립트 함수일 때 #을 추가해서 저장한다.
+                    tmp_command_item.put("function", "#" + jsScript) // js 스크립트는 #으로 시작하게 만들어 함수와 구분한다.
+                }
+
+//                tmp_command_item.put("function", "#" + jsScript.text.toString())
 
                 tmp_command.put(selectedItemPos, tmp_command_item)
                 break
@@ -366,17 +375,10 @@ class CommandActivity : AppCompatActivity() {
         if (selectedFun.contains("#")) {
             // js script라면
             jsScript.setText(selectedFun.replace("#", ""))
-
-        } else {
-            for (i in 0..funList.size - 1) {
-                if (funList.get(i).equals(selectedFun)) {
-                    funSpinner.setSelection(i)
-                    break
-                }
-            }
+        } else if(selectedFun.contains("@")) {
+            // 개발자들이 제공하는 안드로이드 함수이다.
+            jsScript.setText(selectedFun)
         }
-
-
     }
 
 

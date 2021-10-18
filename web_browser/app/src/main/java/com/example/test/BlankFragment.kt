@@ -98,16 +98,13 @@ class BlankFragment : Fragment() {
 //            turl = url.replace("http://","")
             turl = url.replace("https://","")
             turl = turl.replace("http://","")
-            Log.e("here",turl+" name")
 
             try {
                 webview.loadUrl("http://" + turl)
             }catch (e:Exception){}
 
 
-            Log.e("here",MainActivity.frList.size.toString()+" size")
         } else {
-            Log.e("here",this.toString()+" not ready")
             tempStr = url
         }
 

@@ -105,17 +105,14 @@ class MainActivity : AppCompatActivity() {
 
         for (i in 0..frList.size-1){
             if (frList.get(i).blankFragment.isWebViewReady){
-                Log.e("here","ready"+frList.get(i).blankFragment.getUrl())
                 str += frList.get(i).blankFragment.getUrl()+","
             }else{
-                Log.e("here","not ready")
             }
         }
 
         var sharedPref = getSharedPreferences("tabStore", Context.MODE_PRIVATE)
         with (sharedPref.edit()) {
             if(str.length>1){
-                Log.e("here",str.substring(0,str.length-1)+" tabStore")
                 putString("tabStore", str.substring(0,str.length-1))
                 commit()
             }
@@ -187,14 +184,12 @@ class MainActivity : AppCompatActivity() {
         initDialog()
         initCommonCommand()
 
-        loadTab()
-
+//        loadTab() // 탭 유지 기능 활성화 필요시 주석 해제하기
     }
 
     private fun loadTab() {
         val turls = getTabStore()
         for(i in 0..turls.size-1){
-            Log.e("here",turls.get(i)+" ijijiurl")
         }
 
         if(frList.isEmpty() && getTabStore()[0].length == 0){
@@ -385,7 +380,6 @@ class MainActivity : AppCompatActivity() {
 
             // loadTab()에 의해 만들어진 탭 설정하기 flag
             if(newTabBtn.text != "새 탭" || newTabBtn.text != ""){
-                Log.e("here",frList.get(tagToIndex(selectedBtnTag)).blankFragment.getUrl()+" lllloo")
                 if(frList.get(tagToIndex(selectedBtnTag)).blankFragment.getUrl().toString() == "null"){
                     getNowTab().changeUrl(getTabStore().get(tagToIndex(selectedBtnTag)))
                 }
