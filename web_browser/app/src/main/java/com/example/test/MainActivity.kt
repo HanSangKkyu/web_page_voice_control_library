@@ -193,7 +193,7 @@ class MainActivity : AppCompatActivity() {
         }
 
         if(frList.isEmpty() && getTabStore()[0].length == 0){
-            // 추천 명령어 사이트 띄우기
+           // 추천 명령어 사이트 띄우기
             // 이상하게 이렇게 생성된 탭은 사용자 명령어 페이지를 들어갔다 나오면 무조건 추천 명령어 사이트로 리다이렉트 된다.
             makeNewTab().changeUrl("raw.githubusercontent.com/HanSangKkyu/web_page_voice_control_library/main/web_browser/description.txt")
             updateTabStore()
@@ -966,13 +966,12 @@ class MainActivity : AppCompatActivity() {
 
     @RequiresApi(Build.VERSION_CODES.KITKAT)
     private fun matchCustomCommand(speechText: String) {
-        // 사용자 지정 공통 명령어에서 일치하는 것이 있는지 검색한다.
+        // 사용자 지정 "공통 명령어"에서 일치하는 것이 있는지 검색한다.
         var commandArr = getCommandOfUrl("공통 명령어")
         for (i in 0..commandArr.length() - 1) {
             // * 가 line에 포함되어 있는지 판단하여 적용해야 한다.
-
-            if (commandArr.getJSONObject(i).getString("line") == speechText) {
-
+            var lines = commandArr.getJSONObject(i).getString("line").split(',') // 대사를 여러개 지정할 수 있다. 쉼표(,)로 구분한다.
+            if (speechText in lines) {
                 var function = commandArr.getJSONObject(i).getString("function")
                 var script = function
                 if (function.contains("#")) {
@@ -1006,7 +1005,7 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
-        // 사용자 지정 명령어 중 이 페이지에 해당하는 것이 있는지 검색한다.
+        // 사용자 지정 명령어 중 "이 페이지"에 해당하는 것이 있는지 검색한다.
         try{
             commandArr = getCommandOfUrl(getHostPartInUrl(getNowUrl()))
             for (i in 0..commandArr.length() - 1) {
