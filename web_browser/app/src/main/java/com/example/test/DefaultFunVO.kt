@@ -249,6 +249,61 @@ class DefaultFunVO {
                 "포털 사이트 이동"
             )
         )
+        funList.add(
+            Funtion(
+                "공통 명령어",
+                Command(
+                    "*찾아",
+                    "@findElementsInView(*)"
+                ),
+                "엘리먼트 찾기"
+            )
+        )
+        funList.add(
+            Funtion(
+                "공통 명령어",
+                Command(
+                    "다음요",
+                    "@selectFindedElements(1)"
+                ),
+                "다음 엘리먼트 선택"
+            )
+        )
+        funList.add(
+            Funtion(
+                "공통 명령어",
+                Command(
+                    "이전요",
+                    "@selectFindedElements(-1)"
+                ),
+                "이전 엘리먼트 선"
+            )
+        )
+        funList.add(
+            Funtion(
+                "공통 명령어",
+                Command(
+                    "마크 지우기",
+                    "@clearFindedItemMarks()"
+                ),
+                "마크 지우"
+            )
+        )
+        funList.add(
+            Funtion(
+                "공통 명령어",
+                Command(
+                    "클릭",
+                    "@clickHere()"
+                ),
+                "클릭"
+            )
+        )
+
+
+
+
+
 
 
 

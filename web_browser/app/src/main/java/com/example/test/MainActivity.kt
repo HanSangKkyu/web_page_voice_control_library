@@ -994,13 +994,25 @@ class MainActivity : AppCompatActivity() {
                 var wc = speechText
                 if (wc.contains(commmand)) {
                     wc = wc.replace(commmand, "")
+                    wc = wc.trim()
 
                     var function = commandArr.getJSONObject(i).getString("function")
                     var script = function.replace("#", "")
                     script = script.replace("*", wc)
-                    getNowTab().webview.evaluateJavascript(script) {
-                        Log.e("asdf", it)
+
+                    if (function.contains("#")) {
+                        // js 스크립트라면
+                        getNowTab().webview.evaluateJavascript(script) {
+                        }
+                        return
+                    }else if(function.contains("@")){
+                        // 안드로이드 함수라면
+                        fireAndroidFun(function,wc)
+                        return
                     }
+//                    getNowTab().webview.evaluateJavascript(script) {
+//                        Log.e("asdf", it)
+//                    }
                 }
             }
         }
@@ -1046,6 +1058,7 @@ class MainActivity : AppCompatActivity() {
         }
 
     }
+
 
     fun getCommand(): JSONArray {
 
@@ -1305,6 +1318,151 @@ class MainActivity : AppCompatActivity() {
         ) {}
     }
 
+
+    var searchedItems:LinkedList<String> = LinkedList()
+    var nowFindedElementIdx:Int = 0 // 현재 포커싱인 아이템 index
+    @RequiresApi(Build.VERSION_CODES.KITKAT)
+    private fun findElementsInView(keyword : String){
+        // keyword를 가지고 있는 a 태그를 찾는다. 현재 보고 있는 뷰 안에 있는 a 태그만 찾는다.
+        getNowTab().webview.evaluateJavascript(
+            "javascript:(function() {" +
+                    "var atags = document.querySelectorAll('a')\n" +
+                    "var res = '';\n" +
+                    "for (let i = 0; i < atags.length; i++) {\n" +
+                    "    const x = atags[i];\n" +
+                    "    const box = x.getBoundingClientRect();\n" +
+                    "\n" +
+                    "    if(x.textContent.match('"+keyword+"') && (box.top < window.innerHeight && box.bottom >= 0)){\n" +
+                    "        // 단어를 포함한 것 중 화면 안에 보여지는 엘리먼트만 마킹한다.\n" +
+                    "\n" +
+                    "        x.style.border='1px solid red';\n" +
+                    "        if(res.length==0){\n" +
+                    "            x.style.background='yellow';\n" +
+                    "        }\n" +
+                    "        for(var j = 0; j<x.childNodes.length;j++){\n" +
+                    "            try {\n" +
+                    "                x.childNodes[j].style.border='1px solid red';\n" +
+                    "                if(res.length==0){\n" +
+                    "                    x.childNodes[j].style.background='yellow';\n" +
+                    "                }\n" +
+                    "            } catch (error) {\n" +
+                    "                \n" +
+                    "            }\n" +
+                    "        }\n" +
+                    "\n" +
+                    "        res += i+',';\n" +
+                    "    }else{\n" +
+                    "\n" +
+                    "    }\n" +
+                    "}"+
+                    "return res;" +
+                "})();"
+        ) {result->
+            Log.e("list", result)
+            var resultt = result.substring(1, result.length-1)
+            if(resultt.length > 0){
+                searchedItems = LinkedList(resultt.substring(0, resultt.length-1).split(','))
+                for (i in searchedItems){
+                    println("$i")
+                }
+                nowFindedElementIdx = 0
+            }
+        }
+    }
+
+    @RequiresApi(Build.VERSION_CODES.KITKAT)
+    private fun selectFindedElements(direction: Int){
+        val oldFindedElementIdx = nowFindedElementIdx
+        nowFindedElementIdx += direction
+
+        if(!(0 <= nowFindedElementIdx && nowFindedElementIdx < searchedItems.size)){
+            // 범위를 벗어나는 명령은 무시한다.
+            nowFindedElementIdx -= direction
+            return
+        }
+
+        Log.e("here",searchedItems[oldFindedElementIdx]+" "+searchedItems[nowFindedElementIdx])
+        getNowTab().webview.evaluateJavascript(
+            "javascript:(function() {" +
+                    "// 지우고, 칠하기\n" +
+                    "var atags = document.querySelectorAll('a')\n" +
+                    "// 이전 것은 지우기 \n" +
+                    "var x = atags["+searchedItems[oldFindedElementIdx].toInt()+"]\n" +
+                    "x.style.background='';\n" +
+                    "for(var j = 0; j<x.childNodes.length;j++){\n" +
+                    "    try {\n" +
+                    "        x.childNodes[j].style.background='';\n" +
+                    "    } catch (error) {\n" +
+                    "        \n" +
+                    "    }\n" +
+                    "}\n" +
+                    "// 새것 칠하기\n" +
+                    "x = atags["+searchedItems[nowFindedElementIdx].toInt()+"]\n" +
+                    "x.style.background='yellow';\n" +
+                    "for(var j = 0; j<x.childNodes.length;j++){\n" +
+                    "    try {\n" +
+                    "        x.childNodes[j].style.background='yellow';\n" +
+                    "    } catch (error) {\n" +
+                    "        \n" +
+                    "    }\n" +
+                    "}"+
+                    "return '';" +
+                    "})();"
+        ) {result->
+
+        }
+    }
+
+    @RequiresApi(Build.VERSION_CODES.KITKAT)
+    private fun clearFindedItemMarks(){
+        getNowTab().webview.evaluateJavascript(
+            "[].slice.call(document.querySelectorAll('a'))\n" +
+            ".forEach(x =>{\n" +
+            "    x.style.border='';\n" +
+            "    x.style.background='';\n" +
+            "    \n" +
+            "    for(var j = 0; j<x.childNodes.length;j++){\n" +
+            "        try {\n" +
+            "            x.childNodes[j].style.border='';\n" +
+            "            x.childNodes[j].style.background='';\n" +
+            "        } catch (error) {\n" +
+            "            \n" +
+            "        }\n" +
+            "    }\n" +
+            "})"
+        ) {}
+    }
+
+    @RequiresApi(Build.VERSION_CODES.KITKAT)
+    private fun clickHere() {
+        Log.e("here", searchedItems[nowFindedElementIdx].toInt().toString())
+//        getNowTab().webview.evaluateJavascript(
+//            "document.querySelectorAll('a')["+searchedItems[nowFindedElementIdx].toInt()+"].click()"
+//        ) {}
+
+        getNowTab().webview.evaluateJavascript(
+            "javascript:(function() {" +
+                    "// 지우고, 칠하기\n" +
+                    "var atags = document.querySelectorAll('a')\n" +
+                    "// 이전 것은 지우기 \n" +
+                    "var x = atags["+searchedItems[nowFindedElementIdx].toInt()+"]\n" +
+                    "x.click();\n" +
+                    "for(var j = 0; j<x.childNodes.length;j++){\n" +
+                    "    try {\n" +
+                    "        x.childNodes[j].click();\n" +
+                    "    } catch (error) {\n" +
+                    "        \n" +
+                    "    }\n" +
+                    "}\n" +
+                    "return '';" +
+                    "})();"
+        ) {result->
+
+        }
+    }
+
+
+
     @RequiresApi(Build.VERSION_CODES.KITKAT)
     private fun play() {
         if (!searchSelector.contains("video") && !searchSelector.contains("audio")) {
@@ -1445,9 +1603,21 @@ class MainActivity : AppCompatActivity() {
             val desX = if(view.horizontalScrollableRange < view.scrollX + view.width) { view.horizontalScrollableRange } else { view.scrollX + view.width }
             smoothScrollAnime(view, desX, view.scrollY, 1000).start()
 
+        } else if (funStr == "@selectFindedElements(1)") {
+            selectFindedElements(1)
+        }else if (funStr == "@selectFindedElements(-1)") {
+            selectFindedElements(-1)
+        } else if (funStr == "@clearFindedItemMarks()") {
+            clearFindedItemMarks()
+        }else if (funStr == "@clickHere()") {
+            clickHere()
+        } else if (funStr == "@") {
+
         }else if (funStr == "@") {
 
         } else if (funStr == "@") {
+
+        }else if (funStr == "@") {
 
         }else if (funStr == "@") {
 
@@ -1458,6 +1628,17 @@ class MainActivity : AppCompatActivity() {
 
 
 
+    }
+
+    @RequiresApi(Build.VERSION_CODES.KITKAT)
+    private fun fireAndroidFun(funStr: String, wc: String) {
+        // 와일드 카드가 포함된 안드로이드 함수를 처리한다.
+
+        Log.e("here",funStr+" "+wc)
+        if (funStr.equals("@findElementsInView(*)")) {
+            findElementsInView(wc)
+        } else if (funStr == "") {
+        }
     }
 
     fun changeBtnTextColor(){
