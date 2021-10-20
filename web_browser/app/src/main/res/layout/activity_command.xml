@@ -29,20 +29,20 @@
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="명령어를 입력하세요"/>
+            android:text="실행할 함수를 선택하세요"/>
 
-        <EditText
-            android:id="@+id/line"
+        <Spinner
+            android:id="@+id/funSpinner"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"/>
 
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="실행할 함수를 선택하세요"/>
+            android:text="명령어를 입력하세요"/>
 
-        <Spinner
-            android:id="@+id/funSpinner"
+        <EditText
+            android:id="@+id/line"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"/>
     </LinearLayout>
@@ -72,15 +72,18 @@
 
         <Button
             android:id="@+id/saveJsBtn"
+            android:layout_weight="1"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="저장"/>
 
         <Button
             android:id="@+id/createJsBtn"
+            android:layout_weight="1"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="생성"/>
+
     </LinearLayout>
 
     <ListView
