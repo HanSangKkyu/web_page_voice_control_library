@@ -40,6 +40,7 @@ import org.json.JSONObject
 import java.io.*
 import java.nio.charset.Charset
 import java.util.*
+import kotlin.collections.ArrayList
 import kotlin.collections.HashMap
 
 
@@ -119,6 +120,14 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    fun initTabStore(){
+        var sharedPref = getSharedPreferences("tabStore", Context.MODE_PRIVATE)
+        with (sharedPref.edit()) {
+            putString("tabStore", "")
+            commit()
+        }
+    }
+
     companion object {
         val handler = Handler(){
             when (it.what) {
@@ -184,12 +193,15 @@ class MainActivity : AppCompatActivity() {
         initDialog()
         initCommonCommand()
 
-//        loadTab() // 탭 유지 기능 활성화 필요시 주석 해제하기
+        loadTab() // 탭 유지 기능 활성화 필요시 주석 해제하기
     }
+
+    var tmp_tab:ArrayList<String> = ArrayList()
 
     private fun loadTab() {
         val turls = getTabStore()
         for(i in 0..turls.size-1){
+            Log.e("here",turls.get(i))
         }
 
         if(frList.isEmpty() && getTabStore()[0].length == 0){
@@ -203,15 +215,18 @@ class MainActivity : AppCompatActivity() {
                 makeNewTab()
             }
             Handler().postDelayed({
-                getNowTab().changeUrl(getTabStore().get(getTabStore().size-1))
-                if(frList.size > 1){
-                    val urls = getTabStore()
-                    for (i in 0..getTabStore().size-2){
+                tmp_tab = ArrayList(getTabStore())
+                initTabStore() // 오류 때문에 초기화 하기
+                getNowTab().changeUrl(tmp_tab.get(tmp_tab.size-1))
+                if(frList.size > 1) {
+                    val urls = ArrayList(tmp_tab)
+                    for (i in 0..tmp_tab.size - 2) {
 //                    for (i in 0..getTabStore().size-1){
-                        urls.set(i, urls.get(i).replace("https://",""))
-                        urls.set(i, urls.get(i).replace("http://",""))
-                        urls.set(i, urls.get(i).substring(0,5))
+                        urls.set(i, urls.get(i).replace("https://", ""))
+                        urls.set(i, urls.get(i).replace("http://", ""))
+                        urls.set(i, urls.get(i).substring(0, 5))
                         frList.get(i).button.text = urls.get(i)
+                        Log.e("here",frList.get(i).button.text.toString())
                     }
                 }
             }, 100)
@@ -378,10 +393,10 @@ class MainActivity : AppCompatActivity() {
                 .show(frList.get(tagToIndex(newTabBtn.tag.toString())).blankFragment).commitNow()
             selectedBtnTag = newTabBtn.tag.toString()
 
-            // loadTab()에 의해 만들어진 탭 설정하기 flag
+            // loadTab()에 의해 만들어진 탭 설정하기
             if(newTabBtn.text != "새 탭" || newTabBtn.text != ""){
                 if(frList.get(tagToIndex(selectedBtnTag)).blankFragment.getUrl().toString() == "null"){
-                    getNowTab().changeUrl(getTabStore().get(tagToIndex(selectedBtnTag)))
+                    getNowTab().changeUrl(tmp_tab.get(tagToIndex(selectedBtnTag)))
                 }
             }
             changeBtnTextColor()
@@ -423,11 +438,15 @@ class MainActivity : AppCompatActivity() {
                 flag = true
             }
         }
-
+        
+        // loadTab()에 의해 만들어진 탭 설정하기 flag
+        if(frList.get(tagToIndex(selectedBtnTag)).blankFragment.getUrl().toString() == "null"){
+            getNowTab().changeUrl(tmp_tab.get(tagToIndex(selectedBtnTag)))
+        }
         changeBtnTextColor()
     }
 
-    private fun showPreviousTab() {
+    private fun showPreviousTab() { // flag1
         var flag = false;
 
         for (item in frList.reversed()) {
@@ -445,6 +464,10 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
+        // loadTab()에 의해 만들어진 탭 설정하기 flag
+        if(frList.get(tagToIndex(selectedBtnTag)).blankFragment.getUrl().toString() == "null"){
+            getNowTab().changeUrl(tmp_tab.get(tagToIndex(selectedBtnTag)))
+        }
         changeBtnTextColor()
     }
 
