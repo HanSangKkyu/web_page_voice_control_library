@@ -101,24 +101,7 @@ class MainActivity : AppCompatActivity() {
         return ArrayList(sharedPref?.getString("tabStore", "").toString().split(','))
     }
 
-    fun updateTabStore(){
-        var str = ""
 
-        for (i in 0..frList.size-1){
-            if (frList.get(i).blankFragment.isWebViewReady){
-                str += frList.get(i).blankFragment.getUrl()+","
-            }else{
-            }
-        }
-
-        var sharedPref = getSharedPreferences("tabStore", Context.MODE_PRIVATE)
-        with (sharedPref.edit()) {
-            if(str.length>1){
-                putString("tabStore", str.substring(0,str.length-1))
-                commit()
-            }
-        }
-    }
 
     fun initTabStore(){
         var sharedPref = getSharedPreferences("tabStore", Context.MODE_PRIVATE)
@@ -140,7 +123,7 @@ class MainActivity : AppCompatActivity() {
             }
             true
         }
-
+        lateinit var mContext: Context
         var frList: ArrayList<TabInfo> = ArrayList()
         private var selectedBtnTag: String = ""
         var nowBtnTitle = ""
@@ -180,6 +163,31 @@ class MainActivity : AppCompatActivity() {
         fun getNowTab(): BlankFragment {
             return frList.get(tagToIndex(selectedBtnTag)).blankFragment
         }
+
+        fun getNowFrList(): TabInfo {
+            return frList.get(tagToIndex(selectedBtnTag))
+        }
+
+        fun updateTabStore(){
+            var str = ""
+
+            for (i in 0..frList.size-1){
+                str += frList.get(i).url+","
+
+//            if (frList.get(i).blankFragment.isWebViewReady){
+//                str += frList.get(i).blankFragment.getUrl()+","
+//            }else{
+//            }
+            }
+
+            var sharedPref = mContext.getSharedPreferences("tabStore", Context.MODE_PRIVATE)
+            with (sharedPref.edit()) {
+                if(str.length>1){
+                    putString("tabStore", str.substring(0,str.length-1))
+                    commit()
+                }
+            }
+        }
     }
 
     @RequiresApi(Build.VERSION_CODES.KITKAT)
@@ -187,6 +195,8 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
         DefaultFunVO() // 기본 명령어를 만든다.
+
+        MainActivity.mContext = applicationContext
 
         requestMic()
         initWidget()
@@ -199,15 +209,11 @@ class MainActivity : AppCompatActivity() {
     var tmp_tab:ArrayList<String> = ArrayList()
 
     private fun loadTab() {
-        val turls = getTabStore()
-        for(i in 0..turls.size-1){
-            Log.e("here",turls.get(i))
-        }
-
         if(frList.isEmpty() && getTabStore()[0].length == 0){
            // 추천 명령어 사이트 띄우기
             // 이상하게 이렇게 생성된 탭은 사용자 명령어 페이지를 들어갔다 나오면 무조건 추천 명령어 사이트로 리다이렉트 된다.
             makeNewTab().changeUrl("raw.githubusercontent.com/HanSangKkyu/web_page_voice_control_library/main/web_browser/description.txt")
+            getNowFrList().url = "raw.githubusercontent.com/HanSangKkyu/web_page_voice_control_library/main/web_browser/description.txt"
             updateTabStore()
         }else{
             // 이전에 보고 있던 탭이 있을 경우
@@ -216,7 +222,12 @@ class MainActivity : AppCompatActivity() {
             }
             Handler().postDelayed({
                 tmp_tab = ArrayList(getTabStore())
-                initTabStore() // 오류 때문에 초기화 하기
+//                initTabStore() // 오류 때문에 초기화 하기
+
+                for (i in 0..tmp_tab.size-1){
+                    frList.get(i).url = tmp_tab.get(i)
+                }
+
                 getNowTab().changeUrl(tmp_tab.get(tmp_tab.size-1))
                 if(frList.size > 1) {
                     val urls = ArrayList(tmp_tab)
@@ -226,9 +237,9 @@ class MainActivity : AppCompatActivity() {
                         urls.set(i, urls.get(i).replace("http://", ""))
                         urls.set(i, urls.get(i).substring(0, 5))
                         frList.get(i).button.text = urls.get(i)
-                        Log.e("here",frList.get(i).button.text.toString())
                     }
                 }
+                updateTabStore()
             }, 100)
 
         }
@@ -248,6 +259,7 @@ class MainActivity : AppCompatActivity() {
                 val selectItem = parent.getItemAtPosition(position) as String
                 if (frList.isEmpty()) {
                     makeNewTab().changeUrl(selectItem.toString())
+                    getNowFrList().url = selectItem
                     updateTabStore()
                 }else{
                     goToSite(urlEditText.text.toString())
@@ -295,6 +307,7 @@ class MainActivity : AppCompatActivity() {
                 v.clearFocus()
                 if (frList.isEmpty()) {
                     makeNewTab().changeUrl(urlEditText.text.toString())
+                    getNowFrList().url = urlEditText.text.toString()
                     updateTabStore()
 
                 }else{
@@ -312,6 +325,7 @@ class MainActivity : AppCompatActivity() {
             v.clearFocus()
             if (frList.isEmpty()) {
                 makeNewTab().changeUrl(urlEditText.text.toString())
+                getNowFrList().url = urlEditText.text.toString()
                 updateTabStore()
 
             }else{
@@ -1158,6 +1172,7 @@ class MainActivity : AppCompatActivity() {
                 .show(frList.get(tagToIndex(selectedBtnTag)).blankFragment).commitNow()
         }
 
+
         updateTabStore()
     }
 
@@ -1404,7 +1419,6 @@ class MainActivity : AppCompatActivity() {
             return
         }
 
-        Log.e("here",searchedItems[oldFindedElementIdx]+" "+searchedItems[nowFindedElementIdx])
         getNowTab().webview.evaluateJavascript(
             "javascript:(function() {" +
                     "// 지우고, 칠하기\n" +
@@ -1458,11 +1472,6 @@ class MainActivity : AppCompatActivity() {
 
     @RequiresApi(Build.VERSION_CODES.KITKAT)
     private fun clickHere() {
-        Log.e("here", searchedItems[nowFindedElementIdx].toInt().toString())
-//        getNowTab().webview.evaluateJavascript(
-//            "document.querySelectorAll('a')["+searchedItems[nowFindedElementIdx].toInt()+"].click()"
-//        ) {}
-
         getNowTab().webview.evaluateJavascript(
             "javascript:(function() {" +
                     "// 지우고, 칠하기\n" +
@@ -1558,6 +1567,7 @@ class MainActivity : AppCompatActivity() {
     private fun goToSite(siteUrl:String){
 //        frList.get(tagToIndex(selectedBtnTag)).blankFragment.changeUrl(siteUrl)
         getNowTab().changeUrl(siteUrl)
+        getNowFrList().url = siteUrl
         updateTabStore()
     }
 
@@ -1657,7 +1667,6 @@ class MainActivity : AppCompatActivity() {
     private fun fireAndroidFun(funStr: String, wc: String) {
         // 와일드 카드가 포함된 안드로이드 함수를 처리한다.
 
-        Log.e("here",funStr+" "+wc)
         if (funStr.equals("@findElementsInView(*)")) {
             findElementsInView(wc)
         } else if (funStr == "") {

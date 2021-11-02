@@ -1,7 +1,10 @@
 package com.example.test
 
+import android.app.Activity
+import android.content.Context
 import android.graphics.Bitmap
 import android.os.Build
+import android.service.voice.VoiceInteractionSession
 import android.util.Log
 import android.webkit.WebView
 import android.webkit.WebViewClient
@@ -11,13 +14,16 @@ import org.json.JSONObject
 import org.jsoup.Jsoup
 import org.jsoup.nodes.Document
 import org.jsoup.select.Elements
+import kotlin.coroutines.coroutineContext
 
-class MyWebViewClient : WebViewClient() {
+class MyWebViewClient internal constructor(private val activity: Activity): WebViewClient() {
 
     var zoomable: Boolean = true
     var maxScale: Float = 5.0f
     var minScale: Float = 1.0f
     var presentScale: Float = 1.0f
+
+
 
     // 페이지 로드 후 name 속성이 viewport인 meta 태그의 내용을 분석하여
     // 확대 가능 여부, 최대/최소 확대 가능 수치를 받아오며
@@ -125,6 +131,12 @@ class MyWebViewClient : WebViewClient() {
                     titleText = titleText.substring(0,5)+".."
                 }
                 MainActivity.changeBtnTitle(titleText)
+                Log.e("here url ", url.toString())
+                var turl  = url.toString().replace("https://","")
+                turl = turl.replace("http://","")
+                MainActivity.getNowFrList().url = turl
+                MainActivity.updateTabStore()
+
             }).start()
         }
         catch(e : Exception){
@@ -133,6 +145,22 @@ class MyWebViewClient : WebViewClient() {
 
 
 
+    }
+
+    override fun onReceivedError(
+        view: WebView?,
+        errorCode: Int,
+        description: String?,
+        failingUrl: String?
+    ) {
+        Log.e("here receive error", "hey")
+        var sharedPref = activity.getSharedPreferences("tabStore", Context.MODE_PRIVATE)
+        with (sharedPref.edit()) {
+            putString("tabStore", "")
+            android.util.Log.e("here inti","모든 데이터가 지워짐")
+            commit()
+        }
+        super.onReceivedError(view, errorCode, description, failingUrl)
     }
 
 

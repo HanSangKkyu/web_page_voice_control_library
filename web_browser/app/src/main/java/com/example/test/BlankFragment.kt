@@ -35,7 +35,7 @@ class BlankFragment : Fragment() {
         webview.settings.displayZoomControls = false
 
         // 웹뷰안에 새 창이 뜨지 않도록 방지
-        webview.webViewClient = MyWebViewClient()
+        webview.webViewClient = MyWebViewClient(activity!!)
         webview.webChromeClient = WebChromeClient()
 
         // 웹뷰의 준비가 다 됐으면 상태를 업데이트하고 tempStr에 보관된 주소로 접속
