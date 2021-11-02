@@ -196,7 +196,8 @@ class MainActivity : AppCompatActivity() {
         setContentView(R.layout.activity_main)
         DefaultFunVO() // 기본 명령어를 만든다.
 
-        MainActivity.mContext = applicationContext
+        mContext = applicationContext
+
 
         requestMic()
         initWidget()
@@ -263,6 +264,7 @@ class MainActivity : AppCompatActivity() {
                     updateTabStore()
                 }else{
                     goToSite(urlEditText.text.toString())
+                    goToSite(selectItem)
                 }
 
                 dlg?.dismiss()
@@ -407,8 +409,8 @@ class MainActivity : AppCompatActivity() {
                 .show(frList.get(tagToIndex(newTabBtn.tag.toString())).blankFragment).commitNow()
             selectedBtnTag = newTabBtn.tag.toString()
 
-            // loadTab()에 의해 만들어진 탭 설정하기
-            if(newTabBtn.text != "새 탭" || newTabBtn.text != ""){
+            // loadTab()에 의해 만들어진 탭 설정하기 flag2
+            if(newTabBtn.text != "새 탭" && newTabBtn.text != ""){
                 if(frList.get(tagToIndex(selectedBtnTag)).blankFragment.getUrl().toString() == "null"){
                     getNowTab().changeUrl(tmp_tab.get(tagToIndex(selectedBtnTag)))
                 }
@@ -452,11 +454,8 @@ class MainActivity : AppCompatActivity() {
                 flag = true
             }
         }
-        
-        // loadTab()에 의해 만들어진 탭 설정하기 flag
-        if(frList.get(tagToIndex(selectedBtnTag)).blankFragment.getUrl().toString() == "null"){
-            getNowTab().changeUrl(tmp_tab.get(tagToIndex(selectedBtnTag)))
-        }
+
+        getNowTab().changeUrl(getNowFrList().url)
         changeBtnTextColor()
     }
 
@@ -478,10 +477,7 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
-        // loadTab()에 의해 만들어진 탭 설정하기 flag
-        if(frList.get(tagToIndex(selectedBtnTag)).blankFragment.getUrl().toString() == "null"){
-            getNowTab().changeUrl(tmp_tab.get(tagToIndex(selectedBtnTag)))
-        }
+        getNowTab().changeUrl(getNowFrList().url)
         changeBtnTextColor()
     }
 
