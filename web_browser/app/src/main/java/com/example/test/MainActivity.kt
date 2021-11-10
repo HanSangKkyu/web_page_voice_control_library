@@ -337,9 +337,9 @@ class MainActivity : AppCompatActivity() {
 
         // 새로고침 버튼
         refreshBtn.setOnClickListener { v ->
-//            getNowTab().webview.reload()
+            getNowTab().webview.reload()
 
-            makeNewTab().changeUrl("naver.com")
+//            makeNewTab().changeUrl("naver.com")
 
         }
 

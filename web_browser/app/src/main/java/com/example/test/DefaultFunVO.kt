@@ -307,7 +307,7 @@ class DefaultFunVO {
 
 
 
-        // 검색해줘 명령어 (구글, 네이버, 다음, 네이트, 빙, 야후, 유튜브)
+        // 검색해줘 명령어 (구글, 네이버, 다음, 네이트, 빙, 야후)
         funList.add(
             Funtion(
                 "m.naver.com",
@@ -384,11 +384,76 @@ class DefaultFunVO {
                 "음성 검색"
             )
         )
+
+        // 유튜브 특화 명령어
         funList.add(
             Funtion(
                 "m.youtube.com",
                 Command("*검색해 줘", "#location.href='https://m.youtube.com/results?search_query=*';"),
                 "음성 검색"
+            )
+        )
+        funList.add(
+            Funtion(
+                "m.youtube.com",
+                Command("구독으로", "#location.href='https://m.youtube.com/feed/subscriptions';"),
+                "구독한 동영상 보기"
+            )
+        )
+        funList.add(
+            Funtion(
+                "m.youtube.com",
+                Command("기록 보기", "#location.href='https://m.youtube.com/feed/history';"),
+                "기록 화면으로 이동"
+            )
+        )
+        funList.add(
+            Funtion(
+                "m.youtube.com",
+                Command("내 채널 보기", "#location.href='https://m.youtube.com/channel/UCEy_dpSm5NzlS6J6sLaFKZw/videos';"),
+                "내 채널 보기"
+            )
+        )
+        funList.add(
+            Funtion(
+                "m.youtube.com",
+                Command("인기 동영상 보기", "#location.href='https://m.youtube.com/feed/trending?bp=6gQJRkVleHBsb3Jl';"),
+                "인기 동영상 보기"
+            )
+        )
+        funList.add(
+            Funtion(
+                "m.youtube.com",
+                Command("음악 보기", "#location.href='https://m.youtube.com/channel/UC-9-kyTW8ZkZNDHQJ6FgpwQ';"),
+                "음악 화면으로 이동"
+            )
+        )
+        funList.add(
+            Funtion(
+                "m.youtube.com",
+                Command("게임으로", "#location.href='https://m.youtube.com/gaming';"),
+                "게임 화면으로 이동"
+            )
+        )
+        funList.add(
+            Funtion(
+                "m.youtube.com",
+                Command("스포츠 보기", "#location.href='https://m.youtube.com/channel/UCEgdi0XIXXZ-qJOFPf4JSKw';"),
+                "스포츠 화면으로 이동"
+            )
+        )
+        funList.add(
+            Funtion(
+                "m.youtube.com",
+                Command("학습보기", "#location.href='https://m.youtube.com/channel/UCtFRv9O2AHqOZjjynzrv-xg';"),
+                "학습 화면으로 이동"
+            )
+        )
+        funList.add(
+            Funtion(
+                "m.youtube.com",
+                Command("나중에 볼 동영상으로", "#location.href='https://m.youtube.com/playlist?list=WL';"),
+                "나중에 볼 동영상 화면으로"
             )
         )
 
@@ -400,6 +465,42 @@ class DefaultFunVO {
                 "음성 검색"
             )
         )
+
+        funList.add(
+            Funtion(
+                "m.10000recipe.com",
+                Command("분석 탭으로", "#location.href='https://m.10000recipe.com/recipe/index.html?tab=2';"),
+                "분석 탭으로 이동"
+            )
+        )
+
+
+        funList.add(
+            Funtion(
+                "m.10000recipe.com",
+                Command("랭킹 탭으로", "#location.href='https://m.10000recipe.com/ranking/home_new.html';"),
+                "랭킹 탭으로 이동"
+            )
+        )
+
+        funList.add(
+            Funtion(
+                "m.10000recipe.com",
+                Command("매거진 탭으로", "#location.href='https://m.10000recipe.com/recipe/index.html?tab=6';"),
+                "매거진 탭으로 이동"
+            )
+        )
+        funList.add(
+            Funtion(
+                "m.10000recipe.com",
+                Command("랭킹 탭으로", "#location.href='https://m.10000recipe.com/class/home.html';"),
+                "랭킹 탭으로 이"
+            )
+        )
+
+
+
+
 
 
 
