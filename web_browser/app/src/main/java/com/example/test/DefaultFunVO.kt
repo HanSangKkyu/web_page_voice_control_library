@@ -493,16 +493,10 @@ class DefaultFunVO {
         funList.add(
             Funtion(
                 "m.10000recipe.com",
-                Command("랭킹 탭으로", "#location.href='https://m.10000recipe.com/class/home.html';"),
-                "랭킹 탭으로 이"
+                Command("클래스 탭으로", "#location.href='https://m.10000recipe.com/class/home.html';"),
+                "클래스 탭으로 이"
             )
         )
-
-
-
-
-
-
 
     }
 }

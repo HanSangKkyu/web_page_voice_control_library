@@ -2,9 +2,11 @@ package com.example.test
 
 import android.Manifest
 import android.content.Context
+import android.graphics.Color
 import android.os.Build
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.os.Handler
 import android.util.Log
 import android.widget.CompoundButton
 import androidx.core.app.ActivityCompat
@@ -12,6 +14,7 @@ import com.android.volley.Request
 import com.android.volley.Response
 import com.android.volley.toolbox.HttpHeaderParser
 import com.android.volley.toolbox.Volley
+import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.activity_speaker_recnition.*
 import java.io.File
 import java.nio.charset.Charset
@@ -29,7 +32,14 @@ class SpeakerRecnitionActivity : AppCompatActivity() {
     }
     val audioRecord : OnlyAudioRecorder = OnlyAudioRecorder.instance
 
-
+    val handler = Handler(){
+        when (it.what) {
+            0->{
+                registBtn.setTextColor(Color.parseColor("#ffffff"))
+            }
+        }
+        true
+    }
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_speaker_recnition)
@@ -103,6 +113,7 @@ class SpeakerRecnitionActivity : AppCompatActivity() {
 
     private fun startREC(){
         // 파일 경로 설정
+        registBtn.setTextColor(Color.parseColor("#ff0000"))
         audioRecord.PCMPath = recordingFilePath
         audioRecord.WAVPath = wavFilePath
 
@@ -201,7 +212,7 @@ class SpeakerRecnitionActivity : AppCompatActivity() {
                 // Create HashMap of your Headers as the example provided below
 
                 val headers = HashMap<String, String>()
-                headers["Ocp-Apim-Subscription-Key"] = "11dee688d18444d9837321f89ce98c38"
+                headers["Ocp-Apim-Subscription-Key"] = "11dee688d18444d9837321f89ce98c38" // 엑세스키를 넣는 곳이다. Azure에서 볼 수 있다.
                 headers["Content-Type"] = "application/json"
                 return headers
             }
@@ -230,7 +241,9 @@ class SpeakerRecnitionActivity : AppCompatActivity() {
                     infoText.text = "등록이 완료되었습니다."
                 }
 
-                println("error is: $it $json")
+                handler.sendEmptyMessage(0)
+
+                println("result is: $it $json")
             },
             Response.ErrorListener {
                 val response = it.networkResponse
@@ -238,7 +251,7 @@ class SpeakerRecnitionActivity : AppCompatActivity() {
                     response?.data ?: ByteArray(0),
                     Charset.forName(HttpHeaderParser.parseCharset(response?.headers)))
 
-                println("error is: $it $json")
+                println("result is: $it $json")
             }
         ) {
             // wav 파일 보내기
