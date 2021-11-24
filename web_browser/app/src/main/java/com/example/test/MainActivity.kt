@@ -559,6 +559,7 @@ class MainActivity : AppCompatActivity() {
         micBtn.setText("REC")
 
         audioRecord.startRecord() //Start recording
+//        var limit = 0 // 임계치 값을 주변 소음값으로 설정하고 싶을 때 활성화
 
         Thread(Runnable {
             var startFlag = false
@@ -568,6 +569,11 @@ class MainActivity : AppCompatActivity() {
                 Thread.sleep(100L) // 0.1초 마다 발화를 하고 있는 상태인지 확인한다.
                 var Amplitude =  audioRecord.Amplitude
                 Log.e("Amplitude",Amplitude.toString())
+
+//                if(limit == 0){
+//                    limit = Amplitude.toString().toInt() // 임계치 값을 주변 소음값으로 설정하고 싶을 때 활성화
+//                }
+
                 if(Amplitude.toString().toInt() > 100000){
                     if(!startFlag) {
                         startFlag = true
