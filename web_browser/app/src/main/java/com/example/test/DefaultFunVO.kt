@@ -494,9 +494,26 @@ class DefaultFunVO {
             Funtion(
                 "m.10000recipe.com",
                 Command("클래스 탭으로", "#location.href='https://m.10000recipe.com/class/home.html';"),
-                "클래스 탭으로 이"
+                "클래스 탭으로 이동"
             )
         )
+
+        // 건대 e캠퍼스
+        funList.add(
+            Funtion(
+                "ecampus.konkuk.ac.kr",
+                Command("로그인 해", "#document.getElementById('usr_id').value = '아이디';document.getElementById('usr_pwd').value = '비밀번호';loginForm();"),
+                "로그인"
+            )
+        )
+        funList.add(
+            Funtion(
+                "ecampus.konkuk.ac.kr",
+                Command("*라고 글 써 줘", "#document.getElementById('wrtTitle').value = '*';document.getElementById('TXT').value = '*';ins('http://ecampus.konkuk.ac.kr/ilos/m/community/share_insert.acl');"),
+                "소모임 글쓰기"
+            )
+        )
+
 
     }
 }
