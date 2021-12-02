@@ -236,7 +236,9 @@ class MainActivity : AppCompatActivity() {
 //                    for (i in 0..getTabStore().size-1){
                         urls.set(i, urls.get(i).replace("https://", ""))
                         urls.set(i, urls.get(i).replace("http://", ""))
-                        urls.set(i, urls.get(i).substring(0, 5))
+                        if(urls.get(i).length >= 5){
+                            urls.set(i, urls.get(i).substring(0, 5))
+                        }
                         frList.get(i).button.text = urls.get(i)
                     }
                 }
@@ -833,6 +835,7 @@ class MainActivity : AppCompatActivity() {
             micBtn.setText("MIC")
         }
 
+        @RequiresApi(Build.VERSION_CODES.KITKAT)
         override fun onError(error: Int) {
             micBtn.setTextColor(Color.parseColor("#ffffff"))
             micBtn.setText("MIC")
@@ -843,6 +846,21 @@ class MainActivity : AppCompatActivity() {
                     "퍼미션 없음",
                     Toast.LENGTH_SHORT
                 ).show()
+
+                SpeechRecognizer.ERROR_SPEECH_TIMEOUT -> {
+                    Toast.makeText(
+                        this@MainActivity,
+                        "말을 안함",
+                        Toast.LENGTH_SHORT
+                    ).show()
+
+                    Log.e("음성 인식 결과:", "말을 안함1")
+                }
+
+                SpeechRecognizer.ERROR_NO_MATCH -> {
+                    Log.e("음성 인식 결과:", "말을 안함2")
+                    startSTT()
+                }
             }
         }
 
@@ -855,7 +873,12 @@ class MainActivity : AppCompatActivity() {
             micBtn.setTextColor(Color.parseColor("#ffffff"))
             micBtn.setText("MIC")
             matchCommand(speechText)
-            startSTT()
+
+            if(speechText == "음성인식 종료"){
+
+            }else{
+                startSTT()
+            }
         }
     }
 
